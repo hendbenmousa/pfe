@@ -90,7 +90,6 @@ public class SignatureDigestAlgorithmStep extends WizardStep<SignatureModel, Sig
         }
 
         switch (tokenType) {
-            case MOCCA:
             case MSCAPI:
                 return CertificateStep.class;
             case PKCS11:

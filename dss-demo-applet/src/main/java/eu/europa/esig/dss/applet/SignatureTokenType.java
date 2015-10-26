@@ -28,6 +28,6 @@ package eu.europa.esig.dss.applet;
 
 public enum SignatureTokenType {
 
-    PKCS11, PKCS12, MSCAPI, MOCCA
+    PKCS11, PKCS12, MSCAPI
 
 }

@@ -30,8 +30,8 @@ import eu.europa.esig.dss.DSSUtils;
 import eu.europa.esig.dss.applet.JavaPreferencesDAO;
 import eu.europa.esig.dss.applet.SignatureTokenType;
 import eu.europa.esig.dss.applet.UserPreferencesDAO;
+import eu.europa.esig.dss.signature.SignaturePackaging;
 import eu.europa.esig.dss.validation.ValidationResourceManager;
-import eu.europa.esig.dss.wsclient.signature.SignaturePackaging;
 
 /**
  *
@@ -47,7 +47,7 @@ public class Parameters {
 
 
 	public enum AppletUsage {
-		ALL, SIGN, EDIT_VALIDATION_POLICY
+		ALL, SIGN
 	}
 
 	private AppletUsage appletUsage = AppletUsage.ALL;
@@ -57,10 +57,6 @@ public class Parameters {
 	 */
 	private final UserPreferencesDAO userPreferencesDAO = new JavaPreferencesDAO();
 
-	/**
-	 *
-	 */
-	private boolean strictRFC3370;
 	/**
 	 *
 	 */
@@ -87,11 +83,6 @@ public class Parameters {
 	/**
 	 *
 	 */
-	private String serviceURL;
-
-	/**
-	 *
-	 */
 	private SignaturePackaging signaturePackaging;
 
 	/**
@@ -104,8 +95,6 @@ public class Parameters {
 	private String signatureLevel;
 
 	private URL defaultPolicyUrl;
-
-	private URL defaultXsdPolicyUrl;
 
 	/**
 	 *
@@ -143,13 +132,6 @@ public class Parameters {
 			}
 		}
 		return pkcs12File;
-	}
-
-	/**
-	 * @return the serviceURL
-	 */
-	public String getServiceURL() {
-		return serviceURL;
 	}
 
 	public String getSignatureFormat() {
@@ -233,13 +215,6 @@ public class Parameters {
 		return signatureTokenType != null;
 	}
 
-	/**
-	 * @return the strictRFC3370
-	 */
-	public boolean isStrictRFC3370() {
-		return strictRFC3370;
-	}
-
 	public void setAppletUsage(AppletUsage appletUsage) {
 		this.appletUsage = appletUsage;
 	}
@@ -263,13 +238,6 @@ public class Parameters {
 			userPreferencesDAO.setPKCS11LibraryPath(pkcs12File.getAbsolutePath());
 		}
 		this.pkcs12File = pkcs12File;
-	}
-
-	/**
-	 * @param serviceURL the serviceURL to set
-	 */
-	public void setServiceURL(final String serviceURL) {
-		this.serviceURL = serviceURL;
 	}
 
 	public void setSignatureFormat(String signatureFormat) {
@@ -309,13 +277,6 @@ public class Parameters {
 	}
 
 	/**
-	 * @param strictRFC3370 the strictRFC3370 to set
-	 */
-	public void setStrictRFC3370(final boolean strictRFC3370) {
-		this.strictRFC3370 = strictRFC3370;
-	}
-
-	/**
 	 * Set the default policy URL for validation. Can be null.
 	 * @param defaultPolicyUrl
 	 */
@@ -332,26 +293,6 @@ public class Parameters {
 			return getClass().getResource(ValidationResourceManager.defaultPolicyConstraintsLocation);
 		} else {
 			return defaultPolicyUrl;
-		}
-	}
-
-	/**
-	 * Set the default xsd policy URL for validation. Can be null.
-	 * @param defaultXsdPolicyUrl
-	 */
-	public void setDefaultXsdPolicyUrl(URL defaultXsdPolicyUrl) {
-		this.defaultXsdPolicyUrl = defaultXsdPolicyUrl;
-	}
-
-	/**
-	 *
-	 * @return the defaultXsdPolicyUrl for validation. Can be null.
-	 */
-	public URL getDefaultXsdPolicyUrl() {
-		if (defaultXsdPolicyUrl == null) {
-			return getClass().getResource(ValidationResourceManager.defaultPolicyXsdLocation);
-		} else {
-			return defaultXsdPolicyUrl;
 		}
 	}
 

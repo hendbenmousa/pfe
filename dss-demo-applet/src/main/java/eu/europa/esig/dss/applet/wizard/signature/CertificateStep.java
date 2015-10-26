@@ -28,7 +28,6 @@ import eu.europa.esig.dss.applet.model.SignatureModel;
 import eu.europa.esig.dss.applet.swing.mvc.ControllerException;
 import eu.europa.esig.dss.applet.swing.mvc.wizard.WizardStep;
 import eu.europa.esig.dss.applet.swing.mvc.wizard.WizardView;
-import eu.europa.esig.dss.applet.util.MOCCAAdapter;
 import eu.europa.esig.dss.token.MSCAPISignatureToken;
 import eu.europa.esig.dss.token.Pkcs11SignatureToken;
 import eu.europa.esig.dss.token.Pkcs12SignatureToken;
@@ -111,10 +110,6 @@ public class CertificateStep extends WizardStep<SignatureModel, SignatureWizardC
 
 			case MSCAPI: {
 				tokenConnetion = new MSCAPISignatureToken(new PinInputDialog(getController().getCore()));
-				break;
-			}
-			case MOCCA: {
-				tokenConnetion = new MOCCAAdapter().createSignatureToken(new PinInputDialog(getController().getCore()));
 				break;
 			}
 			case PKCS11:

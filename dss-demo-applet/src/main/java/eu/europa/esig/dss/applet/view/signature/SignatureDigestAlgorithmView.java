@@ -20,23 +20,22 @@
  */
 package eu.europa.esig.dss.applet.view.signature;
 
-import java.awt.Container;
+import java.awt.*;
 
-import javax.swing.JComboBox;
+import javax.swing.*;
 
 import com.jgoodies.binding.PresentationModel;
 import com.jgoodies.binding.list.SelectionInList;
 import com.jgoodies.binding.value.ValueModel;
 import com.jgoodies.forms.builder.PanelBuilder;
 import com.jgoodies.forms.layout.CellConstraints;
-
+import eu.europa.esig.dss.DigestAlgorithm;
 import eu.europa.esig.dss.applet.model.SignatureModel;
 import eu.europa.esig.dss.applet.swing.mvc.AppletCore;
 import eu.europa.esig.dss.applet.swing.mvc.wizard.WizardView;
 import eu.europa.esig.dss.applet.util.ComponentFactory;
 import eu.europa.esig.dss.applet.util.ResourceUtils;
 import eu.europa.esig.dss.applet.wizard.signature.SignatureWizardController;
-import eu.europa.esig.dss.wsclient.signature.DigestAlgorithm;
 
 public class SignatureDigestAlgorithmView extends WizardView<SignatureModel, SignatureWizardController> {
 

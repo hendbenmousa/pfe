@@ -34,8 +34,6 @@ import eu.europa.esig.dss.applet.swing.mvc.AppletController;
  */
 public abstract class DSSAppletController<M> extends AppletController<DSSAppletCore, M> {
 
-	protected final String serviceURL;
-
 	/**
 	 * The default constructor for DSSAppletController.
 	 *
@@ -46,11 +44,6 @@ public abstract class DSSAppletController<M> extends AppletController<DSSAppletC
 		super(core, model);
 
 		Security.addProvider(new BouncyCastleProvider());
-
-		final Parameters parameters = core.getParameters();
-
-		serviceURL = parameters.getServiceURL();
-
 	}
 
 	/**

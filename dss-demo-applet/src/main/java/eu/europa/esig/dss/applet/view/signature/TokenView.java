@@ -20,21 +20,19 @@
  */
 package eu.europa.esig.dss.applet.view.signature;
 
-import java.awt.Container;
+import java.awt.*;
 
-import javax.swing.JRadioButton;
+import javax.swing.*;
 
 import com.jgoodies.binding.PresentationModel;
 import com.jgoodies.binding.value.ValueModel;
 import com.jgoodies.forms.builder.PanelBuilder;
 import com.jgoodies.forms.layout.CellConstraints;
-
 import eu.europa.esig.dss.applet.SignatureTokenType;
 import eu.europa.esig.dss.applet.model.SignatureModel;
 import eu.europa.esig.dss.applet.swing.mvc.AppletCore;
 import eu.europa.esig.dss.applet.swing.mvc.wizard.WizardView;
 import eu.europa.esig.dss.applet.util.ComponentFactory;
-import eu.europa.esig.dss.applet.util.MOCCAAdapter;
 import eu.europa.esig.dss.applet.util.ResourceUtils;
 import eu.europa.esig.dss.applet.wizard.signature.SignatureWizardController;
 
@@ -53,12 +51,10 @@ public class TokenView extends WizardView<SignatureModel, SignatureWizardControl
     private static final String I18N_TOKEN_PKCS11 = ResourceUtils.getI18n("PKCS11");
     private static final String I18N_TOKEN_PKCS12 = ResourceUtils.getI18n("PKCS12");
     private static final String I18N_TOKEN_MSCAPI = ResourceUtils.getI18n("MSCAPI");
-    private static final String I18N_TOKEN_MOCCA = ResourceUtils.getI18n("MOCCA");
 
     private final JRadioButton pkcs11Button;
     private final JRadioButton pkcs12Button;
     private final JRadioButton msCapiButton;
-    private final JRadioButton moccaButton;
 
     private final PresentationModel<SignatureModel> presentationModel;
 
@@ -80,7 +76,6 @@ public class TokenView extends WizardView<SignatureModel, SignatureWizardControl
         pkcs11Button = ComponentFactory.createRadioButton(I18N_TOKEN_PKCS11, tokenValue, SignatureTokenType.PKCS11);
         pkcs12Button = ComponentFactory.createRadioButton(I18N_TOKEN_PKCS12, tokenValue, SignatureTokenType.PKCS12);
         msCapiButton = ComponentFactory.createRadioButton(I18N_TOKEN_MSCAPI, tokenValue, SignatureTokenType.MSCAPI);
-        moccaButton = ComponentFactory.createRadioButton(I18N_TOKEN_MOCCA, tokenValue, SignatureTokenType.MOCCA);
 
     }
 
@@ -102,9 +97,9 @@ public class TokenView extends WizardView<SignatureModel, SignatureWizardControl
         builder.add(pkcs11Button, cc.xy(2, 4));
         builder.add(pkcs12Button, cc.xy(2, 6));
         builder.add(msCapiButton, cc.xy(2, 8));
-        if (new MOCCAAdapter().isMOCCAAvailable()) {
-            builder.add(moccaButton, cc.xy(2, 10));
-        }
+//        if (new MOCCAAdapter().isMOCCAAvailable()) {
+//            builder.add(moccaButton, cc.xy(2, 10));
+//        }
 
         return ComponentFactory.createPanel(builder);
     }

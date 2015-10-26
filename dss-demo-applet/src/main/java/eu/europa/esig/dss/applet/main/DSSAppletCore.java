@@ -32,12 +32,10 @@ import eu.europa.esig.dss.applet.controller.ActivityController;
 import eu.europa.esig.dss.applet.main.Parameters.AppletUsage;
 import eu.europa.esig.dss.applet.model.ActivityModel;
 import eu.europa.esig.dss.applet.model.SignatureModel;
-import eu.europa.esig.dss.applet.model.ValidationPolicyModel;
 import eu.europa.esig.dss.applet.swing.mvc.AppletCore;
 import eu.europa.esig.dss.applet.util.DSSStringUtils;
 import eu.europa.esig.dss.applet.wizard.signature.SignatureWizardController;
-import eu.europa.esig.dss.applet.wizard.validationpolicy.ValidationPolicyWizardController;
-import eu.europa.esig.dss.wsclient.signature.SignaturePackaging;
+import eu.europa.esig.dss.signature.SignaturePackaging;
 
 /**
  * TODO
@@ -53,15 +51,11 @@ public class DSSAppletCore extends AppletCore {
 
 	private static final String PARAM_APPLET_USAGE = "usage";
 
-	private static final String PARAM_SERVICE_URL = "service_url";
-
 	private static final String PARAM_PKCS11_FILE = "pkcs11_file";
 	private static final String PARAM_PKCS12_FILE = "pkcs12_file";
 
 	private static final String PARAM_SIGNATURE_POLICY_ALGO = "signature_policy_algo";
 	private static final String PARAM_SIGNATURE_POLICY_HASH = "signature_policy_hash";
-
-	private static final String PARAM_STRICT_RFC3370 = "strict_rfc3370";
 
 	private static final String PARAM_TOKEN_TYPE = "token_type";
 
@@ -99,7 +93,6 @@ public class DSSAppletCore extends AppletCore {
 	protected void registerControllers() {
 		getControllers().put(ActivityController.class, new ActivityController(this, new ActivityModel()));
 		getControllers().put(SignatureWizardController.class, new SignatureWizardController(this, new SignatureModel()));
-		getControllers().put(ValidationPolicyWizardController.class, new ValidationPolicyWizardController(this, new ValidationPolicyModel()));
 	}
 
 	/*
@@ -132,31 +125,13 @@ public class DSSAppletCore extends AppletCore {
 			}
 		}
 
-		// Service URL
-		final String serviceParam = parameterProvider.getParameter(PARAM_SERVICE_URL);
-		//        System.out.println(serviceParam);
-		if (StringUtils.isEmpty(serviceParam)) {
-			throw new IllegalArgumentException(PARAM_SERVICE_URL + " cannot be empty");
-		}
-		parameters.setServiceURL(serviceParam);
-
 		// Signature Token
 		final String tokenParam = parameterProvider.getParameter(PARAM_TOKEN_TYPE);
 		if (DSSStringUtils
-				.contains(tokenParam, SignatureTokenType.MOCCA.name(), SignatureTokenType.MSCAPI.name(), SignatureTokenType.PKCS11.name(), SignatureTokenType.PKCS12.name())) {
+				.contains(tokenParam, SignatureTokenType.MSCAPI.name(), SignatureTokenType.PKCS11.name(), SignatureTokenType.PKCS12.name())) {
 			parameters.setSignatureTokenType(SignatureTokenType.valueOf(tokenParam));
 		} else {
 			LOG.warn("Invalid value of " + PARAM_TOKEN_TYPE + " parameter: {}", tokenParam);
-		}
-
-		// RFC3370
-		final String rfc3370Param = parameterProvider.getParameter(PARAM_STRICT_RFC3370);
-		if (StringUtils.isNotEmpty(rfc3370Param)) {
-			try {
-				parameters.setStrictRFC3370(Boolean.parseBoolean(rfc3370Param));
-			} catch (final Exception e) {
-				LOG.warn("Invalid value of " + PARAM_STRICT_RFC3370 + " parameter: {}", rfc3370Param);
-			}
 		}
 
 		// File path PKCS11
@@ -198,6 +173,5 @@ public class DSSAppletCore extends AppletCore {
 		this.parameters = parameters;
 
 		LOG.info("Parameters - {}", parameters);
-
 	}
 }
