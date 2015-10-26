@@ -29,7 +29,6 @@ import eu.europa.esig.dss.applet.view.ActivityView;
 import eu.europa.esig.dss.applet.wizard.signature.SignatureWizardController;
 
 /**
- *
  * TODO
  */
 public class ActivityController extends DSSAppletController<ActivityModel> {
@@ -41,7 +40,6 @@ public class ActivityController extends DSSAppletController<ActivityModel> {
 	private ActivityView view;
 
 	/**
-	 *
 	 * The default constructor for ActivityController.
 	 *
 	 * @param core
@@ -63,11 +61,12 @@ public class ActivityController extends DSSAppletController<ActivityModel> {
 	 *
 	 */
 	public void startAction() {
+
 		switch (getModel().getAction()) {
 			case SIGN:
 				getCore().getController(SignatureWizardController.class).start();
 				break;
-			case EDIT_VALIDATION_POLICY:
+			case VALIDATION:
 				// TODO-Bob (26/10/2015):  Validation to be implemented
 				//				getCore().getController(ValidationPolicyWizardController.class).start();
 				break;

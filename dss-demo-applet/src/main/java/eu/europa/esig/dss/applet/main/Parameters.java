@@ -47,7 +47,7 @@ public class Parameters {
 
 
 	public enum AppletUsage {
-		ALL, SIGN
+		ALL, SIGN, VALIDATE
 	}
 
 	private AppletUsage appletUsage = AppletUsage.ALL;

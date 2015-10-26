@@ -136,8 +136,8 @@ public class SignatureStep extends WizardStep<SignatureModel, SignatureWizardCon
 	 */
 	@Override
 	protected boolean isValid() {
-		final SignatureModel model = getModel();
+
+			final SignatureModel model = getModel();
 		return StringUtils.isNotEmpty(model.getFormat()) && (model.getPackaging() != null) && StringUtils.isNotEmpty(model.getLevel());
 	}
-
 }

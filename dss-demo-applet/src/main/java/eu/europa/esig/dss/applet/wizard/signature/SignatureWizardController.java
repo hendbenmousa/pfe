@@ -21,19 +21,27 @@
 package eu.europa.esig.dss.applet.wizard.signature;
 
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.security.NoSuchAlgorithmException;
 import java.util.HashMap;
 import java.util.Map;
 
-import eu.europa.esig.dss.AbstractSignatureParameters;
+import org.apache.commons.io.IOUtils;
+
+import eu.europa.esig.dss.DSSDocument;
 import eu.europa.esig.dss.DSSException;
+import eu.europa.esig.dss.DigestAlgorithm;
+import eu.europa.esig.dss.SignatureLevel;
+import eu.europa.esig.dss.TimestampParameters;
 import eu.europa.esig.dss.applet.controller.ActivityController;
 import eu.europa.esig.dss.applet.controller.DSSWizardController;
 import eu.europa.esig.dss.applet.main.DSSAppletCore;
 import eu.europa.esig.dss.applet.model.SignatureModel;
 import eu.europa.esig.dss.applet.swing.mvc.wizard.WizardController;
 import eu.europa.esig.dss.applet.swing.mvc.wizard.WizardStep;
+import eu.europa.esig.dss.applet.util.SigningUtils;
 import eu.europa.esig.dss.applet.view.signature.CertificateView;
 import eu.europa.esig.dss.applet.view.signature.FileView;
 import eu.europa.esig.dss.applet.view.signature.FinishView;
@@ -170,66 +178,29 @@ public class SignatureWizardController extends DSSWizardController<SignatureMode
 		final DSSPrivateKeyEntry privateKey = model.getSelectedPrivateKey();
 
 		final XAdESSignatureParameters parameters = new XAdESSignatureParameters();
+		parameters.setSigningCertificate(privateKey.getCertificate());
+		parameters.setCertificateChain(privateKey.getCertificateChain());
+		parameters.setDigestAlgorithm(DigestAlgorithm.SHA256);
 
-//		parameters.setSigningCertificateBytes(privateKey.getCertificate().getEncoded());
-//
-//		List<WsChainCertificate> chainCertificateList = parameters.getChainCertificateList();
-//		WsChainCertificate certificate = new WsChainCertificate();
-//		certificate.setX509Certificate(privateKey.getCertificate().getEncoded());
-//		chainCertificateList.add(certificate);
-//		CertificateToken[] certificateChain = privateKey.getCertificateChain();
-//		if (ArrayUtils.isNotEmpty(certificateChain)) {
-//			for (CertificateToken certificateToken : certificateChain) {
-//				WsChainCertificate c = new WsChainCertificate();
-//				c.setX509Certificate(certificateToken.getEncoded());
-//				chainCertificateList.add(c);
-//			}
-//		}
-//
-//		parameters.setEncryptionAlgorithm(EncryptionAlgorithm.fromValue(privateKey.getEncryptionAlgorithm().name()));
-//
-//		parameters.setSigningDate(DSSXMLUtils.createXMLGregorianCalendar(new Date()));
-//
-//		DigestAlgorithm digestAlgorithm = model.getSignatureDigestAlgorithm();
-//		if (digestAlgorithm == null) {
-//			parameters.setDigestAlgorithm(DigestAlgorithm.SHA256);
-//		} else {
-//			parameters.setDigestAlgorithm(digestAlgorithm);
-//		}
-//
-//		if (model.isTslSignatureCheck()) {
-//			prepareTSLSignature(parameters, fileToSign);
-//		} else {
-//			prepareCommonSignature(model, parameters);
-//		}
-//
-//		final DSSDocument signedDocument = SigningUtils.signDocument(serviceURL, fileToSign, parameters, privateKey, tokenConnection);
-//		final FileOutputStream fileOutputStream = new FileOutputStream(model.getTargetFile());
-//		final InputStream inputStream = signedDocument.openStream();
-//		IOUtils.copy(inputStream, fileOutputStream);
-//		IOUtils.closeQuietly(inputStream);
-//		IOUtils.closeQuietly(fileOutputStream);
-	}
+		final String signatureLevelString = model.getLevel();
+		parameters.setSignatureLevel(SignatureLevel.valueByName(signatureLevelString));
+		parameters.setSignaturePackaging(model.getPackaging());
 
-	private void prepareCommonSignature(SignatureModel model, AbstractSignatureParameters parameters) {
+		final TimestampParameters signatureTimestampParameters = new TimestampParameters();
+		signatureTimestampParameters.setDigestAlgorithm(DigestAlgorithm.SHA1);
+		parameters.setSignatureTimestampParameters(signatureTimestampParameters);
 
-//		final String signatureLevelString = model.getLevel();
-//		parameters.setSignatureLevel(SignatureLevel.valueOf(signatureLevelString));
-//		parameters.setSignaturePackaging(model.getPackaging());
-//
-//		if (model.isClaimedCheck()) {
-//			parameters.getClaimedSignerRole().add(model.getClaimedRole());
-//		}
-//
-//		if (model.isSignaturePolicyCheck()) {
-//
-//			final byte[] hashValue = Base64.decodeBase64(model.getSignaturePolicyValue());
-//			final Policy policy = new Policy();
-//			policy.setId(model.getSignaturePolicyId());
-//			final DigestAlgorithm policyDigestAlgorithm = DigestAlgorithm.valueOf(model.getSignaturePolicyAlgo());
-//			policy.setDigestAlgorithm(policyDigestAlgorithm);
-//			policy.setDigestValue(hashValue);
-//			parameters.setSignaturePolicy(policy);
-//		}
+		final DSSDocument signedDocument = SigningUtils.signDocument(fileToSign, parameters, privateKey, tokenConnection);
+		FileOutputStream fileOutputStream = null;
+		InputStream inputStream = null;
+		try {
+			fileOutputStream = new FileOutputStream(model.getTargetFile());
+			inputStream = signedDocument.openStream();
+			IOUtils.copy(inputStream, fileOutputStream);
+		} finally {
+			IOUtils.closeQuietly(inputStream);
+			IOUtils.closeQuietly(fileOutputStream);
+
+		}
 	}
 }

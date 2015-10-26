@@ -130,6 +130,9 @@ public class PersonalDataStep extends WizardStep<SignatureModel, SignatureWizard
 		if (model.isSignaturePolicyCheck()) {
 			return StringUtils.isNotEmpty(model.getSignaturePolicyAlgo()) && StringUtils.isNotEmpty(model.getSignaturePolicyId()) && StringUtils.isNotEmpty(model.getSignaturePolicyValue());
 		}
+		if (model.isClaimedCheck()) {
+			return StringUtils.isNotEmpty(model.getClaimedRole());
+		}
 		return true;
 	}
 }

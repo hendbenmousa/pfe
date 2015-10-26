@@ -41,24 +41,21 @@ import eu.europa.esig.dss.applet.util.ComponentFactory;
 import eu.europa.esig.dss.applet.util.ResourceUtils;
 
 /**
- *
  * TODO
- *
  */
 public class ActivityView extends DSSAppletView<ActivityModel, ActivityController> {
 
 	private static final String I18N_SIGN_DOCUMENT = ResourceUtils.getI18n("SIGN_A_DOCUMENT");
-	private static final String I18N_EDIT_VALIDATION_POLICY = ResourceUtils.getI18n("EDIT_VALIDATION_POLICY");
+	private static final String I18N_VALIDATION = ResourceUtils.getI18n("VALIDATION");
 	private final JRadioButton choice1;
 	private final JButton button;
 
-	//	// validation policy editor
-	//	private final JRadioButton choice2;
+	// validation
+	private final JRadioButton choice2;
 	private final PresentationModel<ActivityModel> presentationModel;
 	private final List<JRadioButton> choices = new ArrayList<JRadioButton>();
 
 	/**
-	 *
 	 * The default constructor for ActivityView.
 	 *
 	 * @param core
@@ -71,7 +68,7 @@ public class ActivityView extends DSSAppletView<ActivityModel, ActivityControlle
 		this.presentationModel = new PresentationModel<ActivityModel>(getModel());
 		final ValueModel activityValue = presentationModel.getModel(ActivityModel.PROPERTY_ACTIVITY);
 		choice1 = ComponentFactory.createRadioButton(I18N_SIGN_DOCUMENT, activityValue, ActivityAction.SIGN);
-		//		choice2 = ComponentFactory.createRadioButton(I18N_EDIT_VALIDATION_POLICY, activityValue, ActivityAction.EDIT_VALIDATION_POLICY);
+		choice2 = ComponentFactory.createRadioButton(I18N_VALIDATION, activityValue, ActivityAction.VALIDATION);
 		button = ComponentFactory.createNextButton(true, new NextActionListener());
 		button.setName("next");
 
@@ -79,13 +76,17 @@ public class ActivityView extends DSSAppletView<ActivityModel, ActivityControlle
 		switch (appletUsage) {
 			case ALL: {
 				choices.add(choice1);
+				choices.add(choice2);
 				break;
 			}
 			case SIGN: {
 				choices.add(choice1);
 				break;
 			}
-
+			case VALIDATE: {
+				choices.add(choice2);
+				break;
+			}
 		}
 	}
 

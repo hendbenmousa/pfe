@@ -87,7 +87,8 @@ public class TokenStep extends WizardStep<SignatureModel, SignatureWizardControl
     @Override
     protected Class<? extends WizardStep<SignatureModel, SignatureWizardController>> getNextStep() {
 
-        return SignatureDigestAlgorithmStep.class;
+//        return SignatureDigestAlgorithmStep.class;
+	    return CertificateStep.class;
     }
 
     /*
