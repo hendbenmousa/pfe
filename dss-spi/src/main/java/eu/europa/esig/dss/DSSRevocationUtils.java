@@ -1,19 +1,19 @@
 /**
  * DSS - Digital Signature Services
  * Copyright (C) 2015 European Commission, provided under the CEF programme
- *
+ * <p/>
  * This file is part of the "DSS - Digital Signature Services" project.
- *
+ * <p/>
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 2.1 of the License, or (at your option) any later version.
- *
+ * <p/>
  * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
- *
+ * <p/>
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
@@ -51,8 +51,6 @@ import eu.europa.esig.dss.x509.crl.CRLReasonEnum;
 
 /**
  * Utility class used to convert OCSPResp to BasicOCSPResp
- *
- *
  */
 
 public final class DSSRevocationUtils {
@@ -117,10 +115,8 @@ public final class DSSRevocationUtils {
 	 * This method indicates if the given revocation token is present in the CRL
 	 * or OCSP response list.
 	 *
-	 * @param revocationToken
-	 *            revocation token to be checked
-	 * @param basicOCSPResponses
-	 *            list of basic OCSP responses
+	 * @param revocationToken    revocation token to be checked
+	 * @param basicOCSPResponses list of basic OCSP responses
 	 * @return true if revocation token is present in one of the lists
 	 */
 	public static boolean isTokenIn(final RevocationToken revocationToken, final List<BasicOCSPResp> basicOCSPResponses) {
@@ -138,35 +134,32 @@ public final class DSSRevocationUtils {
 	 * This method returns the reason of the revocation of the certificate
 	 * extracted from the given CRL.
 	 *
-	 * @param crlEntry
-	 *            An object for a revoked certificate in a CRL (Certificate
-	 *            Revocation List).
+	 * @param crlEntry An object for a revoked certificate in a CRL (Certificate
+	 *                 Revocation List).
 	 * @return
 	 * @throws DSSException
 	 */
 	public static String getRevocationReason(final X509CRLEntry crlEntry) throws DSSException {
-		final String reasonId = Extension.reasonCode.getId();
-		final byte[] extensionBytes = crlEntry.getExtensionValue(reasonId);
 
 		try {
+			final String reasonId = Extension.reasonCode.getId();
+			final byte[] extensionBytes = crlEntry.getExtensionValue(reasonId);
 			final ASN1Enumerated reasonCodeExtension = ASN1Enumerated.getInstance(X509ExtensionUtil.fromExtensionValue(extensionBytes));
 			final CRLReason reason = CRLReason.getInstance(reasonCodeExtension);
 			int intValue = reason.getValue().intValue();
 			return CRLReasonEnum.fromInt(intValue).name();
-		} catch (IOException e) {
-			throw new DSSException(e);
+		} finally {
+			return CRLReasonEnum.unspecified.name();
 		}
 	}
 
 	/**
 	 * fix for certId.equals methods that doesn't work very well.
 	 *
-	 * @param certId
-	 *            {@code CertificateID}
-	 * @param singleResp
-	 *            {@code SingleResp}
+	 * @param certId     {@code CertificateID}
+	 * @param singleResp {@code SingleResp}
 	 * @return true if the certificate matches this included in
-	 *         {@code SingleResp}
+	 * {@code SingleResp}
 	 */
 	public static boolean matches(final CertificateID certId, final SingleResp singleResp) {
 
@@ -183,18 +176,16 @@ public final class DSSRevocationUtils {
 
 		// certId.equals fails in comparing the algoIdentifier because
 		// AlgoIdentifier params in null in one case and DERNull in another case
-		return singleRespCertIDHashAlgOID.equals(certIdHashAlgOID) && Arrays.areEqual(singleRespCertIDIssuerKeyHash, certIdIssuerKeyHash)
-				&& Arrays.areEqual(singleRespCertIDIssuerNameHash, certIdIssuerNameHash) && singleRespCertIDSerialNumber.equals(certIdSerialNumber);
+		return singleRespCertIDHashAlgOID.equals(certIdHashAlgOID) && Arrays.areEqual(singleRespCertIDIssuerKeyHash, certIdIssuerKeyHash) && Arrays
+			  .areEqual(singleRespCertIDIssuerNameHash, certIdIssuerNameHash) && singleRespCertIDSerialNumber.equals(certIdSerialNumber);
 	}
 
 	/**
 	 * Returns the {@code CertificateID} for the given certificate and its
 	 * issuer's certificate.
 	 *
-	 * @param cert
-	 *            {@code X509Certificate} for which the id is created
-	 * @param issuerCert
-	 *            {@code X509Certificate} issuer certificate of the {@code cert}
+	 * @param cert       {@code X509Certificate} for which the id is created
+	 * @param issuerCert {@code X509Certificate} issuer certificate of the {@code cert}
 	 * @return {@code CertificateID}
 	 * @throws eu.europa.esig.dss.DSSException
 	 */

@@ -126,8 +126,8 @@ public class MSCAPISignatureToken extends AbstractSignatureTokenConnection {
 	public List<DSSPrivateKeyEntry> getKeys() throws DSSException {
 
 		final List<DSSPrivateKeyEntry> list = new ArrayList<DSSPrivateKeyEntry>();
-
 		try {
+
 			final ProtectionParameter protectionParameter = new CallbackPasswordProtection(new PrefilledPasswordCallback("nimp".toCharArray()));
 			KeyStore keyStore = getKeyStore();
 			Enumeration<String> aliases = keyStore.aliases();
