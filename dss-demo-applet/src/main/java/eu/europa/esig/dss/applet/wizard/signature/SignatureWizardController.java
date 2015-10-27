@@ -30,6 +30,7 @@ import java.util.Map;
 
 import org.apache.commons.io.IOUtils;
 
+import ance.CertificateValidationService;
 import eu.europa.esig.dss.DSSDocument;
 import eu.europa.esig.dss.DSSException;
 import eu.europa.esig.dss.DigestAlgorithm;
@@ -71,6 +72,8 @@ public class SignatureWizardController extends DSSWizardController<SignatureMode
 	private PersonalDataView personalDataView;
 	private SaveView saveView;
 	private FinishView signView;
+
+	private boolean successful = false;
 
 	/**
 	 * The default constructor for SignatureWizardController.
@@ -173,6 +176,14 @@ public class SignatureWizardController extends DSSWizardController<SignatureMode
 
 		final SignatureModel model = getModel();
 
+		final boolean validSigningCertificate = isValidSigningCertificate(model);
+
+		if (!validSigningCertificate) {
+			setSuccessful(false);
+//			showDialogBox("Signing certificate validation error!");
+			return;
+		}
+
 		final File fileToSign = model.getSelectedFile();
 		final SignatureTokenConnection tokenConnection = model.getTokenConnection();
 		final DSSPrivateKeyEntry privateKey = model.getSelectedPrivateKey();
@@ -197,10 +208,33 @@ public class SignatureWizardController extends DSSWizardController<SignatureMode
 			fileOutputStream = new FileOutputStream(model.getTargetFile());
 			inputStream = signedDocument.openStream();
 			IOUtils.copy(inputStream, fileOutputStream);
+			setSuccessful(true);
 		} finally {
 			IOUtils.closeQuietly(inputStream);
 			IOUtils.closeQuietly(fileOutputStream);
-
 		}
+	}
+
+//	protected void showDialogBox(final String message) {
+//
+//		JDialog.setDefaultLookAndFeelDecorated(true);
+//		JOptionPane.showMessageDialog(null, message);
+//	}
+
+
+	private boolean isValidSigningCertificate(final SignatureModel model) {
+
+		CertificateValidationService certificateValidationService = new CertificateValidationService();
+		final DSSPrivateKeyEntry selectedPrivateKey = model.getSelectedPrivateKey();
+		final boolean valid = certificateValidationService.validate(selectedPrivateKey.getCertificate());
+		return valid;
+	}
+
+	public boolean isSuccessful() {
+		return successful;
+	}
+
+	public void setSuccessful(boolean successful) {
+		this.successful = successful;
 	}
 }

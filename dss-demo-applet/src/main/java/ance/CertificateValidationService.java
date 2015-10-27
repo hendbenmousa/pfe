@@ -34,6 +34,7 @@ import eu.europa.esig.dss.validation.SignatureValidationContext;
 import eu.europa.esig.dss.validation.ValidationContext;
 import eu.europa.esig.dss.x509.CertificateToken;
 import eu.europa.esig.dss.x509.CommonTrustedCertificateSource;
+import eu.europa.esig.dss.x509.RevocationToken;
 
 
 /**
@@ -52,7 +53,19 @@ import eu.europa.esig.dss.x509.CommonTrustedCertificateSource;
 public class CertificateValidationService {
 
 	private static CertificateToken rootCertificateToken;
+	private static CertificateToken rootCertificateToken2;
+
+	static {
+
+		final File rootCertificateFile = new File("C:\\git\\ance-4.5.0\\dss-demo-applet\\src\\main\\resources\\tun-root.pem");
+		rootCertificateToken = DSSUtils.loadCertificate(rootCertificateFile);
+
+		final File rootCertificateFile2 = new File("C:\\git\\ecna-4.5.0\\dss-demo-applet\\src\\main\\resources\\TunServerCA2.crt");
+		rootCertificateToken2 = DSSUtils.loadCertificate(rootCertificateFile2);
+	}
+
 	private final CertificateVerifier certificateVerifier;
+	private Date currentValidationTime;
 
 	public CertificateValidationService() {
 
@@ -69,21 +82,21 @@ public class CertificateValidationService {
 		final File rootCertificateFile = new File("C:\\git\\ance-4.5.0\\dss-demo-applet\\src\\main\\resources\\tun-root.pem");
 		rootCertificateToken = DSSUtils.loadCertificate(rootCertificateFile);
 
+		final File rootCertificateFile2 = new File("C:\\git\\ecna-4.5.0\\dss-demo-applet\\src\\main\\resources\\TunServerCA2.crt");
+		rootCertificateToken2 = DSSUtils.loadCertificate(rootCertificateFile2);
+
 		final File expCertificateFile = new File("C:\\git\\ance-4.5.0\\dss-demo-applet\\src\\main\\resources\\user1.crt");
 		final CertificateToken expCertificateToken = DSSUtils.loadCertificate(expCertificateFile);
 
 		final File revokedCertificateFile = new File("C:\\git\\ance-4.5.0\\dss-demo-applet\\src\\main\\resources\\user2.crt");
 		final CertificateToken revokedCertificateToken = DSSUtils.loadCertificate(revokedCertificateFile);
 
-
 		final File revoked2CertificateFile = new File("C:\\git\\ance-4.5.0\\dss-demo-applet\\src\\main\\resources\\Abdelkader_Mustapha_SFAXI.cer");
 		final CertificateToken revoked2CertificateToken = DSSUtils.loadCertificate(revoked2CertificateFile);
 
 
 		final CertificateValidationService certificateValidationService = new CertificateValidationService();
-		//		certificateValidationService.validate(certificateToken);
-		//		certificateValidationService.validate(expCertificateToken);
-		certificateValidationService.validate(revoked2CertificateToken);
+		certificateValidationService.validate(certificateToken);
 	}
 
 	/**
@@ -92,10 +105,11 @@ public class CertificateValidationService {
 	 * @param certificateToken {@code List} of {@code X509Certificate} to be ordered
 	 * @return the {@code List} of {@code X509CheckResult} taking into account the relevance of the certificate for signing
 	 */
-	public void validate(final CertificateToken certificateToken) {
+	public boolean validate(final CertificateToken certificateToken) {
 
 		final CommonTrustedCertificateSource trustedCertificateSource = new CommonTrustedCertificateSource();
 		trustedCertificateSource.addCertificate(rootCertificateToken);
+		trustedCertificateSource.addCertificate(rootCertificateToken2);
 		certificateVerifier.setTrustedCertSource(trustedCertificateSource);
 
 		final ValidationContext validationContext = new SignatureValidationContext();
@@ -105,7 +119,7 @@ public class CertificateValidationService {
 
 		validationContext.addCertificateTokenForVerification(certificateToken);
 		validationContext.validate();
-		final Date currentValidationTime = validationContext.getCurrentTime();
+		currentValidationTime = validationContext.getCurrentTime();
 		System.out.println(certificateToken.toString());
 
 		boolean keyUsage = false;
@@ -142,5 +156,55 @@ public class CertificateValidationService {
 		System.out.println("Global validation: " + valid);
 		System.out.println("Signing certificate key-usage: " + keyUsage);
 		System.out.println("Trust status: " + trusted);
+		return valid && keyUsage && trusted;
+		//		toCheckToken = certificateToken;
+		//		do {
+		//
+		//			if (toCheckToken.isSelfSigned()) {
+		//				final boolean revocationTrust = checkRevocationTrust(toCheckToken.getRevocationToken());
+		//				if (!revocationTrust) {
+		//
+		//					System.out.println("Revocation validation: " + revocationTrust);
+		//				}
+		//			}
+		//			toCheckToken = toCheckToken.getIssuerToken();
+		//		} while (toCheckToken != null);
+		//		System.out.println("Revocation validation: true");
+	}
+
+	/**
+	 * @param revocationToken
+	 * @return
+	 */
+	protected boolean checkRevocationTrust(final RevocationToken revocationToken) {
+
+		if (revocationToken == null) {
+			return false;
+		}
+		CertificateToken toCheckToken = revocationToken.getIssuerToken();
+		if (toCheckToken == null) {
+			return false;
+		}
+		boolean trusted = false;
+		boolean valid;
+		do {
+
+			final boolean validOn = toCheckToken.isValidOn(currentValidationTime);
+			final boolean signatureValid = toCheckToken.isSignatureValid();
+			final boolean selfSigned = toCheckToken.isSelfSigned();
+			Boolean revoked;
+			if (selfSigned) {
+				revoked = false;
+			} else {
+				revoked = toCheckToken.isRevoked();
+			}
+			trusted = trusted | toCheckToken.isTrusted();
+			valid = validOn && signatureValid && !revoked;
+			if (!valid) {
+				break;
+			}
+			toCheckToken = toCheckToken.getIssuerToken();
+		} while (toCheckToken != null);
+		return valid && trusted;
 	}
 }
