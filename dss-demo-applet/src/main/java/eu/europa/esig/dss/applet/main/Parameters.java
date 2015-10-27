@@ -21,29 +21,96 @@
 package eu.europa.esig.dss.applet.main;
 
 import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Properties;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.builder.ReflectionToStringBuilder;
 
+import eu.europa.esig.dss.DSSException;
 import eu.europa.esig.dss.DSSUtils;
-import eu.europa.esig.dss.applet.JavaPreferencesDAO;
+import eu.europa.esig.dss.DigestAlgorithm;
 import eu.europa.esig.dss.applet.SignatureTokenType;
-import eu.europa.esig.dss.applet.UserPreferencesDAO;
 import eu.europa.esig.dss.signature.SignaturePackaging;
 import eu.europa.esig.dss.validation.ValidationResourceManager;
+import eu.europa.esig.dss.x509.SignatureForm;
+
+import static eu.europa.esig.dss.applet.SignatureTokenType.MSCAPI;
+import static eu.europa.esig.dss.applet.SignatureTokenType.PKCS11;
+import static eu.europa.esig.dss.applet.SignatureTokenType.PKCS12;
+import static eu.europa.esig.dss.applet.main.Parameters.AppletUsage.SIGN;
+import static eu.europa.esig.dss.applet.main.Parameters.AppletUsage.VALIDATE;
+import static eu.europa.esig.dss.applet.main.Parameters.Level.B;
+import static eu.europa.esig.dss.applet.main.Parameters.Level.LT;
+import static eu.europa.esig.dss.applet.main.Parameters.Level.LTA;
+import static eu.europa.esig.dss.applet.main.Parameters.Level.T;
+import static eu.europa.esig.dss.signature.SignaturePackaging.DETACHED;
+import static eu.europa.esig.dss.signature.SignaturePackaging.ENVELOPED;
+import static eu.europa.esig.dss.signature.SignaturePackaging.ENVELOPING;
+import static eu.europa.esig.dss.x509.SignatureForm.CAdES;
+import static eu.europa.esig.dss.x509.SignatureForm.PAdES;
+import static eu.europa.esig.dss.x509.SignatureForm.XAdES;
 
 /**
  * TODO
  */
 public class Parameters {
 
+	public static final String USAGE = "USAGE";
+	public static final String FORM = "FORMAT";
+	public static final String LEVEL = "LEVEL";
+	public static final String PACKAGING = "PACKAGING";
+	public static final String TOKEN = "TOKEN";
+	public static final String PKCS11_FILE = "PKCS11_FILE";
+	public static final String PKCS12_FILE = "PKCS12_FILE";
+	public static final String SIGNATURE_HASH = "SIGNATURE_HASH";
+	public static final String TIMESTAMP_HASH = "TIMESTAMP_HASH";
+	public static final String VALIDATION_POLICY = "VALIDATION_POLICY";
 
 	/**
 	 *
 	 */
-	private final UserPreferencesDAO userPreferencesDAO = new JavaPreferencesDAO();
-	private AppletUsage appletUsage = AppletUsage.ALL;
+	private List<AppletUsage> usageList = new ArrayList<AppletUsage>() {{
+		add(SIGN);
+		add(VALIDATE);
+	}};
+	/**
+	 *
+	 */
+	private List<SignatureForm> formList = new ArrayList<SignatureForm>() {{
+		add(XAdES);
+		add(CAdES);
+		add(PAdES);
+	}};
+	/**
+	 *
+	 */
+	private List<Level> levelList = new ArrayList<Level>() {{
+		add(B);
+		add(T);
+		add(LT);
+		add(LTA);
+	}};
+	/**
+	 *
+	 */
+	private List<SignaturePackaging> packagingList = new ArrayList<SignaturePackaging>() {{
+		add(DETACHED);
+		add(ENVELOPED);
+		add(ENVELOPING);
+	}};
+	/**
+	 *
+	 */
+	private List<SignatureTokenType> tokenTypeList = new ArrayList<SignatureTokenType>() {{
+		add(PKCS11);
+		add(PKCS12);
+		add(MSCAPI);
+	}};
 	/**
 	 *
 	 */
@@ -52,14 +119,21 @@ public class Parameters {
 	 *
 	 */
 	private File pkcs12File;
+
 	/**
 	 *
 	 */
-	private SignatureTokenType signatureTokenType;
+	private DigestAlgorithm signatureHashAlgorithm = DigestAlgorithm.SHA256;
+
 	/**
 	 *
 	 */
-	private String signaturePolicyAlgo;
+	private DigestAlgorithm timestampHashAlgorithm = DigestAlgorithm.SHA1;
+
+	/**
+	 *
+	 */
+	private String signaturePolicyAlgorithm;
 	/**
 	 *
 	 */
@@ -67,42 +141,141 @@ public class Parameters {
 	/**
 	 *
 	 */
-	private SignaturePackaging signaturePackaging;
-	/**
-	 *
-	 */
-	private String signatureFormat;
-	/**
-	 *
-	 */
-	private String signatureLevel;
 	private URL defaultPolicyUrl;
 
 	/**
 	 * The default constructor for Parameters.
+	 *
+	 * @param setupPath
 	 */
-	public Parameters() {
+	public Parameters(final String setupPath) {
 
+		try {
+
+			final InputStream inputStream = DSSUtils.toInputStream(setupPath);
+			final Properties properties = new Properties();
+			properties.load(inputStream);
+
+			initUsage(properties);
+			initForm(properties);
+			initLevel(properties);
+			initPackaging(properties);
+			initTokenType(properties);
+			initSignatureHashAlgorithm(properties);
+
+		} catch (IOException e) {
+			throw new DSSException(e);
+		}
 	}
 
-	public AppletUsage getAppletUsage() {
-		return appletUsage;
+	private void initUsage(final Properties properties) {
+
+		final String usage = properties.getProperty(USAGE);
+		final String[] splitArray = usage.split("|");
+		final List appletUsageList = new ArrayList();
+		for (final String split : splitArray) {
+
+			if (StringUtils.isNotEmpty(split)) {
+
+				final AppletUsage appletUsage = AppletUsage.valueOf(split.toUpperCase());
+				appletUsageList.add(appletUsage);
+			}
+		}
+		if (!appletUsageList.isEmpty()) {
+			setUsageList(appletUsageList);
+		}
 	}
 
-	public void setAppletUsage(AppletUsage appletUsage) {
-		this.appletUsage = appletUsage;
+	private void initForm(final Properties properties) {
+
+		final String form = properties.getProperty(FORM);
+		final String[] splitArray = form.split("|");
+		final List formList = new ArrayList();
+		for (final String split : splitArray) {
+
+			if (StringUtils.isNotEmpty(split)) {
+
+				final SignatureForm signatureForm = SignatureForm.valueOf(split);
+				formList.add(signatureForm);
+			}
+		}
+		if (!formList.isEmpty()) {
+			setFormList(formList);
+		}
+	}
+
+	private void initLevel(final Properties properties) {
+
+		final String form = properties.getProperty(LEVEL);
+		final String[] splitArray = form.split("|");
+		final List levelList = new ArrayList();
+		for (final String split : splitArray) {
+
+			if (StringUtils.isNotEmpty(split)) {
+
+				final Level level = Level.valueOf(split);
+				levelList.add(level);
+			}
+		}
+		if (!levelList.isEmpty()) {
+			setLevelList(levelList);
+		}
+	}
+
+	private void initPackaging(final Properties properties) {
+
+		final String packaging = properties.getProperty(PACKAGING);
+		final String[] splitArray = packaging.split("|");
+		final List packagingList = new ArrayList();
+		for (final String split : splitArray) {
+
+			if (StringUtils.isNotEmpty(split)) {
+
+				final Level level = Level.valueOf(split);
+				packagingList.add(level);
+			}
+		}
+		if (!packagingList.isEmpty()) {
+			setPackagingList(packagingList);
+		}
+	}
+
+	private void initTokenType(final Properties properties) {
+
+		final String token = properties.getProperty(TOKEN);
+		final String[] splitArray = token.split("|");
+		final List tokenTypeList = new ArrayList();
+		for (final String split : splitArray) {
+
+			if (StringUtils.isNotEmpty(split)) {
+
+				final Level level = Level.valueOf(split);
+				tokenTypeList.add(level);
+			}
+		}
+		if (!tokenTypeList.isEmpty()) {
+			setTokenTypeList(tokenTypeList);
+		}
+	}
+
+	private void initSignatureHashAlgorithm(final Properties properties) {
+
+		final String token = properties.getProperty(SIGNATURE_HASH);
+		DigestAlgorithm signatureHashAlgorithm = DigestAlgorithm.forName(token);
+	}
+
+	public List<AppletUsage> getUsageList() {
+		return usageList;
+	}
+
+	public void setUsageList(List<AppletUsage> usageList) {
+		this.usageList = usageList;
 	}
 
 	/**
 	 * @return the pkcs11File
 	 */
 	public File getPkcs11File() {
-		if (pkcs11File == null) {
-			final String path = userPreferencesDAO.getPKCS11LibraryPath();
-			if (StringUtils.isNotEmpty(path)) {
-				pkcs11File = new File(path);
-			}
-		}
 		return pkcs11File;
 	}
 
@@ -110,9 +283,6 @@ public class Parameters {
 	 * @param pkcs11File the pkcs11File to set
 	 */
 	public void setPkcs11File(final File pkcs11File) {
-		if (pkcs11File != null) {
-			userPreferencesDAO.setPKCS12FilePath(pkcs11File.getAbsolutePath());
-		}
 		this.pkcs11File = pkcs11File;
 	}
 
@@ -120,12 +290,6 @@ public class Parameters {
 	 * @return the pkcs12File
 	 */
 	public File getPkcs12File() {
-		if (pkcs12File == null) {
-			final String path = userPreferencesDAO.getPKCS12FilePath();
-			if (StringUtils.isNotEmpty(path)) {
-				pkcs12File = new File(path);
-			}
-		}
 		return pkcs12File;
 	}
 
@@ -133,48 +297,45 @@ public class Parameters {
 	 * @param pkcs12File the pkcs12File to set
 	 */
 	public void setPkcs12File(final File pkcs12File) {
-		if (pkcs12File != null) {
-			userPreferencesDAO.setPKCS11LibraryPath(pkcs12File.getAbsolutePath());
-		}
 		this.pkcs12File = pkcs12File;
 	}
 
-	public String getSignatureFormat() {
-		return signatureFormat;
+	public List<SignatureForm> getFormList() {
+		return formList;
 	}
 
-	public void setSignatureFormat(String signatureFormat) {
-		this.signatureFormat = signatureFormat;
+	public void setFormList(List formList) {
+		this.formList = formList;
 	}
 
-	public String getSignatureLevel() {
-		return signatureLevel;
+	public List<Level> getLevelList() {
+		return levelList;
 	}
 
-	public void setSignatureLevel(String signatureLevel) {
-		this.signatureLevel = signatureLevel;
+	public void setLevelList(List signatureLevelList) {
+		this.levelList = signatureLevelList;
 	}
 
-	public SignaturePackaging getSignaturePackaging() {
-		return signaturePackaging;
+	public List<SignaturePackaging> getPackagingList() {
+		return packagingList;
 	}
 
-	public void setSignaturePackaging(SignaturePackaging signaturePackaging) {
-		this.signaturePackaging = signaturePackaging;
-	}
-
-	/**
-	 * @return the signaturePolicyAlgo
-	 */
-	public String getSignaturePolicyAlgo() {
-		return signaturePolicyAlgo;
+	public void setPackagingList(List packagingList) {
+		this.packagingList = packagingList;
 	}
 
 	/**
-	 * @param signaturePolicyAlgo the signaturePolicyAlgo to set
+	 * @return the signaturePolicyAlgorithm
 	 */
-	public void setSignaturePolicyAlgo(final String signaturePolicyAlgo) {
-		this.signaturePolicyAlgo = signaturePolicyAlgo;
+	public String getSignaturePolicyAlgorithm() {
+		return signaturePolicyAlgorithm;
+	}
+
+	/**
+	 * @param signaturePolicyAlgorithm the signaturePolicyAlgorithm to set
+	 */
+	public void setSignaturePolicyAlgorithm(final String signaturePolicyAlgorithm) {
+		this.signaturePolicyAlgorithm = signaturePolicyAlgorithm;
 	}
 
 	/**
@@ -197,21 +358,15 @@ public class Parameters {
 	/**
 	 * @return the signatureTokenType
 	 */
-	public SignatureTokenType getSignatureTokenType() {
-		if (signatureTokenType == null) {
-			signatureTokenType = userPreferencesDAO.getSignatureTokenType();
-		}
-		return signatureTokenType;
+	public List<SignatureTokenType> getTokenTypeList() {
+		return tokenTypeList;
 	}
 
 	/**
-	 * @param signatureTokenType the signatureTokenType to set
+	 * @param tokenTypeList the tokenTypeList to set
 	 */
-	public void setSignatureTokenType(final SignatureTokenType signatureTokenType) {
-		if (signatureTokenType != null) {
-			userPreferencesDAO.setSignatureTokenType(signatureTokenType);
-		}
-		this.signatureTokenType = signatureTokenType;
+	public void setTokenTypeList(final List<SignatureTokenType> tokenTypeList) {
+		this.tokenTypeList = tokenTypeList;
 	}
 
 	/**
@@ -233,8 +388,8 @@ public class Parameters {
 	/**
 	 * @return
 	 */
-	public boolean hasSignaturePolicyAlgo() {
-		return StringUtils.isNotEmpty(signaturePolicyAlgo);
+	public boolean hasSignaturePolicyAlgorithm() {
+		return StringUtils.isNotEmpty(signaturePolicyAlgorithm);
 	}
 
 	/**
@@ -248,7 +403,7 @@ public class Parameters {
 	 * @return
 	 */
 	public boolean hasSignatureTokenType() {
-		return signatureTokenType != null;
+		return !tokenTypeList.isEmpty();
 	}
 
 	/**
@@ -282,6 +437,10 @@ public class Parameters {
 	}
 
 	public enum AppletUsage {
-		ALL, SIGN, VALIDATE
+		SIGN, VALIDATE
+	}
+
+	public enum Level {
+		B, T, LT, LTA
 	}
 }

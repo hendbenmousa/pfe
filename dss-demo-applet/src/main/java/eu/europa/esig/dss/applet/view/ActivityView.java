@@ -72,7 +72,7 @@ public class ActivityView extends DSSAppletView<ActivityModel, ActivityControlle
 		button = ComponentFactory.createNextButton(true, new NextActionListener());
 		button.setName("next");
 
-		final AppletUsage appletUsage = getController().getParameter().getAppletUsage();
+		final AppletUsage appletUsage = getController().getParameter().getUsageList();
 		switch (appletUsage) {
 			case ALL: {
 				choices.add(choice1);

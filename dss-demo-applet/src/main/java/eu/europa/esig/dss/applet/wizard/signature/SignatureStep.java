@@ -112,9 +112,9 @@ public class SignatureStep extends WizardStep<SignatureModel, SignatureWizardCon
 
 		final SignatureModel model = getModel();
 		final Parameters parameters = getController().getParameter();
-		final SignaturePackaging packaging = parameters.getSignaturePackaging();
+		final SignaturePackaging packaging = parameters.getPackaging();
 		final String level = parameters.getSignatureLevel();
-		final String format = parameters.getSignatureFormat();
+		final String format = parameters.getFormList();
 
 		if (format != null) {
 			model.setFormat(format);
