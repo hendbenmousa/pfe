@@ -1,30 +1,35 @@
 /**
  * DSS - Digital Signature Services
  * Copyright (C) 2015 European Commission, provided under the CEF programme
- *
+ * <p/>
  * This file is part of the "DSS - Digital Signature Services" project.
- *
+ * <p/>
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 2.1 of the License, or (at your option) any later version.
- *
+ * <p/>
  * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
- *
+ * <p/>
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  */
 package eu.europa.esig.dss.token;
 
+import java.io.IOException;
 import java.lang.reflect.Field;
 import java.security.KeyStore;
 import java.security.KeyStore.PrivateKeyEntry;
 import java.security.KeyStore.ProtectionParameter;
+import java.security.KeyStoreException;
 import java.security.KeyStoreSpi;
+import java.security.NoSuchAlgorithmException;
+import java.security.UnrecoverableEntryException;
+import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -38,38 +43,14 @@ import eu.europa.esig.dss.DSSException;
 
 /**
  * Class holding all MS CAPI API access logic.
- *
  */
 public class MSCAPISignatureToken extends AbstractSignatureTokenConnection {
 
 	private static final Logger LOG = LoggerFactory.getLogger(MSCAPISignatureToken.class);
-
-	private static class CallbackPasswordProtection extends KeyStore.PasswordProtection {
-		PasswordInputCallback passwordCallback;
-
-		public CallbackPasswordProtection(PasswordInputCallback callback) {
-			super(null);
-			this.passwordCallback = callback;
-		}
-
-		@Override
-		public synchronized char[] getPassword() {
-			if (passwordCallback == null) {
-				throw new RuntimeException("MSCAPI: No callback provided for entering the PIN/password");
-			}
-			char[] password = passwordCallback.getPassword();
-			return password;
-		}
-	}
-
 	private PasswordInputCallback callback;
 
 	public MSCAPISignatureToken(PasswordInputCallback callback) {
 		this.callback = callback;
-	}
-
-	@Override
-	public void close() {
 	}
 
 	/**
@@ -119,29 +100,73 @@ public class MSCAPISignatureToken extends AbstractSignatureTokenConnection {
 	}
 
 	@Override
-	public List<DSSPrivateKeyEntry> getKeys() throws DSSException {
+	public void close() {
+	}
 
-		List<DSSPrivateKeyEntry> list = new ArrayList<DSSPrivateKeyEntry>();
+	public KeyStore getKeyStore() {
 
 		try {
-			ProtectionParameter protectionParameter = new CallbackPasswordProtection(new PrefilledPasswordCallback("nimp".toCharArray()));
 
 			KeyStore keyStore = KeyStore.getInstance("Windows-MY");
 			keyStore.load(null, null);
 			_fixAliases(keyStore);
+			return keyStore;
+		} catch (KeyStoreException e) {
+			throw new DSSException(e);
+		} catch (IOException e) {
+			throw new DSSException(e);
+		} catch (NoSuchAlgorithmException e) {
+			throw new DSSException(e);
+		} catch (CertificateException e) {
+			throw new DSSException(e);
+		}
+	}
 
+	@Override
+	public List<DSSPrivateKeyEntry> getKeys() throws DSSException {
+
+		final List<DSSPrivateKeyEntry> list = new ArrayList<DSSPrivateKeyEntry>();
+
+		try {
+			final ProtectionParameter protectionParameter = new CallbackPasswordProtection(new PrefilledPasswordCallback("nimp".toCharArray()));
+			KeyStore keyStore = getKeyStore();
 			Enumeration<String> aliases = keyStore.aliases();
 			while (aliases.hasMoreElements()) {
-				String alias = aliases.nextElement();
+
+				final String alias = aliases.nextElement();
 				if (keyStore.isKeyEntry(alias)) {
-					PrivateKeyEntry entry = (PrivateKeyEntry) keyStore.getEntry(alias, protectionParameter);
+
+					final PrivateKeyEntry entry = (PrivateKeyEntry) keyStore.getEntry(alias, protectionParameter);
 					list.add(new KSPrivateKeyEntry(entry));
 				}
 			}
-
-		} catch (Exception e) {
+		} catch (KeyStoreException e) {
+			throw new DSSException(e);
+		} catch (NoSuchAlgorithmException e) {
+			throw new DSSException(e);
+		} catch (UnrecoverableEntryException e) {
 			throw new DSSException(e);
 		}
 		return list;
+	}
+
+	private static class CallbackPasswordProtection extends KeyStore.PasswordProtection {
+
+		PasswordInputCallback passwordCallback;
+
+		public CallbackPasswordProtection(PasswordInputCallback callback) {
+			super(null);
+			this.passwordCallback = callback;
+		}
+
+		@Override
+		public synchronized char[] getPassword() {
+
+			if (passwordCallback == null) {
+				throw new RuntimeException("MSCAPI: No callback provided for entering the PIN/password");
+			}
+			char[] password = passwordCallback.getPassword();
+			return password;
+		}
 	}
 }

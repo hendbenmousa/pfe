@@ -167,7 +167,7 @@ public class Pkcs11SignatureToken extends AbstractSignatureTokenConnection {
 	}
 
 	@SuppressWarnings("restriction")
-	private KeyStore getKeyStore() throws KeyStoreException {
+	public KeyStore getKeyStore() throws KeyStoreException {
 
 		if (_keyStore == null) {
 			_keyStore = KeyStore.getInstance("PKCS11", getProvider());
