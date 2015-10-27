@@ -81,7 +81,6 @@ public class PersonalDataView extends WizardView<SignatureModel, SignatureWizard
 
 		final ValueModel claimedCheck = presentationModel.getModel(SignatureModel.PROPERTY_CLAIMED_CHECK);
 		final ValueModel claimedRole = presentationModel.getModel(SignatureModel.PROPERTY_CLAIMED_ROLE);
-		final ValueModel tslSignatureCheck = presentationModel.getModel(SignatureModel.PROPERTY_TSL_SIGNATURE_CHECK);
 		final ValueModel policyCheck = presentationModel.getModel(SignatureModel.PROPERTY_SIGNATURE_POLICY_CHECK);
 		final ValueModel policyID = presentationModel.getModel(SignatureModel.PROPERTY_POLICY_ID);
 		final ValueModel policyAlgo = presentationModel.getModel(SignatureModel.PROPERTY_POLICY_ALGO);

@@ -1,53 +1,31 @@
 /**
  * DSS - Digital Signature Services
  * Copyright (C) 2015 European Commission, provided under the CEF programme
- *
+ * <p/>
  * This file is part of the "DSS - Digital Signature Services" project.
- *
+ * <p/>
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 2.1 of the License, or (at your option) any later version.
- *
+ * <p/>
  * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
- *
+ * <p/>
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  */
 package eu.europa.esig.dss.applet.util;
 
-import java.awt.Color;
-import java.awt.Component;
-import java.awt.Container;
-import java.awt.FlowLayout;
-import java.awt.LayoutManager;
+import java.awt.*;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.swing.BorderFactory;
-import javax.swing.ButtonModel;
-import javax.swing.ComboBoxModel;
-import javax.swing.Icon;
-import javax.swing.ImageIcon;
-import javax.swing.JApplet;
-import javax.swing.JButton;
-import javax.swing.JCheckBox;
-import javax.swing.JComboBox;
-import javax.swing.JComponent;
-import javax.swing.JLabel;
-import javax.swing.JList;
-import javax.swing.JPanel;
-import javax.swing.JRadioButton;
-import javax.swing.JScrollPane;
-import javax.swing.JTree;
-import javax.swing.ListCellRenderer;
-import javax.swing.ListModel;
-import javax.swing.UIManager;
+import javax.swing.*;
 import javax.swing.border.Border;
 import javax.swing.tree.TreeCellRenderer;
 import javax.swing.tree.TreeModel;
@@ -108,6 +86,9 @@ public final class ComponentFactory extends BasicComponentFactory {
 		ICON_UNSURE = new ImageIcon(ResourceUtils.class.getResource("/eu/europa/esig/dss/applet/report/unsure_16.png"));
 		ICON_INFO = new ImageIcon(ResourceUtils.class.getResource("/eu/europa/esig/dss/applet/report/info_16.png"));
 		ICON_SUCCESS = new ImageIcon(ResourceUtils.class.getResource("/eu/europa/esig/dss/applet/wizard/big_ok.png"));
+	}
+
+	private ComponentFactory() {
 	}
 
 	/**
@@ -391,6 +372,7 @@ public final class ComponentFactory extends BasicComponentFactory {
 	 * @return
 	 */
 	public static JRadioButton createRadioButton(final String text, final ValueModel valueModel, final Object value) {
+
 		final JRadioButton button = new JRadioButton(text);
 		final ButtonModel model = new RadioButtonAdapter(valueModel, value);
 		button.setModel(model);
@@ -403,6 +385,7 @@ public final class ComponentFactory extends BasicComponentFactory {
 	 * @return
 	 */
 	public static JButton createRefreshButton(final boolean enabled, final ActionListener actionListener) {
+
 		return ComponentFactory.createButton(ResourceUtils.getI18n("REFRESH"), enabled, actionListener, ICON_REFRESH);
 	}
 
@@ -413,6 +396,7 @@ public final class ComponentFactory extends BasicComponentFactory {
 	 * @return
 	 */
 	public static JButton createSaveButton(final String label, final boolean enabled, final ActionListener actionListener) {
+
 		return ComponentFactory.createButton(label, enabled, actionListener, ICON_SAVE_FILE);
 	}
 
@@ -421,6 +405,7 @@ public final class ComponentFactory extends BasicComponentFactory {
 	 * @return
 	 */
 	public static JScrollPane createScrollPane(final Component component) {
+
 		final JScrollPane pane = new JScrollPane();
 		pane.setViewportView(component);
 		return pane;
@@ -444,6 +429,7 @@ public final class ComponentFactory extends BasicComponentFactory {
 		final CellConstraints cc = new CellConstraints();
 
 		for (int i = 1; i <= maxStep; i++) {
+
 			final JPanel subPanel = ComponentFactory.createPanel(i == currentStep ? DEFAULT_HIGHLIGHT : DEFAULT_BACKGROUND);
 			subPanel.add(ComponentFactory.createLabel(String.valueOf(i)));
 
@@ -458,11 +444,11 @@ public final class ComponentFactory extends BasicComponentFactory {
 	}
 
 	/**
-	 * @param ressourceName
+	 * @param resourceName
 	 * @return
 	 */
-	public static ImageIcon icon(final String ressourceName) {
-		return new ImageIcon(ComponentFactory.class.getResource(ressourceName));
+	public static ImageIcon icon(final String resourceName) {
+		return new ImageIcon(ComponentFactory.class.getResource(resourceName));
 	}
 
 	/**
@@ -543,6 +529,7 @@ public final class ComponentFactory extends BasicComponentFactory {
 	 * @param container
 	 */
 	public static void updateDisplay(final JApplet applet, final Container container) {
+
 		if (container != null) {
 
 			final PanelBuilder builder = createBuilder(new String[]{"5dlu", "fill:default:grow", "5dlu"}, new String[]{"5dlu", "fill:default:grow", "5dlu"});
@@ -559,8 +546,4 @@ public final class ComponentFactory extends BasicComponentFactory {
 
 		}
 	}
-
-	private ComponentFactory() {
-	}
-
 }

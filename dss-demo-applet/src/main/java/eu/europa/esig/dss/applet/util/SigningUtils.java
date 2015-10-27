@@ -25,6 +25,7 @@ import java.io.File;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import ance.AnceDataLoader;
 import eu.europa.esig.dss.DSSDocument;
 import eu.europa.esig.dss.DSSException;
 import eu.europa.esig.dss.DigestAlgorithm;
@@ -41,12 +42,6 @@ import eu.europa.esig.dss.xades.signature.XAdESService;
 
 /**
  * TODO
- *
- *
- *
- *
- *
- *
  */
 public final class SigningUtils {
 
@@ -54,16 +49,16 @@ public final class SigningUtils {
 
 	private static final OnlineTSPSource onlineTSPSource;
 
-	//	private static AnceDataLoader dataLoader;
+	private static AnceDataLoader dataLoader;
 
 	private static PinInputDialog pinInputDialog;
 
 	static {
 
 		onlineTSPSource = new OnlineTSPSource("https://ts.certification.tn:4318");
-		//		dataLoader = new AnceDataLoader();
-		//		dataLoader.setContentType("application/timestamp-query");
-		//		onlineTSPSource.setDataLoader(dataLoader);
+		dataLoader = new AnceDataLoader();
+		dataLoader.setContentType("application/timestamp-query");
+		onlineTSPSource.setDataLoader(dataLoader);
 	}
 
 	private SigningUtils() {
@@ -78,7 +73,7 @@ public final class SigningUtils {
 
 			XAdESService xadesService = new XAdESService(new CommonCertificateVerifier());
 
-			pinInputDialog = new PinInputDialog(null);
+			//			pinInputDialog = new PinInputDialog(null);
 			//			dataLoader.setPinInputDialog(pinInputDialog);
 			xadesService.setTspSource(onlineTSPSource);
 

@@ -75,6 +75,7 @@ public class SignatureStep extends WizardStep<SignatureModel, SignatureWizardCon
 
 		final Parameters parameters = getController().getParameter();
 		if (parameters.hasSignatureTokenType()) {
+
 			final SignatureTokenType tokenType = parameters.getSignatureTokenType();
 			getModel().setTokenType(tokenType);
 			switch (tokenType) {
@@ -87,11 +88,8 @@ public class SignatureStep extends WizardStep<SignatureModel, SignatureWizardCon
 				default:
 					throw new RuntimeException("Cannot evaluate token type");
 			}
-
-		} else {
-			return TokenStep.class;
 		}
-
+		return TokenStep.class;
 	}
 
 	/*
@@ -137,7 +135,7 @@ public class SignatureStep extends WizardStep<SignatureModel, SignatureWizardCon
 	@Override
 	protected boolean isValid() {
 
-			final SignatureModel model = getModel();
+		final SignatureModel model = getModel();
 		return StringUtils.isNotEmpty(model.getFormat()) && (model.getPackaging() != null) && StringUtils.isNotEmpty(model.getLevel());
 	}
 }

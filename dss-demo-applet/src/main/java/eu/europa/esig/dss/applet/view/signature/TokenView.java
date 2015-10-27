@@ -59,6 +59,7 @@ public class TokenView extends WizardView<SignatureModel, SignatureWizardControl
 	 * @param model
 	 */
 	public TokenView(final AppletCore core, final SignatureWizardController controller, final SignatureModel model) {
+
 		super(core, controller, model);
 
 		presentationModel = new PresentationModel<SignatureModel>(getModel());
@@ -68,14 +69,8 @@ public class TokenView extends WizardView<SignatureModel, SignatureWizardControl
 		pkcs11Button = ComponentFactory.createRadioButton(I18N_TOKEN_PKCS11, tokenValue, SignatureTokenType.PKCS11);
 		pkcs12Button = ComponentFactory.createRadioButton(I18N_TOKEN_PKCS12, tokenValue, SignatureTokenType.PKCS12);
 		msCapiButton = ComponentFactory.createRadioButton(I18N_TOKEN_MSCAPI, tokenValue, SignatureTokenType.MSCAPI);
-
 	}
 
-	/*
-	 * (non-Javadoc)
-	 *
-	 * @see eu.europa.esig.dss.applet.view.DSSAppletView#doLayout()
-	 */
 	@Override
 	protected Container doLayout() {
 

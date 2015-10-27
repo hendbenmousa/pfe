@@ -114,10 +114,8 @@ public class CertificateStep extends WizardStep<SignatureModel, SignatureWizardC
 			}
 			case PKCS11:
 
-				final File file = model.getPkcs11File();
-
-				tokenConnetion = new Pkcs11SignatureToken(file.getAbsolutePath(), model.getPkcs11Password().toCharArray());
-
+				final File pkcs11File = model.getPkcs11File();
+				tokenConnetion = new Pkcs11SignatureToken(pkcs11File.getAbsolutePath(), model.getPkcs11Password().toCharArray());
 				break;
 			case PKCS12:
 				tokenConnetion = new Pkcs12SignatureToken(model.getPkcs12Password(), model.getPkcs12File());
