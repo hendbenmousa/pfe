@@ -28,18 +28,11 @@ import eu.europa.esig.dss.applet.swing.mvc.wizard.WizardStep;
 import eu.europa.esig.dss.applet.swing.mvc.wizard.WizardView;
 
 /**
- *
  * TODO
- *
- *
- *
- *
- *
- *
  */
 public class SignatureDigestAlgorithmStep extends WizardStep<SignatureModel, SignatureWizardController> {
+
 	/**
-	 *
 	 * The default constructor for SignatureDigestAlgorithmStep.
 	 *
 	 * @param model
@@ -50,37 +43,23 @@ public class SignatureDigestAlgorithmStep extends WizardStep<SignatureModel, Sig
 		super(model, view, controller);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 *
-	 * @see eu.europa.esig.dss.applet.swing.mvc.wizard.WizardStep#finish()
-	 */
 	@Override
 	protected void finish() throws ControllerException {
 		// TODO Auto-generated method stub
 
 	}
 
-	/*
-	 * (non-Javadoc)
-	 *
-	 * @see eu.europa.esig.dss.applet.swing.mvc.wizard.WizardStep#getBackStep()
-	 */
 	@Override
 	protected Class<? extends WizardStep<SignatureModel, SignatureWizardController>> getBackStep() {
+
 		final Parameters parameters = getController().getParameter();
-		if (parameters.hasSignatureTokenType()) {
+		if (parameters.getTokenTypeList().size() == 1) {
 			return SignatureStep.class;
 		} else {
 			return TokenStep.class;
 		}
 	}
 
-	/*
-	 * (non-Javadoc)
-	 *
-	 * @see eu.europa.esig.dss.applet.swing.mvc.wizard.WizardStep#getNextStep()
-	 */
 	@Override
 	protected Class<? extends WizardStep<SignatureModel, SignatureWizardController>> getNextStep() {
 
@@ -99,34 +78,18 @@ public class SignatureDigestAlgorithmStep extends WizardStep<SignatureModel, Sig
 		return this.getClass();
 	}
 
-	/*
-	 * (non-Javadoc)
-	 *
-	 * @see eu.europa.esig.dss.applet.swing.mvc.wizard.WizardStep#getStepProgression()
-	 */
 	@Override
 	protected int getStepProgression() {
 		return 3;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 *
-	 * @see eu.europa.esig.dss.applet.swing.mvc.wizard.WizardStep#init()
-	 */
 	@Override
 	protected void init() throws ControllerException {
 
 	}
 
-	/*
-	 * (non-Javadoc)
-	 *
-	 * @see eu.europa.esig.dss.applet.swing.mvc.wizard.WizardStep#isValid()
-	 */
 	@Override
 	protected boolean isValid() {
 		return true;
 	}
-
 }

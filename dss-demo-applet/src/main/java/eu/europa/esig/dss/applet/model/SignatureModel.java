@@ -30,20 +30,15 @@ import com.jgoodies.binding.beans.Model;
 import eu.europa.esig.dss.DigestAlgorithm;
 import eu.europa.esig.dss.applet.SignatureTokenType;
 import eu.europa.esig.dss.applet.main.FileType;
+import eu.europa.esig.dss.applet.main.Parameters;
 import eu.europa.esig.dss.applet.util.FileTypeDetectorUtils;
 import eu.europa.esig.dss.signature.SignaturePackaging;
 import eu.europa.esig.dss.token.DSSPrivateKeyEntry;
 import eu.europa.esig.dss.token.SignatureTokenConnection;
+import eu.europa.esig.dss.x509.SignatureForm;
 
 /**
- *
  * TODO
- *
- *
- *
- *
- *
- *
  */
 @SuppressWarnings("serial")
 public class SignatureModel extends Model {
@@ -75,9 +70,9 @@ public class SignatureModel extends Model {
 	private String pkcs11Password;
 	private String pkcs12Password;
 	private SignatureTokenType tokenType;
-	private String format;
+	private SignatureForm form;
 	private SignaturePackaging packaging;
-	private String level;
+	private Parameters.Level level;
 	private SignatureTokenConnection tokenConnection;
 	private List<DSSPrivateKeyEntry> privateKeys;
 	private DSSPrivateKeyEntry selectedPrivateKey;
@@ -125,35 +120,37 @@ public class SignatureModel extends Model {
 	}
 
 	/**
-	 * @return the format
+	 * @return the form
 	 */
-	public String getFormat() {
-		return format;
+	public SignatureForm getForm() {
+		return form;
 	}
 
 	/**
-	 * @param format the format to set
+	 * @param form the form to set
 	 */
-	public void setFormat(final String format) {
-		final String oldValue = this.format;
-		final String newValue = format;
-		this.format = newValue;
+	public void setForm(final SignatureForm form) {
+
+		final SignatureForm oldValue = this.form;
+		final SignatureForm newValue = form;
+		this.form = newValue;
 		firePropertyChange(PROPERTY_FORMAT, oldValue, newValue);
 	}
 
 	/**
 	 * @return the level
 	 */
-	public String getLevel() {
+	public Parameters.Level getLevel() {
 		return level;
 	}
 
 	/**
 	 * @param level the level to set
 	 */
-	public void setLevel(final String level) {
-		final String oldValue = this.level;
-		final String newValue = level;
+	public void setLevel(final Parameters.Level level) {
+
+		final Parameters.Level oldValue = this.level;
+		final Parameters.Level newValue = level;
 		this.level = newValue;
 		firePropertyChange(PROPERTY_LEVEL, oldValue, newValue);
 	}
@@ -200,7 +197,6 @@ public class SignatureModel extends Model {
 	}
 
 	/**
-	 *
 	 * @param pkcs11Password the pkcs11password to set
 	 */
 	public void setPkcs11Password(final String pkcs11Password) {

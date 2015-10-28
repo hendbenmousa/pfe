@@ -41,7 +41,6 @@ public class ValidationResourceManager {
 
 	public static String defaultPolicyConstraintsLocation = "/policy/constraint.xml";
 	public static String defaultCountersignaturePolicyConstraintsLocation = "/policy/countersignature-constraint.xml";
-	public static String defaultPolicyXsdLocation = "/policy/policy.xsd";
 
 	private static JAXBContext jaxbContext;
 

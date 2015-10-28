@@ -24,12 +24,13 @@ import java.io.File;
 
 import org.apache.commons.lang.StringUtils;
 
-import eu.europa.esig.dss.DSSUtils;
+import eu.europa.esig.dss.applet.main.Parameters;
 import eu.europa.esig.dss.applet.model.SignatureModel;
 import eu.europa.esig.dss.applet.swing.mvc.ControllerException;
 import eu.europa.esig.dss.applet.swing.mvc.wizard.WizardStep;
 import eu.europa.esig.dss.applet.swing.mvc.wizard.WizardView;
 import eu.europa.esig.dss.signature.SignaturePackaging;
+import eu.europa.esig.dss.x509.SignatureForm;
 
 /**
  * TODO
@@ -90,14 +91,16 @@ public class SaveStep extends WizardStep<SignatureModel, SignatureWizardControll
 	@Override
 	protected void init() {
 
-		final File selectedFile = getModel().getSelectedFile();
-		// Initialize the target file base on the current selected file
+		final SignatureModel model = getModel();
 
-		final SignaturePackaging signaturePackaging = getModel().getPackaging();
-		final String signatureLevel = getModel().getLevel();
-		final File targetFile = prepareTargetFileName(selectedFile, signaturePackaging, signatureLevel);
+		final File selectedFile = model.getSelectedFile();
+		// Initialize the target file based on the current selected file
+		final SignaturePackaging signaturePackaging = model.getPackaging();
+		final SignatureForm signatureForm = model.getForm();
+		final Parameters.Level signatureLevel = model.getLevel();
+		final File targetFile = prepareTargetFileName(selectedFile, signaturePackaging, signatureForm, signatureLevel);
 
-		getModel().setTargetFile(targetFile);
+		model.setTargetFile(targetFile);
 
 	}
 
@@ -112,33 +115,24 @@ public class SaveStep extends WizardStep<SignatureModel, SignatureWizardControll
 		return targetFile != null;
 	}
 
-	private File prepareTargetFileName(final File file, final SignaturePackaging signaturePackaging, final String signatureLevel) {
+	private File prepareTargetFileName(final File file, final SignaturePackaging signaturePackaging, SignatureForm signatureForm, final Parameters.Level signatureLevel) {
 
 		final File parentDir = file.getParentFile();
 		final String originalName = StringUtils.substringBeforeLast(file.getName(), ".");
 		final String originalExtension = "." + StringUtils.substringAfterLast(file.getName(), ".");
-		final String level = signatureLevel.toUpperCase();
+		final String form = signatureForm.name();
+		final String level = signatureLevel.name();
 
-		if (((SignaturePackaging.ENVELOPING == signaturePackaging) || (SignaturePackaging.DETACHED == signaturePackaging)) && level.startsWith("XADES")) {
+		if (((SignaturePackaging.ENVELOPING == signaturePackaging) || (SignaturePackaging.DETACHED == signaturePackaging)) && signatureForm == SignatureForm.XAdES) {
 
-			final String form = "xades";
-			final String levelOnly = DSSUtils.replaceStrStr(level, "XADES-", "").toLowerCase();
 			final String packaging = signaturePackaging.name().toLowerCase();
-			return new File(parentDir, originalName + "-" + form + "-" + packaging + "-" + levelOnly + ".xml");
+			return new File(parentDir, originalName + "-" + form + "-" + packaging + "-" + level + ".xml");
 		}
 
-		if (level.startsWith("CADES") && !originalExtension.toLowerCase().equals(".p7m")) {
+		if (signatureForm == SignatureForm.CAdES && !originalExtension.toLowerCase().equals(".p7m")) {
 			return new File(parentDir, originalName + originalExtension + ".p7m");
 		}
 
-		if (level.startsWith("ASIC_S")) {
-			return new File(parentDir, originalName + originalExtension + ".asics");
-		}
-		if (level.startsWith("ASIC_E")) {
-			return new File(parentDir, originalName + originalExtension + ".asice");
-		}
-
 		return new File(parentDir, originalName + "-signed" + originalExtension);
-
 	}
 }

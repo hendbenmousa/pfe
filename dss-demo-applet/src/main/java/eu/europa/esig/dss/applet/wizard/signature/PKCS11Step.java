@@ -60,7 +60,7 @@ public class PKCS11Step extends WizardStep<SignatureModel, SignatureWizardContro
 	protected Class<? extends WizardStep<SignatureModel, SignatureWizardController>> getBackStep() {
 
 		final Parameters parameters = getController().getParameter();
-		if (parameters.hasSignatureTokenType()) {
+		if (parameters.getTokenTypeList().size()==1) {
 			return SignatureStep.class;
 		} else {
 			return TokenStep.class;

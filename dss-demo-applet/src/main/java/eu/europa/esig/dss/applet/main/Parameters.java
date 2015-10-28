@@ -23,7 +23,6 @@ package eu.europa.esig.dss.applet.main;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
@@ -141,7 +140,7 @@ public class Parameters {
 	/**
 	 *
 	 */
-	private URL defaultPolicyUrl;
+	private String validationPolicy;
 
 	/**
 	 * The default constructor for Parameters.
@@ -162,7 +161,10 @@ public class Parameters {
 			initPackaging(properties);
 			initTokenType(properties);
 			initSignatureHashAlgorithm(properties);
-
+			initTimestampHashAlgorithm(properties);
+			initPkcs11File(properties);
+			initPkcs12File(properties);
+			initValidationPolicy(properties);
 		} catch (IOException e) {
 			throw new DSSException(e);
 		}
@@ -261,7 +263,40 @@ public class Parameters {
 	private void initSignatureHashAlgorithm(final Properties properties) {
 
 		final String token = properties.getProperty(SIGNATURE_HASH);
-		DigestAlgorithm signatureHashAlgorithm = DigestAlgorithm.forName(token);
+		setSignatureHashAlgorithm(DigestAlgorithm.forName(token));
+	}
+
+	private void initTimestampHashAlgorithm(final Properties properties) {
+
+		final String token = properties.getProperty(TIMESTAMP_HASH);
+		setTimestampHashAlgorithm(DigestAlgorithm.forName(token));
+	}
+
+	private void initPkcs11File(final Properties properties) {
+
+		final String token = properties.getProperty(PKCS11_FILE);
+		final File file = new File(token);
+		if (file.exists() && file.isFile()) {
+			setPkcs11File(file);
+		}
+	}
+
+	private void initPkcs12File(final Properties properties) {
+
+		final String token = properties.getProperty(PKCS12_FILE);
+		final File file = new File(token);
+		if (file.exists() && file.isFile()) {
+			setPkcs12File(file);
+		}
+	}
+
+	private void initValidationPolicy(final Properties properties) {
+
+		final String token = properties.getProperty(VALIDATION_POLICY);
+		final File file = new File(token);
+		if (file.exists() && file.isFile()) {
+			setValidationPolicy(file.getAbsolutePath());
+		}
 	}
 
 	public List<AppletUsage> getUsageList() {
@@ -322,6 +357,22 @@ public class Parameters {
 
 	public void setPackagingList(List packagingList) {
 		this.packagingList = packagingList;
+	}
+
+	public DigestAlgorithm getSignatureHashAlgorithm() {
+		return signatureHashAlgorithm;
+	}
+
+	public void setSignatureHashAlgorithm(DigestAlgorithm signatureHashAlgorithm) {
+		this.signatureHashAlgorithm = signatureHashAlgorithm;
+	}
+
+	public DigestAlgorithm getTimestampHashAlgorithm() {
+		return timestampHashAlgorithm;
+	}
+
+	public void setTimestampHashAlgorithm(DigestAlgorithm timestampHashAlgorithm) {
+		this.timestampHashAlgorithm = timestampHashAlgorithm;
 	}
 
 	/**
@@ -400,37 +451,25 @@ public class Parameters {
 	}
 
 	/**
-	 * @return
+	 * @return the validation policy. Can be null.
 	 */
-	public boolean hasSignatureTokenType() {
-		return !tokenTypeList.isEmpty();
-	}
+	public String getValidationPolicy() {
 
-	/**
-	 * @return the defaultPolicyUrl for validation. Can be null.
-	 */
-	public URL getDefaultPolicyUrl() {
-		if (defaultPolicyUrl == null) {
-			return getClass().getResource(ValidationResourceManager.defaultPolicyConstraintsLocation);
-		} else {
-			return defaultPolicyUrl;
+		if (validationPolicy == null) {
+			return ValidationResourceManager.defaultPolicyConstraintsLocation;
 		}
+		return validationPolicy;
 	}
 
 	/**
-	 * Set the default policy URL for validation. Can be null.
+	 * Set the default policy file for validation. Can be null.
 	 *
-	 * @param defaultPolicyUrl
+	 * @param validationPolicy
 	 */
-	public void setDefaultPolicyUrl(URL defaultPolicyUrl) {
-		this.defaultPolicyUrl = defaultPolicyUrl;
+	public void setValidationPolicy(String validationPolicy) {
+		this.validationPolicy = validationPolicy;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 *
-	 * @see java.lang.Object#toString()
-	 */
 	@Override
 	public String toString() {
 		return ReflectionToStringBuilder.reflectionToString(this);

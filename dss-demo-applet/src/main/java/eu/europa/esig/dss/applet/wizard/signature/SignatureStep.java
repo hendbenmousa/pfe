@@ -20,7 +20,7 @@
  */
 package eu.europa.esig.dss.applet.wizard.signature;
 
-import org.apache.commons.lang.StringUtils;
+import java.util.List;
 
 import eu.europa.esig.dss.applet.SignatureTokenType;
 import eu.europa.esig.dss.applet.main.Parameters;
@@ -29,11 +29,13 @@ import eu.europa.esig.dss.applet.swing.mvc.ControllerException;
 import eu.europa.esig.dss.applet.swing.mvc.wizard.WizardStep;
 import eu.europa.esig.dss.applet.swing.mvc.wizard.WizardView;
 import eu.europa.esig.dss.signature.SignaturePackaging;
+import eu.europa.esig.dss.x509.SignatureForm;
 
 /**
  * TODO
  */
 public class SignatureStep extends WizardStep<SignatureModel, SignatureWizardController> {
+
 	/**
 	 * The default constructor for SignatureStep.
 	 *
@@ -45,40 +47,26 @@ public class SignatureStep extends WizardStep<SignatureModel, SignatureWizardCon
 		super(model, view, controller);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 *
-	 * @see eu.europa.esig.dss.applet.swing.mvc.wizard.WizardStep#finish()
-	 */
 	@Override
 	protected void finish() throws ControllerException {
 
 	}
 
-	/*
-	 * (non-Javadoc)
-	 *
-	 * @see eu.europa.esig.dss.applet.swing.mvc.wizard.WizardStep#getBackStep()
-	 */
 	@Override
 	protected Class<? extends WizardStep<SignatureModel, SignatureWizardController>> getBackStep() {
 		return FileStep.class;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 *
-	 * @see eu.europa.esig.dss.applet.swing.mvc.wizard.WizardStep#getNextStep()
-	 */
 	@Override
 	protected Class<? extends WizardStep<SignatureModel, SignatureWizardController>> getNextStep() {
 
 		final Parameters parameters = getController().getParameter();
-		if (parameters.hasSignatureTokenType()) {
+		final List<SignatureTokenType> tokenTypeList = parameters.getTokenTypeList();
+		if (tokenTypeList.size() == 1) {
 
-			final SignatureTokenType tokenType = parameters.getSignatureTokenType();
-			getModel().setTokenType(tokenType);
-			switch (tokenType) {
+			final SignatureTokenType signatureTokenType = tokenTypeList.get(0);
+			getModel().setTokenType(signatureTokenType);
+			switch (signatureTokenType) {
 				case MSCAPI:
 					return CertificateStep.class;
 				case PKCS11:
@@ -92,50 +80,41 @@ public class SignatureStep extends WizardStep<SignatureModel, SignatureWizardCon
 		return TokenStep.class;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 *
-	 * @see eu.europa.esig.dss.applet.swing.mvc.wizard.WizardStep#getStepProgression()
-	 */
 	@Override
 	protected int getStepProgression() {
 		return 2;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 *
-	 * @see eu.europa.esig.dss.applet.swing.mvc.wizard.WizardStep#execute()
-	 */
 	@Override
 	protected void init() {
 
 		final SignatureModel model = getModel();
 		final Parameters parameters = getController().getParameter();
-		final SignaturePackaging packaging = parameters.getPackaging();
-		final String level = parameters.getSignatureLevel();
-		final String format = parameters.getFormList();
+		final List<SignatureForm> formatList = parameters.getFormList();
+		final List<SignaturePackaging> packagingList = parameters.getPackagingList();
+		final List<Parameters.Level> levelList = parameters.getLevelList();
 
-		if (format != null) {
-			model.setFormat(format);
-			if (packaging != null) {
-				model.setPackaging(packaging);
-				if (StringUtils.isNotEmpty(level)) {
-					model.setLevel(level);
-				}
-			}
+		if (formatList.size() == 1) {
+
+			final SignatureForm signatureForm = formatList.get(0);
+			model.setForm(signatureForm);
+		}
+		if (packagingList.size() == 1) {
+
+			final SignaturePackaging signaturePackaging = packagingList.get(0);
+			model.setPackaging(signaturePackaging);
+		}
+		if (levelList.size() == 1) {
+
+			final Parameters.Level level = levelList.get(0);
+			model.setLevel(level);
 		}
 	}
 
-	/*
-	 * (non-Javadoc)
-	 *
-	 * @see eu.europa.esig.dss.applet.swing.mvc.wizard.WizardStep#isValid()
-	 */
 	@Override
 	protected boolean isValid() {
 
 		final SignatureModel model = getModel();
-		return StringUtils.isNotEmpty(model.getFormat()) && (model.getPackaging() != null) && StringUtils.isNotEmpty(model.getLevel());
+		return model.getForm() != null && model.getPackaging() != null && model.getLevel() != null;
 	}
 }

@@ -39,6 +39,7 @@ import eu.europa.esig.dss.TimestampParameters;
 import eu.europa.esig.dss.applet.controller.ActivityController;
 import eu.europa.esig.dss.applet.controller.DSSWizardController;
 import eu.europa.esig.dss.applet.main.DSSAppletCore;
+import eu.europa.esig.dss.applet.main.Parameters;
 import eu.europa.esig.dss.applet.model.SignatureModel;
 import eu.europa.esig.dss.applet.swing.mvc.wizard.WizardController;
 import eu.europa.esig.dss.applet.swing.mvc.wizard.WizardStep;
@@ -55,7 +56,17 @@ import eu.europa.esig.dss.applet.view.signature.SignatureView;
 import eu.europa.esig.dss.applet.view.signature.TokenView;
 import eu.europa.esig.dss.token.DSSPrivateKeyEntry;
 import eu.europa.esig.dss.token.SignatureTokenConnection;
+import eu.europa.esig.dss.x509.SignatureForm;
 import eu.europa.esig.dss.xades.XAdESSignatureParameters;
+
+import static eu.europa.esig.dss.SignatureLevel.CAdES_BASELINE_B;
+import static eu.europa.esig.dss.SignatureLevel.CAdES_BASELINE_T;
+import static eu.europa.esig.dss.SignatureLevel.PAdES_BASELINE_B;
+import static eu.europa.esig.dss.SignatureLevel.PAdES_BASELINE_LT;
+import static eu.europa.esig.dss.SignatureLevel.PAdES_BASELINE_LTA;
+import static eu.europa.esig.dss.SignatureLevel.PAdES_BASELINE_T;
+import static eu.europa.esig.dss.SignatureLevel.XAdES_BASELINE_B;
+import static eu.europa.esig.dss.SignatureLevel.XAdES_BASELINE_T;
 
 /**
  * TODO
@@ -193,8 +204,11 @@ public class SignatureWizardController extends DSSWizardController<SignatureMode
 		parameters.setCertificateChain(privateKey.getCertificateChain());
 		parameters.setDigestAlgorithm(DigestAlgorithm.SHA256);
 
-		final String signatureLevelString = model.getLevel();
-		parameters.setSignatureLevel(SignatureLevel.valueByName(signatureLevelString));
+		final SignatureForm form = model.getForm();
+		final Parameters.Level level = model.getLevel();
+
+		SignatureLevel signatureLevel = getSignatureLevel(form, level);
+		parameters.setSignatureLevel(signatureLevel);
 		parameters.setSignaturePackaging(model.getPackaging());
 
 		final TimestampParameters signatureTimestampParameters = new TimestampParameters();
@@ -215,7 +229,55 @@ public class SignatureWizardController extends DSSWizardController<SignatureMode
 		}
 	}
 
-//	protected void showDialogBox(final String message) {
+	private SignatureLevel getSignatureLevel(SignatureForm form, Parameters.Level level) {
+
+		if (SignatureForm.PAdES == form) {
+
+			if (level == Parameters.Level.B) {
+				return PAdES_BASELINE_B;
+			}
+			if (level == Parameters.Level.T) {
+				return PAdES_BASELINE_T;
+			}
+			if (level == Parameters.Level.LT) {
+				return PAdES_BASELINE_LT;
+			}
+			if (level == Parameters.Level.LTA) {
+				return PAdES_BASELINE_LTA;
+			}
+		} else if (SignatureForm.CAdES == form) {
+
+			if (level == Parameters.Level.B) {
+				return CAdES_BASELINE_B;
+			}
+			if (level == Parameters.Level.T) {
+				return CAdES_BASELINE_T;
+			}
+			if (level == Parameters.Level.LT) {
+				return SignatureLevel.CAdES_BASELINE_LT;
+			}
+			if (level == Parameters.Level.LTA) {
+				return SignatureLevel.CAdES_BASELINE_LTA;
+			}
+		} else if (SignatureForm.XAdES == form) {
+
+			if (level == Parameters.Level.B) {
+				return XAdES_BASELINE_B;
+			}
+			if (level == Parameters.Level.T) {
+				return XAdES_BASELINE_T;
+			}
+			if (level == Parameters.Level.LT) {
+				return SignatureLevel.XAdES_BASELINE_LT;
+			}
+			if (level == Parameters.Level.LTA) {
+				return SignatureLevel.XAdES_BASELINE_LTA;
+			}
+		}
+		return null;
+	}
+
+	//	protected void showDialogBox(final String message) {
 //
 //		JDialog.setDefaultLookAndFeelDecorated(true);
 //		JOptionPane.showMessageDialog(null, message);

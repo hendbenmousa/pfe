@@ -166,7 +166,7 @@ public class FileView extends WizardView<SignatureModel, SignatureWizardControll
 				}
 				setFileContent(toSignFile);
 				getModel().setSelectedFile(selectedFile);
-				getModel().setFormat(null);
+				getModel().setForm(null);
 				getModel().setPackaging(null);
 			}
 		}
