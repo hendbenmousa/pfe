@@ -26,6 +26,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import ance.AnceDataLoader;
+import eu.europa.esig.dss.AbstractSignatureParameters;
 import eu.europa.esig.dss.DSSDocument;
 import eu.europa.esig.dss.DSSException;
 import eu.europa.esig.dss.DigestAlgorithm;
@@ -59,13 +60,12 @@ public final class SigningUtils {
 	private SigningUtils() {
 	}
 
-	public static DSSDocument signDocument(final File file, final XAdESSignatureParameters parameters, DSSPrivateKeyEntry privateKey, SignatureTokenConnection tokenConnection,
+	public static DSSDocument signDocument(final File file, final AbstractSignatureParameters parameters, DSSPrivateKeyEntry privateKey, SignatureTokenConnection tokenConnection,
 	                                       SignatureModel model) throws DSSException {
 
 		try {
 
 			final DSSDocument toSignDocument = new FileDocument(file);
-
 
 			AbstractSignatureService signatureService = null;
 			switch (model.getForm()) {

@@ -31,6 +31,7 @@ import java.util.Map;
 import org.apache.commons.io.IOUtils;
 
 import ance.CertificateValidationService;
+import eu.europa.esig.dss.AbstractSignatureParameters;
 import eu.europa.esig.dss.DSSDocument;
 import eu.europa.esig.dss.DSSException;
 import eu.europa.esig.dss.DigestAlgorithm;
@@ -54,22 +55,31 @@ import eu.europa.esig.dss.applet.view.signature.SaveView;
 import eu.europa.esig.dss.applet.view.signature.SignatureDigestAlgorithmView;
 import eu.europa.esig.dss.applet.view.signature.SignatureView;
 import eu.europa.esig.dss.applet.view.signature.TokenView;
+import eu.europa.esig.dss.cades.CAdESSignatureParameters;
 import eu.europa.esig.dss.token.DSSPrivateKeyEntry;
 import eu.europa.esig.dss.token.SignatureTokenConnection;
 import eu.europa.esig.dss.x509.SignatureForm;
 import eu.europa.esig.dss.xades.XAdESSignatureParameters;
 
-import static eu.europa.esig.dss.SignatureLevel.*;
 import static eu.europa.esig.dss.SignatureLevel.CAdES_BASELINE_B;
+import static eu.europa.esig.dss.SignatureLevel.CAdES_BASELINE_LT;
+import static eu.europa.esig.dss.SignatureLevel.CAdES_BASELINE_LTA;
 import static eu.europa.esig.dss.SignatureLevel.CAdES_BASELINE_T;
 import static eu.europa.esig.dss.SignatureLevel.PAdES_BASELINE_B;
 import static eu.europa.esig.dss.SignatureLevel.PAdES_BASELINE_LT;
 import static eu.europa.esig.dss.SignatureLevel.PAdES_BASELINE_LTA;
 import static eu.europa.esig.dss.SignatureLevel.PAdES_BASELINE_T;
 import static eu.europa.esig.dss.SignatureLevel.XAdES_BASELINE_B;
+import static eu.europa.esig.dss.SignatureLevel.XAdES_BASELINE_LT;
+import static eu.europa.esig.dss.SignatureLevel.XAdES_BASELINE_LTA;
 import static eu.europa.esig.dss.SignatureLevel.XAdES_BASELINE_T;
-import static eu.europa.esig.dss.applet.main.Level.*;
-import static eu.europa.esig.dss.x509.SignatureForm.*;
+import static eu.europa.esig.dss.applet.main.Level.BASELINE_B;
+import static eu.europa.esig.dss.applet.main.Level.BASELINE_LT;
+import static eu.europa.esig.dss.applet.main.Level.BASELINE_LTA;
+import static eu.europa.esig.dss.applet.main.Level.BASELINE_T;
+import static eu.europa.esig.dss.x509.SignatureForm.CAdES;
+import static eu.europa.esig.dss.x509.SignatureForm.PAdES;
+import static eu.europa.esig.dss.x509.SignatureForm.XAdES;
 
 /**
  * TODO
@@ -202,7 +212,15 @@ public class SignatureWizardController extends DSSWizardController<SignatureMode
 		final SignatureTokenConnection tokenConnection = model.getTokenConnection();
 		final DSSPrivateKeyEntry privateKey = model.getSelectedPrivateKey();
 
-		final XAdESSignatureParameters signatureParameters = new XAdESSignatureParameters();
+		AbstractSignatureParameters signatureParameters =null;
+		switch (model.getForm()) {
+			case XAdES:
+				signatureParameters = new XAdESSignatureParameters();
+				break;
+			case CAdES:
+				signatureParameters = new CAdESSignatureParameters();
+				break;
+		}
 		signatureParameters.setSigningCertificate(privateKey.getCertificate());
 		signatureParameters.setCertificateChain(privateKey.getCertificateChain());
 		signatureParameters.setDigestAlgorithm(DigestAlgorithm.SHA256);
