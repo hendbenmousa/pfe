@@ -39,12 +39,6 @@ import eu.europa.esig.dss.applet.wizard.signature.SignatureWizardController;
 
 /**
  * TODO
- *
- *
- *
- *
- *
- *
  */
 public class PersonalDataView extends WizardView<SignatureModel, SignatureWizardController> {
 
@@ -97,7 +91,6 @@ public class PersonalDataView extends WizardView<SignatureModel, SignatureWizard
 		policyHashValueInput = ComponentFactory.createTextField(policyHashValue, false);
 
 		claimedRoleInput = ComponentFactory.createTextField(claimedRole, false);
-
 	}
 
 	private JPanel doExplicitLayout() {
@@ -116,21 +109,11 @@ public class PersonalDataView extends WizardView<SignatureModel, SignatureWizard
 		return ComponentFactory.createPanel(builder);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 *
-	 * @see eu.europa.esig.dss.applet.view.DSSAppletView#doInit()
-	 */
 	@Override
 	public void doInit() {
 		updateDisplay();
 	}
 
-	/*
-	 * (non-Javadoc)
-	 *
-	 * @see eu.europa.esig.dss.applet.view.DSSAppletView#doLayout()
-	 */
 	@Override
 	protected Container doLayout() {
 
@@ -148,26 +131,16 @@ public class PersonalDataView extends WizardView<SignatureModel, SignatureWizard
 		return ComponentFactory.createPanel(builder);
 	}
 
-	/**
-	 *
-	 */
 	private void updateDisplay() {
+
 		final SignatureModel model = getModel();
 		claimedRoleInput.setEnabled(model.isClaimedCheck());
 		explicitPanel.setVisible(model.isSignaturePolicyCheck());
 		policyCheckBox.setVisible(model.isSignaturePolicyVisible());
 	}
 
-	/*
-	 * (non-Javadoc)
-	 *
-	 * @see
-	 * eu.europa.esig.dss.applet.swing.mvc.wizard.WizardView#wizardModelChange(java.beans.PropertyChangeEvent
-	 * )
-	 */
 	@Override
 	public void wizardModelChange(final PropertyChangeEvent evt) {
 		updateDisplay();
 	}
-
 }

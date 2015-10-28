@@ -29,6 +29,8 @@ import java.util.Properties;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.builder.ReflectionToStringBuilder;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import eu.europa.esig.dss.DSSException;
 import eu.europa.esig.dss.DSSUtils;
@@ -58,6 +60,8 @@ import static eu.europa.esig.dss.x509.SignatureForm.XAdES;
  * TODO
  */
 public class Parameters {
+
+	private static final Logger LOG = LoggerFactory.getLogger(Parameters.class);
 
 	public static final String USAGE = "USAGE";
 	public static final String FORM = "FORMAT";
@@ -151,6 +155,12 @@ public class Parameters {
 
 		try {
 
+			File file = new File(setupPath);
+			if (file.exists() && file.isFile()) {
+				LOG.warn("Applet configuration does not exist: " + setupPath);
+				return;
+			}
+			LOG.warn("Applet configuration used: " + setupPath);
 			final InputStream inputStream = DSSUtils.toInputStream(setupPath);
 			final Properties properties = new Properties();
 			properties.load(inputStream);

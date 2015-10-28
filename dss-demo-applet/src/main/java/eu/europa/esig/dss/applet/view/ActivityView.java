@@ -23,6 +23,7 @@ package eu.europa.esig.dss.applet.view;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.beans.PropertyChangeEvent;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -48,7 +49,7 @@ public class ActivityView extends DSSAppletView<ActivityModel, ActivityControlle
 	private static final String I18N_SIGN_DOCUMENT = ResourceUtils.getI18n("SIGN_A_DOCUMENT");
 	private static final String I18N_VALIDATION = ResourceUtils.getI18n("VALIDATION");
 	private final JRadioButton choice1;
-	private final JButton button;
+	private final JButton nextButton;
 
 	// validation
 	private final JRadioButton choice2;
@@ -63,14 +64,15 @@ public class ActivityView extends DSSAppletView<ActivityModel, ActivityControlle
 	 * @param model
 	 */
 	public ActivityView(final AppletCore core, final ActivityController controller, final ActivityModel model) {
+
 		super(core, controller, model);
 
 		this.presentationModel = new PresentationModel<ActivityModel>(getModel());
 		final ValueModel activityValue = presentationModel.getModel(ActivityModel.PROPERTY_ACTIVITY);
 		choice1 = ComponentFactory.createRadioButton(I18N_SIGN_DOCUMENT, activityValue, ActivityAction.SIGN);
 		choice2 = ComponentFactory.createRadioButton(I18N_VALIDATION, activityValue, ActivityAction.VALIDATION);
-		button = ComponentFactory.createNextButton(true, new NextActionListener());
-		button.setName("next");
+		nextButton = ComponentFactory.createNextButton(true, new NextActionListener());
+		nextButton.setName("next");
 
 		final List<AppletUsage> appletUsage = getController().getParameter().getUsageList();
 		for (final AppletUsage usage : appletUsage) {
@@ -88,11 +90,6 @@ public class ActivityView extends DSSAppletView<ActivityModel, ActivityControlle
 		}
 	}
 
-	/*
-	 * (non-Javadoc)
-	 *
-	 * @see eu.europa.esig.dss.applet.view.DSSAppletView#doLayout()
-	 */
 	@Override
 	protected Container doLayout() {
 
@@ -108,28 +105,43 @@ public class ActivityView extends DSSAppletView<ActivityModel, ActivityControlle
 
 		int i = 4;
 		for (JRadioButton choice : choices) {
+
 			builder.add(choice, cc.xy(2, i));
 			i += 2;
 		}
 
 		panel.add(ComponentFactory.createPanel(builder), BorderLayout.CENTER);
-		panel.add(ComponentFactory.actionPanel(button), BorderLayout.SOUTH);
+		panel.add(ComponentFactory.actionPanel(nextButton), BorderLayout.SOUTH);
 
 		return panel;
 	}
 
+	@Override
+	protected Container layout() {
+
+		doInit();
+
+		final boolean valid = getController().isValid();
+		nextButton.setEnabled(valid);
+
+		return doLayout();
+	}
+
+	@Override
+	public void modelChanged(final PropertyChangeEvent evt) {
+
+		final boolean enabled = getController().isValid();
+		nextButton.setEnabled(enabled);
+        //wizardModelChange(evt);
+	}
+
 	private final class NextActionListener implements ActionListener {
-		/*
-		 * (non-Javadoc)
-		 *
-		 * @see java.awt.event.ActionListener#actionPerformed(java.awt.event.ActionEvent)
-		 */
+
 		@Override
 		public void actionPerformed(ActionEvent e) {
 			if (getModel().getAction() != null) {
 				getController().startAction();
 			}
 		}
-
 	}
 }

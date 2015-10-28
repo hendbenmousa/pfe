@@ -75,4 +75,8 @@ public class ActivityController extends DSSAppletController<ActivityModel> {
 				break;
 		}
 	}
+
+	public boolean isValid() {
+		return getModel().getAction() != null;
+	}
 }

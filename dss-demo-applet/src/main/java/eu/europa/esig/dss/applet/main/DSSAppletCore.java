@@ -59,61 +59,6 @@ public class DSSAppletCore extends AppletCore {
 		final String setupPath = parameterProvider.getParameter("setup-path");
 
 		final Parameters parameters = new Parameters(setupPath);
-
-//			final String signaturePackagingParam = parameterProvider.getParameter(PARAM_SIGNATURE_PACKAGING);
-//			if (StringUtils.isNotEmpty(signaturePackagingParam)) {
-//				parameters.setPackaging(SignaturePackaging.valueOf(signaturePackagingParam));
-//				final String signatureLevelParam = parameterProvider.getParameter(PARAM_SIGNATURE_LEVEL);
-//				if (StringUtils.isNotEmpty(signatureLevelParam)) {
-//					parameters.setSignatureLevel(signatureLevelParam);
-//				}
-//			}
-//		}
-//
-//		// Signature Token
-//		final String tokenParam = parameterProvider.getParameter(PARAM_TOKEN_TYPE);
-//		if (DSSStringUtils.contains(tokenParam, SignatureTokenType.MSCAPI.name(), SignatureTokenType.PKCS11.name(), SignatureTokenType.PKCS12.name())) {
-//			parameters.setSignatureTokenType(SignatureTokenType.valueOf(tokenParam));
-//		} else {
-//			LOG.warn("Invalid value of " + PARAM_TOKEN_TYPE + " parameter: {}", tokenParam);
-//		}
-//
-//		// File path PKCS11
-//		final String pkcs11Param = parameterProvider.getParameter(PARAM_PKCS11_FILE);
-//		if (StringUtils.isNotEmpty(pkcs11Param)) {
-//			final File file = new File(pkcs11Param);
-//			if (!file.exists() || file.isFile()) {
-//				LOG.warn("Invalid value of " + PARAM_PKCS11_FILE + " parameter: {}", pkcs11Param);
-//			}
-//			parameters.setPkcs11File(file);
-//		}
-//
-//		// File path PKCS12
-//		final String pkcs12Param = parameterProvider.getParameter(PARAM_PKCS12_FILE);
-//		if (StringUtils.isNotEmpty(pkcs12Param)) {
-//			final File file = new File(pkcs12Param);
-//			if (!file.exists() || file.isFile()) {
-//				LOG.warn("Invalid value of " + PARAM_PKCS12_FILE + " parameter: {}", pkcs11Param);
-//			}
-//			parameters.setPkcs12File(file);
-//		}
-//
-//		final String signaturePolicyAlgoParam = parameterProvider.getParameter(PARAM_SIGNATURE_POLICY_ALGO);
-//		parameters.setSignaturePolicyAlgo(signaturePolicyAlgoParam);
-//
-//		final String signaturePolicyValueParam = parameterProvider.getParameter(PARAM_SIGNATURE_POLICY_HASH);
-//		parameters.setSignaturePolicyValue(Base64.decodeBase64(signaturePolicyValueParam));
-//
-//		// Default policy URL
-//		final String defaultPolicyUrl = parameterProvider.getParameter(PARAM_DEFAULT_POLICY_URL);
-//		if (StringUtils.isNotEmpty(defaultPolicyUrl)) {
-//			try {
-//				parameters.setDefaultPolicyUrl(new URL(defaultPolicyUrl));
-//			} catch (IOException e) {
-//				throw new IllegalArgumentException(PARAM_DEFAULT_POLICY_URL + " cannot be opened", e);
-//			}
-//		}
-
 		this.parameters = parameters;
 
 		LOG.info("Parameters - {}", parameters);
