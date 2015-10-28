@@ -20,13 +20,18 @@
  */
 package eu.europa.esig.dss.applet.main;
 
+import java.util.Map;
+
 import ance.AnceDataLoader;
 import eu.europa.esig.dss.applet.controller.ActivityController;
 import eu.europa.esig.dss.applet.model.ActivityModel;
 import eu.europa.esig.dss.applet.model.SignatureModel;
+import eu.europa.esig.dss.applet.model.ValidationModel;
+import eu.europa.esig.dss.applet.swing.mvc.AppletController;
 import eu.europa.esig.dss.applet.swing.mvc.AppletCore;
 import eu.europa.esig.dss.applet.util.SigningUtils;
 import eu.europa.esig.dss.applet.wizard.signature.SignatureWizardController;
+import eu.europa.esig.dss.applet.wizard.validation.ValidationWizardController;
 import eu.europa.esig.dss.client.tsp.OnlineTSPSource;
 
 /**
@@ -52,8 +57,10 @@ public class DSSAppletCore extends AppletCore {
 	@Override
 	protected void registerControllers() {
 
-		getControllers().put(ActivityController.class, new ActivityController(this, new ActivityModel()));
-		getControllers().put(SignatureWizardController.class, new SignatureWizardController(this, new SignatureModel()));
+		final Map<Class<? extends AppletController>, AppletController> controllers = getControllers();
+		controllers.put(ActivityController.class, new ActivityController(this, new ActivityModel()));
+		controllers.put(SignatureWizardController.class, new SignatureWizardController(this, new SignatureModel()));
+		controllers.put(ValidationWizardController.class, new ValidationWizardController(this, new ValidationModel()));
 	}
 
 	@Override

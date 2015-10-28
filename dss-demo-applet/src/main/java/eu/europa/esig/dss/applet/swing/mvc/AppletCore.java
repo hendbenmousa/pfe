@@ -58,11 +58,6 @@ public abstract class AppletCore extends JApplet {
 		return controllers;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 *
-	 * @see java.applet.Applet#init()
-	 */
 	@Override
 	public void init() {
 		super.init();
