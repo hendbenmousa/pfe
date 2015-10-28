@@ -33,7 +33,10 @@ import eu.europa.esig.dss.FileDocument;
 import eu.europa.esig.dss.SignatureValue;
 import eu.europa.esig.dss.ToBeSigned;
 import eu.europa.esig.dss.applet.PinInputDialog;
+import eu.europa.esig.dss.applet.model.SignatureModel;
+import eu.europa.esig.dss.cades.signature.CAdESService;
 import eu.europa.esig.dss.client.tsp.OnlineTSPSource;
+import eu.europa.esig.dss.signature.AbstractSignatureService;
 import eu.europa.esig.dss.token.DSSPrivateKeyEntry;
 import eu.europa.esig.dss.token.SignatureTokenConnection;
 import eu.europa.esig.dss.validation.CommonCertificateVerifier;
@@ -47,45 +50,49 @@ public final class SigningUtils {
 
 	private static final Logger logger = LoggerFactory.getLogger(SigningUtils.class);
 
-	private static final OnlineTSPSource onlineTSPSource;
+	private static OnlineTSPSource onlineTSPSource;
 
 	private static AnceDataLoader dataLoader;
 
 	private static PinInputDialog pinInputDialog;
 
-	static {
-
-		onlineTSPSource = new OnlineTSPSource("https://ts.certification.tn:4318");
-		dataLoader = new AnceDataLoader();
-		dataLoader.setContentType("application/timestamp-query");
-		onlineTSPSource.setDataLoader(dataLoader);
-	}
-
 	private SigningUtils() {
 	}
 
-	public static DSSDocument signDocument(final File file, final XAdESSignatureParameters parameters, DSSPrivateKeyEntry privateKey,
-	                                       SignatureTokenConnection tokenConnection) throws DSSException {
+	public static DSSDocument signDocument(final File file, final XAdESSignatureParameters parameters, DSSPrivateKeyEntry privateKey, SignatureTokenConnection tokenConnection,
+	                                       SignatureModel model) throws DSSException {
 
 		try {
 
 			final DSSDocument toSignDocument = new FileDocument(file);
 
-			XAdESService xadesService = new XAdESService(new CommonCertificateVerifier());
 
+			AbstractSignatureService signatureService = null;
+			switch (model.getForm()) {
+				case XAdES:
+					signatureService = new XAdESService(new CommonCertificateVerifier());
+					break;
+				case CAdES:
+					signatureService = new CAdESService(new CommonCertificateVerifier());
+					break;
+			}
 			//			pinInputDialog = new PinInputDialog(null);
 			//			dataLoader.setPinInputDialog(pinInputDialog);
-			xadesService.setTspSource(onlineTSPSource);
+			signatureService.setTspSource(onlineTSPSource);
 
-			final ToBeSigned toBeSigned = xadesService.getDataToSign(toSignDocument, parameters);
+			final ToBeSigned toBeSigned = signatureService.getDataToSign(toSignDocument, parameters);
 
 			DigestAlgorithm digestAlgorithm = parameters.getDigestAlgorithm();
 			final SignatureValue signatureValue = tokenConnection.sign(toBeSigned, DigestAlgorithm.forName(digestAlgorithm.name()), privateKey);
-			final DSSDocument dssSignature = xadesService.signDocument(toSignDocument, parameters, signatureValue);
+			final DSSDocument dssSignature = signatureService.signDocument(toSignDocument, parameters, signatureValue);
 
 			return dssSignature;
 		} catch (Exception e) {
 			throw new DSSException(e);
 		}
+	}
+
+	public static void setOnlineTSPSource(OnlineTSPSource onlineTSPSource) {
+		SigningUtils.onlineTSPSource = onlineTSPSource;
 	}
 }

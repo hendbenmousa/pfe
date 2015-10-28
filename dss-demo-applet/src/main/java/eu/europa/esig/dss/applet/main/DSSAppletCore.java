@@ -20,11 +20,14 @@
  */
 package eu.europa.esig.dss.applet.main;
 
+import ance.AnceDataLoader;
 import eu.europa.esig.dss.applet.controller.ActivityController;
 import eu.europa.esig.dss.applet.model.ActivityModel;
 import eu.europa.esig.dss.applet.model.SignatureModel;
 import eu.europa.esig.dss.applet.swing.mvc.AppletCore;
+import eu.europa.esig.dss.applet.util.SigningUtils;
 import eu.europa.esig.dss.applet.wizard.signature.SignatureWizardController;
+import eu.europa.esig.dss.client.tsp.OnlineTSPSource;
 
 /**
  *
@@ -61,6 +64,13 @@ public class DSSAppletCore extends AppletCore {
 
 		final Parameters parameters = new Parameters(setupPath);
 		this.parameters = parameters;
+
+		final OnlineTSPSource onlineTSPSource = new OnlineTSPSource(parameters.getTimestampServerUrl());
+		final AnceDataLoader dataLoader = new AnceDataLoader();
+		dataLoader.setContentType("application/timestamp-query");
+		onlineTSPSource.setDataLoader(dataLoader);
+
+		SigningUtils.setOnlineTSPSource(onlineTSPSource);
 
 		LOG.info("Parameters - {}", parameters);
 	}

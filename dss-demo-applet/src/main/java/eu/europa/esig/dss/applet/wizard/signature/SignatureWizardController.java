@@ -202,23 +202,23 @@ public class SignatureWizardController extends DSSWizardController<SignatureMode
 		final SignatureTokenConnection tokenConnection = model.getTokenConnection();
 		final DSSPrivateKeyEntry privateKey = model.getSelectedPrivateKey();
 
-		final XAdESSignatureParameters parameters = new XAdESSignatureParameters();
-		parameters.setSigningCertificate(privateKey.getCertificate());
-		parameters.setCertificateChain(privateKey.getCertificateChain());
-		parameters.setDigestAlgorithm(DigestAlgorithm.SHA256);
+		final XAdESSignatureParameters signatureParameters = new XAdESSignatureParameters();
+		signatureParameters.setSigningCertificate(privateKey.getCertificate());
+		signatureParameters.setCertificateChain(privateKey.getCertificateChain());
+		signatureParameters.setDigestAlgorithm(DigestAlgorithm.SHA256);
 
 		final SignatureForm form = model.getForm();
 		final Level level = model.getLevel();
 
 		SignatureLevel signatureLevel = getSignatureLevel(form, level);
-		parameters.setSignatureLevel(signatureLevel);
-		parameters.setSignaturePackaging(model.getPackaging());
+		signatureParameters.setSignatureLevel(signatureLevel);
+		signatureParameters.setSignaturePackaging(model.getPackaging());
 
 		final TimestampParameters signatureTimestampParameters = new TimestampParameters();
 		signatureTimestampParameters.setDigestAlgorithm(DigestAlgorithm.SHA1);
-		parameters.setSignatureTimestampParameters(signatureTimestampParameters);
+		signatureParameters.setSignatureTimestampParameters(signatureTimestampParameters);
 
-		final DSSDocument signedDocument = SigningUtils.signDocument(fileToSign, parameters, privateKey, tokenConnection);
+		final DSSDocument signedDocument = SigningUtils.signDocument(fileToSign, signatureParameters, privateKey, tokenConnection, model);
 		FileOutputStream fileOutputStream = null;
 		InputStream inputStream = null;
 		try {

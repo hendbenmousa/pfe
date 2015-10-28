@@ -73,6 +73,7 @@ public class Parameters {
 	public static final String PKCS12_FILE = "PKCS12_FILE";
 	public static final String SIGNATURE_HASH = "SIGNATURE_HASH";
 	public static final String TIMESTAMP_HASH = "TIMESTAMP_HASH";
+	public static final String TIMESTAMP_SERVER_URL = "TIMESTAMP_SERVER_URL";
 	public static final String VALIDATION_POLICY = "VALIDATION_POLICY";
 
 	/**
@@ -146,6 +147,10 @@ public class Parameters {
 	 *
 	 */
 	private String validationPolicy;
+	/**
+	 *
+	 */
+	private String timestampServerUrl;
 
 	/**
 	 * The default constructor for Parameters.
@@ -155,7 +160,10 @@ public class Parameters {
 	public Parameters(final String setupPath) {
 
 		try {
-
+			if (StringUtils.isBlank(setupPath)) {
+				LOG.warn("Default applet configuration used.");
+				return;
+			}
 			File file = new File(setupPath);
 			if (!(file.exists() && file.isFile())) {
 				LOG.warn("Applet configuration does not exist: " + setupPath);
@@ -176,6 +184,7 @@ public class Parameters {
 			initPkcs11File(properties);
 			initPkcs12File(properties);
 			initValidationPolicy(properties);
+			initTimestampServerUrl(properties);
 		} catch (IOException e) {
 			throw new DSSException(e);
 		}
@@ -286,7 +295,7 @@ public class Parameters {
 	private void initPkcs11File(final Properties properties) {
 
 		final String token = properties.getProperty(PKCS11_FILE);
-		if(StringUtils.isBlank(token)) {
+		if (StringUtils.isBlank(token)) {
 			return;
 		}
 		final File file = new File(token);
@@ -298,7 +307,7 @@ public class Parameters {
 	private void initPkcs12File(final Properties properties) {
 
 		final String token = properties.getProperty(PKCS12_FILE);
-		if(StringUtils.isBlank(token)) {
+		if (StringUtils.isBlank(token)) {
 			return;
 		}
 		final File file = new File(token);
@@ -310,13 +319,22 @@ public class Parameters {
 	private void initValidationPolicy(final Properties properties) {
 
 		final String token = properties.getProperty(VALIDATION_POLICY);
-		if(StringUtils.isBlank(token)) {
+		if (StringUtils.isBlank(token)) {
 			return;
 		}
 		final File file = new File(token);
 		if (file.exists() && file.isFile()) {
 			setValidationPolicy(file.getAbsolutePath());
 		}
+	}
+
+	private void initTimestampServerUrl(final Properties properties) {
+
+		final String token = properties.getProperty(TIMESTAMP_SERVER_URL);
+		if (StringUtils.isBlank(token)) {
+			return;
+		}
+		setTimestampServerUrl(token);
 	}
 
 	public List<ActivityAction> getUsageList() {
@@ -488,6 +506,15 @@ public class Parameters {
 	 */
 	public void setValidationPolicy(String validationPolicy) {
 		this.validationPolicy = validationPolicy;
+	}
+
+
+	public String getTimestampServerUrl() {
+		return timestampServerUrl;
+	}
+
+	public void setTimestampServerUrl(String timestampServerUrl) {
+		this.timestampServerUrl = timestampServerUrl;
 	}
 
 	@Override
