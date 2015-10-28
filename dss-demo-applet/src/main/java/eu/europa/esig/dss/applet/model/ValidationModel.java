@@ -25,7 +25,9 @@ import java.io.File;
 import org.apache.commons.lang.builder.ReflectionToStringBuilder;
 
 import com.jgoodies.binding.beans.Model;
-import eu.europa.esig.dss.XmlDom;
+import eu.europa.esig.dss.validation.report.DetailedReport;
+import eu.europa.esig.dss.validation.report.DiagnosticData;
+import eu.europa.esig.dss.validation.report.SimpleReport;
 
 /**
  * TODO
@@ -48,9 +50,9 @@ public class ValidationModel extends Model {
 	private File signedFile;
 	private File originalFile;
 	private boolean defaultPolicy = true;
-	private XmlDom diagnosticData;
-	private XmlDom detailedReport;
-	private XmlDom simpleReport;
+	private DiagnosticData diagnosticData;
+	private DetailedReport detailedReport;
+	private SimpleReport simpleReport;
 
 	/**
 	 * @return the originalFile
@@ -86,11 +88,6 @@ public class ValidationModel extends Model {
 		firePropertyChange(CHANGE_PROPERTY_SIGNED_FILE, oldValue, newValue);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 *
-	 * @see java.lang.Object#toString()
-	 */
 	@Override
 	public String toString() {
 		return ReflectionToStringBuilder.reflectionToString(this);
@@ -108,35 +105,35 @@ public class ValidationModel extends Model {
 		firePropertyChange(CHANGE_PROPERTY_DEFAULT_POLICY, oldValue, newValue);
 	}
 
-	public XmlDom getDetailedReport() {
+	public DetailedReport getDetailedReport() {
 		return detailedReport;
 	}
 
-	public void setDetailedReport(XmlDom detailedReport) {
-		final XmlDom oldValue = this.detailedReport;
-		final XmlDom newValue = detailedReport;
+	public void setDetailedReport(DetailedReport detailedReport) {
+		final DetailedReport oldValue = this.detailedReport;
+		final DetailedReport newValue = detailedReport;
 		this.detailedReport = detailedReport;
 		firePropertyChange(CHANGE_PROPERTY_DETAILED_REPORT, oldValue, newValue);
 	}
 
-	public XmlDom getDiagnosticData() {
+	public DiagnosticData getDiagnosticData() {
 		return diagnosticData;
 	}
 
-	public void setDiagnosticData(XmlDom diagnosticData) {
-		final XmlDom oldValue = this.diagnosticData;
-		final XmlDom newValue = diagnosticData;
+	public void setDiagnosticData(DiagnosticData diagnosticData) {
+		final DiagnosticData oldValue = this.diagnosticData;
+		final DiagnosticData newValue = diagnosticData;
 		this.diagnosticData = diagnosticData;
 		firePropertyChange(CHANGE_PROPERTY_DIAGNOSTIC_DATA_, oldValue, newValue);
 	}
 
-	public XmlDom getSimpleReport() {
+	public SimpleReport getSimpleReport() {
 		return simpleReport;
 	}
 
-	public void setSimpleReport(XmlDom simpleReport) {
-		final XmlDom oldValue = this.simpleReport;
-		final XmlDom newValue = simpleReport;
+	public void setSimpleReport(SimpleReport simpleReport) {
+		final SimpleReport oldValue = this.simpleReport;
+		final SimpleReport newValue = simpleReport;
 		this.simpleReport = simpleReport;
 		firePropertyChange(CHANGE_PROPERTY_SIMPLE_REPORT_, oldValue, newValue);
 	}

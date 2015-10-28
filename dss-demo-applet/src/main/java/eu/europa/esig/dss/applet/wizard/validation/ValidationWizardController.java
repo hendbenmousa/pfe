@@ -22,10 +22,15 @@ package eu.europa.esig.dss.applet.wizard.validation;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
+import ance.CertificateValidationService;
+import eu.europa.esig.dss.DSSDocument;
 import eu.europa.esig.dss.DSSException;
+import eu.europa.esig.dss.FileDocument;
 import eu.europa.esig.dss.applet.controller.ActivityController;
 import eu.europa.esig.dss.applet.controller.DSSWizardController;
 import eu.europa.esig.dss.applet.main.DSSAppletCore;
@@ -35,6 +40,17 @@ import eu.europa.esig.dss.applet.swing.mvc.wizard.WizardController;
 import eu.europa.esig.dss.applet.swing.mvc.wizard.WizardStep;
 import eu.europa.esig.dss.applet.view.validation.ReportView;
 import eu.europa.esig.dss.applet.view.validation.ValidationView;
+import eu.europa.esig.dss.client.crl.OnlineCRLSource;
+import eu.europa.esig.dss.client.http.commons.FileCacheDataLoader;
+import eu.europa.esig.dss.client.ocsp.OnlineOCSPSource;
+import eu.europa.esig.dss.validation.CertificateVerifier;
+import eu.europa.esig.dss.validation.CommonCertificateVerifier;
+import eu.europa.esig.dss.validation.SignedDocumentValidator;
+import eu.europa.esig.dss.validation.report.DetailedReport;
+import eu.europa.esig.dss.validation.report.DiagnosticData;
+import eu.europa.esig.dss.validation.report.Reports;
+import eu.europa.esig.dss.validation.report.SimpleReport;
+import eu.europa.esig.dss.x509.CommonTrustedCertificateSource;
 
 /**
  * TODO
@@ -100,13 +116,14 @@ public class ValidationWizardController extends DSSWizardController<ValidationMo
 	public void validateDocument() throws DSSException {
 
 		final ValidationModel model = getModel();
+		System.out.println("VALIDATION.....");
 
 		final File signedFile = model.getSignedFile();
-		//		final WsDocument wsSignedDocument = toWsDocument(signedFile);
-		//
-		//		final File detachedFile = model.getOriginalFile();
-		//		final WsDocument wsDetachedDocument = detachedFile != null ? toWsDocument(detachedFile) : null;
-		//
+		final DSSDocument signedDocument = new FileDocument(signedFile);
+
+		final File detachedFile = model.getOriginalFile();
+		final DSSDocument detachedDocument = detachedFile != null ? new FileDocument(detachedFile) : null;
+
 		//		WsDocument wsPolicyDocument = null;
 		//		if (!model.isDefaultPolicy() && model.getSelectedPolicyFile() != null) {
 		//
@@ -115,49 +132,36 @@ public class ValidationWizardController extends DSSWizardController<ValidationMo
 		//			wsPolicyDocument = new WsDocument();
 		//			wsPolicyDocument.setBytes(DSSUtils.toByteArray(inputStream));
 		//		}
-		//
-		//		//assertValidationPolicyFileValid(validationPolicyURL);
-		//
-		//		final ValidationService_Service validationService_service = new ValidationService_Service();
-		//		final ValidationService validationServiceImplPort = validationService_service.getValidationServiceImplPort();
-		//		final WsValidationReport wsValidationReport;
-		//		try {
-		//			wsValidationReport = validationServiceImplPort.validateDocument(wsSignedDocument, wsDetachedDocument, wsPolicyDocument, true);
-		//		} catch (DSSException_Exception e) {
-		//			throw new DSSException(e);
-		//		} catch (Throwable e) {
-		//			throw new DSSException(e);
-		//		}
-		//
-		//		String xmlData = "";
-		//		try {
-		//
-		//			// In case of some signatures, the returned data are not UTF-8 encoded. The conversion is forced.
-		//
-		//			xmlData = wsValidationReport.getXmlDiagnosticData();
-		//			// final String xmlDiagnosticData = DSSUtils.getUtf8String(xmlData);
-		//			final XmlDom diagnosticDataXmlDom = getXmlDomReport(xmlData);
-		//			model.setDiagnosticData(diagnosticDataXmlDom);
-		//
-		//			xmlData = "";
-		//			xmlData = wsValidationReport.getXmlDetailedReport();
-		//			// final String xmlDetailedReport = DSSUtils.getUtf8String(xmlData);
-		//			final XmlDom detailedReportXmlDom = getXmlDomReport(xmlData);
-		//			model.setDetailedReport(detailedReportXmlDom);
-		//
-		//			xmlData = "";
-		//			xmlData = wsValidationReport.getXmlSimpleReport();
-		//			// final String xmlSimpleReport = DSSUtils.getUtf8String(xmlData);
-		//			final XmlDom simpleReportXmlDom = getXmlDomReport(xmlData);
-		//			model.setSimpleReport(simpleReportXmlDom);
-		//		} catch (Exception e) {
-		//
-		//			final String base64Encode = DSSUtils.base64Encode(xmlData.getBytes());
-		//			LOG.error("Erroneous data: " + base64Encode);
-		//			if (e instanceof DSSException) {
-		//				throw (DSSException) e;
-		//			}
-		//			throw new DSSException(e);
-		//		}
+
+
+
+		final SignedDocumentValidator validator = SignedDocumentValidator.fromDocument(signedDocument);
+		final CertificateVerifier certificateVerifier = new CommonCertificateVerifier();
+		certificateVerifier.setCrlSource(new OnlineCRLSource());
+		certificateVerifier.setOcspSource(new OnlineOCSPSource());
+
+		certificateVerifier.setDataLoader(new FileCacheDataLoader());
+
+		final CommonTrustedCertificateSource trustedCertificateSource = new CommonTrustedCertificateSource();
+		trustedCertificateSource.addCertificate(CertificateValidationService.rootCertificateToken);
+		trustedCertificateSource.addCertificate(CertificateValidationService.rootCertificateToken2);
+		certificateVerifier.setTrustedCertSource(trustedCertificateSource);
+
+		validator.setCertificateVerifier(certificateVerifier);
+
+		final List<DSSDocument> detachedContents = new ArrayList<DSSDocument>();
+		detachedContents.add(detachedDocument);
+		validator.setDetachedContents(detachedContents);
+
+		final Reports reports = validator.validateDocument();
+
+		final SimpleReport simpleReport = reports.getSimpleReport();
+		model.setSimpleReport(simpleReport);
+
+		DiagnosticData diagnosticData = reports.getDiagnosticData();
+		model.setDiagnosticData(diagnosticData);
+
+		final DetailedReport detailedReport = reports.getDetailedReport();
+		model.setDetailedReport(detailedReport);
 	}
 }

@@ -23,7 +23,6 @@ package eu.europa.esig.dss.applet.view.validation;
 import java.awt.*;
 
 import javax.swing.*;
-import javax.swing.tree.DefaultTreeModel;
 
 import com.jgoodies.binding.value.ValueHolder;
 import com.jgoodies.forms.builder.PanelBuilder;
@@ -33,20 +32,15 @@ import eu.europa.esig.dss.applet.swing.mvc.AppletCore;
 import eu.europa.esig.dss.applet.swing.mvc.wizard.WizardView;
 import eu.europa.esig.dss.applet.util.ComponentFactory;
 import eu.europa.esig.dss.applet.wizard.validation.ValidationWizardController;
+import eu.europa.esig.dss.validation.report.SimpleReport;
 
 /**
  * TODO
  */
 public class ReportView extends WizardView<ValidationModel, ValidationWizardController> {
 
-	private static final boolean DISPLAY_PLAINTEXT_REPORTS = false;
 	private final ValueHolder simpleReportValueHolder;
-	private final ValueHolder detailedReportValueHolder;
-	private final ValueHolder diagnosticValueHolder;
-	private JTextArea detailedReportText;
 	private JTextArea simpleReportText;
-	private JTextArea diagnosticText;
-	private JTree diagnostic;
 
 	/**
 	 * The default constructor for ReportView.
@@ -58,32 +52,21 @@ public class ReportView extends WizardView<ValidationModel, ValidationWizardCont
 	public ReportView(final AppletCore core, final ValidationWizardController controller, final ValidationModel model) {
 
 		super(core, controller, model);
-		detailedReportValueHolder = new ValueHolder("");
-		diagnosticValueHolder = new ValueHolder("");
 		simpleReportValueHolder = new ValueHolder("");
 
-		if (DISPLAY_PLAINTEXT_REPORTS) {
-			detailedReportText = ComponentFactory.createTextArea(detailedReportValueHolder);
-			detailedReportText.setTabSize(2);
-			simpleReportText = ComponentFactory.createTextArea(simpleReportValueHolder);
-			simpleReportText.setTabSize(2);
-			diagnosticText = ComponentFactory.createTextArea(diagnosticValueHolder);
-			diagnosticText.setTabSize(2);
-		}
-
-		diagnostic = ComponentFactory.tree("Diagnostic", new DefaultTreeModel(null));
+		simpleReportText = ComponentFactory.createTextArea(simpleReportValueHolder);
+		simpleReportText.setTabSize(2);
 	}
 
-	@SuppressWarnings("unchecked")
 	@Override
 	public void doInit() {
 
-		//		final ValidationModel model = getModel();
-		//
-		//		final XmlDom simpleReport = model.getSimpleReport();
-		//		final String simpleReportText = simpleReport.toString();
-		//		simpleReportValueHolder.setValue(simpleReportText);
-		//
+		final ValidationModel model = getModel();
+
+		final SimpleReport simpleReport = model.getSimpleReport();
+		final String simpleReportText = simpleReport.toString();
+		simpleReportValueHolder.setValue(simpleReportText);
+
 		//		final XmlDom detailedReport = model.getDetailedReport();
 		//		final String reportText = detailedReport.toString();
 		//		detailedReportValueHolder.setValue(reportText);
@@ -111,56 +94,49 @@ public class ReportView extends WizardView<ValidationModel, ValidationWizardCont
 	@Override
 	protected Container doLayout() {
 
-		JTabbedPane tabbedPane = new JTabbedPane(SwingConstants.TOP);
-		//		tabbedPane.addTab("Simple Report", getHtmlPanel("Simple Report", simpleReportScrollPane, simpleReportHtmlPanel));
-		//		tabbedPane.addTab("Detailed Report", getHtmlPanel("Detailed Report", detailedReportScrollPane, detailedReportHtmlPanel));
-		tabbedPane.addTab("Diagnostic Tree", getDiagnosticPanel());
-		if (DISPLAY_PLAINTEXT_REPORTS) {
-			tabbedPane.addTab("Simple Report XML", getSimpleReportText());
-			tabbedPane.addTab("Detailed Report XML", getDetailedReportText());
-			tabbedPane.addTab("Diagnostic XML", getDiagnosticPanelText());
-		}
-
-		return tabbedPane;
-
+		//		JTabbedPane tabbedPane = new JTabbedPane(SwingConstants.TOP);
+		final JPanel simpleReportText = getSimpleReportText();
+		//		tabbedPane.addTab("Simple Report XML", simpleReportText);
+		return simpleReportText;
 	}
 
-	//	private JPanel getHtmlPanel(final String textWithMnemonic, final FSScrollPane simpleReportScrollPane, final XHTMLPanel htmlPanel) {
-	//		final String[] columnSpecs = new String[]{"5dlu", "pref", "5dlu", "fill:default:grow", "5dlu"};
-	//		final String[] rowSpecs = new String[]{"5dlu", "pref", "5dlu", "fill:default:grow", "5dlu", "pref", "5dlu"};
-	//		final PanelBuilder builder = ComponentFactory.createBuilder(columnSpecs, rowSpecs);
-	//		final CellConstraints cc = new CellConstraints();
-	//
-	//		builder.addSeparator(textWithMnemonic, cc.xyw(2, 2, 3));
-	//		builder.add(ComponentFactory.createScrollPane(simpleReportScrollPane), cc.xyw(2, 4, 3));
-	//		builder.add(ComponentFactory.createSaveButton("Save as PDF", true, new ActionListener() {
-	//			@Override
-	//			public void actionPerformed(ActionEvent event) {
-	//				final JFileChooser fileChooser = new JFileChooser();
-	//				int returnValue = fileChooser.showSaveDialog(simpleReportScrollPane);
-	//				if (returnValue == JFileChooser.APPROVE_OPTION) {
-	//					try {
-	//						OutputStream os = new FileOutputStream(fileChooser.getSelectedFile());
-	//						ITextRenderer renderer = new ITextRenderer();
-	//						renderer.setDocument(htmlPanel.getDocument(), "file:///");
-	//						renderer.layout();
-	//						renderer.createPDF(os);
-	//
-	//						os.close();
-	//					} catch (FileNotFoundException e) {
-	//						throw new RuntimeException(e);
-	//					} catch (DocumentException e) {
-	//						throw new RuntimeException(e);
-	//					} catch (IOException e) {
-	//						throw new RuntimeException(e);
-	//					}
-	//
-	//				}
-	//			}
-	//		}), cc.xyw(2, 6, 1));
-	//
-	//		return ComponentFactory.createPanel(builder);
-	//	}
+	private JPanel getHtmlPanel(final String textWithMnemonic) {
+
+		final String[] columnSpecs = new String[]{"5dlu", "pref", "5dlu", "fill:default:grow", "5dlu"};
+		final String[] rowSpecs = new String[]{"5dlu", "pref", "5dlu", "fill:default:grow", "5dlu", "pref", "5dlu"};
+		final PanelBuilder builder = ComponentFactory.createBuilder(columnSpecs, rowSpecs);
+		final CellConstraints cc = new CellConstraints();
+
+		builder.addSeparator(textWithMnemonic, cc.xyw(2, 2, 3));
+		builder.add(ComponentFactory.createScrollPane(simpleReportText), cc.xyw(2, 4, 3));
+		//		builder.add(ComponentFactory.createSaveButton("Save as PDF", true, new ActionListener() {
+		//			@Override
+		//			public void actionPerformed(ActionEvent event) {
+		//				final JFileChooser fileChooser = new JFileChooser();
+		//				int returnValue = fileChooser.showSaveDialog(simpleReportScrollPane);
+		//				if (returnValue == JFileChooser.APPROVE_OPTION) {
+		//					try {
+		//						OutputStream os = new FileOutputStream(fileChooser.getSelectedFile());
+		//						ITextRenderer renderer = new ITextRenderer();
+		//						renderer.setDocument(htmlPanel.getDocument(), "file:///");
+		//						renderer.layout();
+		//						renderer.createPDF(os);
+		//
+		//						os.close();
+		//					} catch (FileNotFoundException e) {
+		//						throw new RuntimeException(e);
+		//					} catch (DocumentException e) {
+		//						throw new RuntimeException(e);
+		//					} catch (IOException e) {
+		//						throw new RuntimeException(e);
+		//					}
+		//
+		//				}
+		//			}
+		//		}), cc.xyw(2, 6, 1));
+
+		return ComponentFactory.createPanel(builder);
+	}
 
 	private JPanel getSimpleReportText() {
 
@@ -173,57 +149,5 @@ public class ReportView extends WizardView<ValidationModel, ValidationWizardCont
 		builder.add(ComponentFactory.createScrollPane(simpleReportText), cc.xyw(2, 4, 1));
 
 		return ComponentFactory.createPanel(builder);
-	}
-
-	private JPanel getDetailedReportText() {
-
-		final String[] columnSpecs = new String[]{"5dlu", "fill:default:grow", "5dlu"};
-		final String[] rowSpecs = new String[]{"5dlu", "pref", "5dlu", "fill:default:grow", "5dlu"};
-		final PanelBuilder builder = ComponentFactory.createBuilder(columnSpecs, rowSpecs);
-		final CellConstraints cc = new CellConstraints();
-
-		builder.addSeparator("Detailed Report XML", cc.xyw(2, 2, 1));
-		builder.add(ComponentFactory.createScrollPane(detailedReportText), cc.xyw(2, 4, 1));
-
-		return ComponentFactory.createPanel(builder);
-	}
-
-	private JPanel getDiagnosticPanel() {
-
-		final String[] columnSpecs = new String[]{"5dlu", "fill:default:grow", "5dlu"};
-		final String[] rowSpecs = new String[]{"5dlu", "pref", "5dlu", "fill:default:grow", "5dlu"};
-		final PanelBuilder builder = ComponentFactory.createBuilder(columnSpecs, rowSpecs);
-		final CellConstraints cc = new CellConstraints();
-
-		builder.addSeparator("Diagnostic Tree", cc.xyw(2, 2, 1));
-		builder.add(ComponentFactory.createScrollPane(diagnostic), cc.xyw(2, 4, 1));
-
-		return ComponentFactory.createPanel(builder);
-	}
-
-	private JPanel getDiagnosticPanelText() {
-
-		final String[] columnSpecs = new String[]{"5dlu", "fill:default:grow", "5dlu"};
-		final String[] rowSpecs = new String[]{"5dlu", "pref", "5dlu", "fill:default:grow", "5dlu"};
-		final PanelBuilder builder = ComponentFactory.createBuilder(columnSpecs, rowSpecs);
-		final CellConstraints cc = new CellConstraints();
-
-		builder.addSeparator("Diagnostic XML", cc.xyw(2, 2, 1));
-		builder.add(ComponentFactory.createScrollPane(diagnosticText), cc.xyw(2, 4, 1));
-
-		return ComponentFactory.createPanel(builder);
-	}
-
-	/**
-	 * fully expand the tree
-	 *
-	 * @param tree
-	 */
-	private void expandTree(JTree tree) {
-		// expand all
-		//        for (int i = 0; i < tree.getRowCount(); i++) {
-		int i = 0;
-		tree.expandRow(i);
-		//        }
 	}
 }
