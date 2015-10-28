@@ -440,14 +440,8 @@ public class SignatureModel extends Model {
 		this.signaturePolicyVisible = signaturePolicyVisible;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 *
-	 * @see java.lang.Object#toString()
-	 */
 	@Override
 	public String toString() {
 		return ReflectionToStringBuilder.reflectionToString(this);
 	}
-
 }

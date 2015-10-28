@@ -39,5 +39,4 @@ public abstract class DSSWizardController<M extends Model> extends WizardControl
 	protected DSSWizardController(final DSSAppletCore core, final M model) {
 		super(core, model);
 	}
-
 }

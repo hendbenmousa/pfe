@@ -45,6 +45,7 @@ public abstract class WizardStep<M extends Model, C extends WizardController<M>>
 	 * @param controller
 	 */
 	public WizardStep(final M model, final WizardView<M, C> view, final C controller) {
+
 		this.model = model;
 		this.view = view;
 		this.controller = controller;
@@ -102,5 +103,4 @@ public abstract class WizardStep<M extends Model, C extends WizardController<M>>
 	public String toString() {
 		return ReflectionToStringBuilder.reflectionToString(this);
 	}
-
 }

@@ -74,7 +74,7 @@ public class FileView extends WizardView<SignatureModel, SignatureWizardControll
 		super(core, controller, model);
 		fileSourceLabel = ComponentFactory.createLabel(I18N_NO_FILE_SELECTED);
 		selectFileSource = ComponentFactory.createFileChooser(I18N_BROWSE_SIGNED, true, new SelectFileAEventListener());
-		textDocument = new JTextArea("");
+		textDocument = new JTextArea(5,200);
 		textDocument.setEditable(false);
 	}
 

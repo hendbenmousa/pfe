@@ -74,11 +74,6 @@ public class CertificateView extends WizardView<SignatureModel, SignatureWizardC
 
 	}
 
-	/*
-	 * (non-Javadoc)
-	 *
-	 * @see eu.europa.esig.dss.applet.view.DSSAppletView#doLayout()
-	 */
 	@Override
 	protected Container doLayout() {
 
@@ -95,13 +90,6 @@ public class CertificateView extends WizardView<SignatureModel, SignatureWizardC
 		return ComponentFactory.createPanel(builder);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 *
-	 * @see
-	 * eu.europa.esig.dss.applet.swing.mvc.wizard.WizardView#wizardModelChange(java.beans.PropertyChangeEvent
-	 * )
-	 */
 	@Override
 	public void wizardModelChange(final PropertyChangeEvent evt) {
 		//        if (SignatureModel.PROPERTY_PRIVATE_KEYS.equals(evt.getPropertyName()) || SignatureModel.PROPERTY_SELECTED_PRIVATE_KEY.equals(evt.getPropertyName())) {
@@ -115,15 +103,10 @@ public class CertificateView extends WizardView<SignatureModel, SignatureWizardC
 	 * TODO
 	 */
 	private class RefreshActionListener implements ActionListener {
-		/*
-		 * (non-Javadoc)
-		 *
-		 * @see java.awt.event.ActionListener#actionPerformed(java.awt.event.ActionEvent)
-		 */
+
 		@Override
 		public void actionPerformed(final ActionEvent e) {
 			getController().doRefreshPrivateKeys();
 		}
 	}
-
 }

@@ -57,6 +57,7 @@ public abstract class DSSAppletView<M, C extends DSSAppletController<M>> extends
 
 	@Override
 	protected Container layout() {
+
 		doInit();
 		return doLayout();
 	}

@@ -24,6 +24,7 @@ import java.io.File;
 
 import eu.europa.esig.dss.DSSException;
 import eu.europa.esig.dss.applet.PinInputDialog;
+import eu.europa.esig.dss.applet.main.Parameters;
 import eu.europa.esig.dss.applet.model.SignatureModel;
 import eu.europa.esig.dss.applet.swing.mvc.ControllerException;
 import eu.europa.esig.dss.applet.swing.mvc.wizard.WizardStep;
@@ -35,14 +36,9 @@ import eu.europa.esig.dss.token.SignatureTokenConnection;
 
 /**
  * TODO
- *
- *
- *
- *
- *
- *
  */
 public class CertificateStep extends WizardStep<SignatureModel, SignatureWizardController> {
+
 	/**
 	 * The default constructor for CertificateStep.
 	 *
@@ -54,92 +50,69 @@ public class CertificateStep extends WizardStep<SignatureModel, SignatureWizardC
 		super(model, view, controller);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 *
-	 * @see eu.europa.esig.dss.applet.swing.mvc.wizard.WizardStep#finish()
-	 */
 	@Override
 	protected void finish() throws ControllerException {
 
 	}
 
-	/*
-	 * (non-Javadoc)
-	 *
-	 * @see eu.europa.esig.dss.applet.swing.mvc.wizard.WizardStep#getBackStep()
-	 */
 	@Override
 	protected Class<? extends WizardStep<SignatureModel, SignatureWizardController>> getBackStep() {
 		//		return SignatureDigestAlgorithmStep.class;
+
+		final Parameters parameter = getController().getParameter();
+		if (parameter.getTokenTypeList().size() == 1) {
+			if (parameter.getFormList().size() == 1 && parameter.getPackagingList().size() == 1 && parameter.getLevelList().size() == 1) {
+				return FileStep.class;
+			}
+			return SignatureStep.class;
+		}
 		return TokenStep.class;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 *
-	 * @see eu.europa.esig.dss.applet.swing.mvc.wizard.WizardStep#getNextStep()
-	 */
 	@Override
 	protected Class<? extends WizardStep<SignatureModel, SignatureWizardController>> getNextStep() {
 		return PersonalDataStep.class;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 *
-	 * @see eu.europa.esig.dss.applet.swing.mvc.wizard.WizardStep#getStepProgression()
-	 */
 	@Override
 	protected int getStepProgression() {
 		return 4;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 *
-	 * @see eu.europa.esig.dss.applet.swing.mvc.wizard.WizardStep#execute()
-	 */
 	@Override
 	protected void init() throws ControllerException {
+
 		final SignatureModel model = getModel();
 
-		SignatureTokenConnection tokenConnetion = null;
-
+		SignatureTokenConnection tokenConnection;
 		switch (model.getTokenType()) {
 
-			case MSCAPI: {
-				tokenConnetion = new MSCAPISignatureToken(new PinInputDialog(getController().getCore()));
+			case MSCAPI:
+
+				tokenConnection = new MSCAPISignatureToken(new PinInputDialog(getController().getCore()));
 				break;
-			}
 			case PKCS11:
 
 				final File pkcs11File = model.getPkcs11File();
-				tokenConnetion = new Pkcs11SignatureToken(pkcs11File.getAbsolutePath(), model.getPkcs11Password().toCharArray());
+				tokenConnection = new Pkcs11SignatureToken(pkcs11File.getAbsolutePath(), model.getPkcs11Password().toCharArray());
 				break;
 			case PKCS12:
-				tokenConnetion = new Pkcs12SignatureToken(model.getPkcs12Password(), model.getPkcs12File());
+
+				tokenConnection = new Pkcs12SignatureToken(model.getPkcs12Password(), model.getPkcs12File());
 				break;
 			default:
 				throw new RuntimeException("No token connection selected");
 		}
 		try {
-			model.setTokenConnection(tokenConnetion);
-			model.setPrivateKeys(tokenConnetion.getKeys());
+			model.setTokenConnection(tokenConnection);
+			model.setPrivateKeys(tokenConnection.getKeys());
 		} catch (final DSSException e) {
 			throw new ControllerException(e);
 		}
-
 	}
 
-	/*
-	 * (non-Javadoc)
-	 *
-	 * @see eu.europa.esig.dss.applet.swing.mvc.wizard.WizardStep#isValid()
-	 */
 	@Override
 	protected boolean isValid() {
 		return getModel().getSelectedPrivateKey() != null;
 	}
-
 }

@@ -47,6 +47,9 @@ import eu.europa.esig.dss.applet.wizard.signature.SignatureWizardController;
 import eu.europa.esig.dss.signature.SignaturePackaging;
 import eu.europa.esig.dss.x509.SignatureForm;
 
+import static eu.europa.esig.dss.signature.SignaturePackaging.DETACHED;
+import static eu.europa.esig.dss.signature.SignaturePackaging.ENVELOPED;
+import static eu.europa.esig.dss.signature.SignaturePackaging.ENVELOPING;
 import static eu.europa.esig.dss.x509.SignatureForm.CAdES;
 import static eu.europa.esig.dss.x509.SignatureForm.PAdES;
 import static eu.europa.esig.dss.x509.SignatureForm.XAdES;
@@ -59,16 +62,16 @@ public class SignatureView extends WizardView<SignatureModel, SignatureWizardCon
 	private static final String I18N_ENVELOPING = ResourceUtils.getI18n("ENVELOPING");
 	private static final String I18N_ENVELOPED = ResourceUtils.getI18n("ENVELOPED");
 	private static final String I18N_DETACHED = ResourceUtils.getI18n("DETACHED");
-	//	private final JRadioButton asicsButton;
-	//	private final JRadioButton asiceButton;
-	private final JRadioButton envelopingButton;
-	private final JRadioButton envelopedButton;
-	private final JRadioButton detachedButton;
 	private final JComboBox levelComboBox;
 	private final ValueHolder formatValueHolder;
 	private final ValueHolder packagingValueHolder;
 	private final ValueModel levelValue;
 	private final SignatureWizardController controller;
+	//	private final JRadioButton asicsButton;
+	//	private final JRadioButton asiceButton;
+	private JRadioButton envelopingButton;
+	private JRadioButton envelopedButton;
+	private JRadioButton detachedButton;
 	private JRadioButton cadesButton;
 	private JRadioButton xadesButton;
 	private JRadioButton padesButton;
@@ -92,27 +95,30 @@ public class SignatureView extends WizardView<SignatureModel, SignatureWizardCon
 
 		final Parameters parameter = controller.getParameter();
 		final List<SignatureForm> formList = parameter.getFormList();
-		if (formList.size() > 0) {
-
-			if (formList.contains(XAdES)) {
-				xadesButton = ComponentFactory.createRadioButton(XAdES.name(), formatValueHolder, XAdES);
-			}
-			if (formList.contains(CAdES)) {
-				cadesButton = ComponentFactory.createRadioButton(CAdES.name(), formatValueHolder, CAdES);
-			}
-			if (formList.contains(PAdES)) {
-				padesButton = ComponentFactory.createRadioButton(PAdES.name(), formatValueHolder, PAdES);
-			}
+		if (formList.contains(XAdES)) {
+			xadesButton = ComponentFactory.createRadioButton(XAdES.name(), formatValueHolder, XAdES);
 		}
-		//		asicsButton = ComponentFactory.createRadioButton(FormatType.ASICS, formatValueHolder, FormatType.ASICS);
-		//		asiceButton = ComponentFactory.createRadioButton(FormatType.ASICE, formatValueHolder, FormatType.ASICE);
+		if (formList.contains(CAdES)) {
+			cadesButton = ComponentFactory.createRadioButton(CAdES.name(), formatValueHolder, CAdES);
+		}
+		if (formList.contains(PAdES)) {
+			padesButton = ComponentFactory.createRadioButton(PAdES.name(), formatValueHolder, PAdES);
+		}
+
+		final List<SignaturePackaging> packagingList = parameter.getPackagingList();
 
 		packagingValueHolder = new ValueHolder(model.getPackaging());
 		packagingValueHolder.addPropertyChangeListener(new PackagingEventListener());
 
-		envelopingButton = ComponentFactory.createRadioButton(I18N_ENVELOPING, packagingValueHolder, SignaturePackaging.ENVELOPING);
-		envelopedButton = ComponentFactory.createRadioButton(I18N_ENVELOPED, packagingValueHolder, SignaturePackaging.ENVELOPED);
-		detachedButton = ComponentFactory.createRadioButton(I18N_DETACHED, packagingValueHolder, SignaturePackaging.DETACHED);
+		if (packagingList.contains(ENVELOPING)) {
+			envelopingButton = ComponentFactory.createRadioButton(I18N_ENVELOPING, packagingValueHolder, ENVELOPING);
+		}
+		if (packagingList.contains(ENVELOPED)) {
+			envelopedButton = ComponentFactory.createRadioButton(I18N_ENVELOPED, packagingValueHolder, ENVELOPED);
+		}
+		if (packagingList.contains(DETACHED)) {
+			detachedButton = ComponentFactory.createRadioButton(I18N_DETACHED, packagingValueHolder, DETACHED);
+		}
 
 		levelValue = beanAdapter.getValueModel(SignatureModel.PROPERTY_LEVEL);
 		final SelectionInList<String> levels = new SelectionInList<String>(new LevelComboBoxModel(), levelValue);
@@ -121,18 +127,24 @@ public class SignatureView extends WizardView<SignatureModel, SignatureWizardCon
 
 	private JPanel doFormatLayout() {
 
-		if(cadesButton!=null && xadesButton!=null && padesButton!=null)
+		if (cadesButton != null && xadesButton != null && padesButton != null) {
 			return ComponentFactory.createPanel(cadesButton, xadesButton, padesButton);//, asicsButton, asiceButton);
-		if(cadesButton!=null && xadesButton!=null)
+		}
+		if (cadesButton != null && xadesButton != null) {
 			return ComponentFactory.createPanel(cadesButton, xadesButton);//, asicsButton, asiceButton);
-		if(xadesButton!=null && padesButton!=null)
+		}
+		if (xadesButton != null && padesButton != null) {
 			return ComponentFactory.createPanel(xadesButton, padesButton);//, asicsButton, asiceButton);
-		if(cadesButton!=null && padesButton!=null)
+		}
+		if (cadesButton != null && padesButton != null) {
 			return ComponentFactory.createPanel(cadesButton, padesButton);//, asicsButton, asiceButton);
-		if(cadesButton!=null)
+		}
+		if (cadesButton != null) {
 			return ComponentFactory.createPanel(cadesButton);//, asicsButton, asiceButton);
-		if(xadesButton!=null)
+		}
+		if (xadesButton != null) {
 			return ComponentFactory.createPanel(xadesButton);//, asicsButton, asiceButton);
+		}
 		return ComponentFactory.createPanel(padesButton);//, asicsButton, asiceButton);
 	}
 
@@ -181,7 +193,26 @@ public class SignatureView extends WizardView<SignatureModel, SignatureWizardCon
 	}
 
 	private JPanel doPackagingLayout() {
-		return ComponentFactory.createPanel(envelopingButton, envelopedButton, detachedButton);
+
+		if (envelopingButton != null && envelopedButton != null && detachedButton != null) {
+			return ComponentFactory.createPanel(envelopingButton, envelopedButton, detachedButton);
+		}
+		if (envelopingButton != null && envelopedButton != null) {
+			return ComponentFactory.createPanel(envelopingButton, envelopedButton);
+		}
+		if (envelopingButton != null && detachedButton != null) {
+			return ComponentFactory.createPanel(envelopingButton, detachedButton);
+		}
+		if (envelopedButton != null && detachedButton != null) {
+			return ComponentFactory.createPanel(envelopedButton, detachedButton);
+		}
+		if (envelopingButton != null) {
+			return ComponentFactory.createPanel(envelopingButton);
+		}
+		if (envelopedButton != null) {
+			return ComponentFactory.createPanel(envelopedButton);
+		}
+		return ComponentFactory.createPanel(detachedButton);
 	}
 
 	@Override
@@ -215,21 +246,42 @@ public class SignatureView extends WizardView<SignatureModel, SignatureWizardCon
 			}
 
 			if (XAdES.equals(form)) {
-				envelopingButton.setEnabled(true);
-				detachedButton.setEnabled(true);
-				envelopedButton.setEnabled(FileType.XML == getModel().getFileType());
 
-				if (envelopedButton.isSelected()) {
-					envelopedButton.setSelected(false);
+				JRadioButton selectedButton = null;
+				if (envelopingButton != null) {
+					envelopingButton.setEnabled(true);
+					selectedButton = envelopingButton;
 				}
-
-				envelopingButton.doClick();
+				if (detachedButton != null) {
+					detachedButton.setEnabled(true);
+					if (selectedButton == null) {
+						selectedButton = detachedButton;
+					}
+				}
+				if (envelopedButton != null) {
+					envelopedButton.setEnabled(FileType.XML == getModel().getFileType());
+					if (selectedButton == null) {
+						selectedButton = envelopedButton;
+					}
+				}
+				selectedButton.doClick();
 			}
 			levelComboBox.setSelectedIndex(-1);
 			if (levelComboBox.getModel().getSize() > 0) {
 				levelComboBox.setSelectedIndex(0);
 			}
 		}
+	}
+
+	@Override
+	protected Container layout() {
+
+		final Container panel = super.layout();
+		final Parameters parameter = getController().getParameter();
+		if (parameter.getFormList().size() == 1 && parameter.getPackagingList().size() == 1 && parameter.getLevelList().size() == 1) {
+			nextButton.doClick();
+		}
+		return panel;
 	}
 
 	/**
@@ -260,15 +312,9 @@ public class SignatureView extends WizardView<SignatureModel, SignatureWizardCon
 	 * TODO
 	 */
 	private final class PackagingEventListener implements PropertyChangeListener {
-		/*
-		 * (non-Javadoc)
-		 *
-		 * @see java.beans.PropertyChangeListener#propertyChange(java.beans.PropertyChangeEvent)
-		 */
 		@Override
 		public void propertyChange(final PropertyChangeEvent evt) {
 			getModel().setPackaging((SignaturePackaging) evt.getNewValue());
 		}
-
 	}
 }

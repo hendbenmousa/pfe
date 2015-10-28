@@ -43,10 +43,10 @@ public class ActivityModel extends Model {
 	 * @param action the action to set
 	 */
 	public void setAction(final ActivityAction action) {
+
 		final ActivityAction oldValue = this.action;
 		final ActivityAction newValue = action;
 		this.action = newValue;
 		firePropertyChange(PROPERTY_ACTIVITY, oldValue, newValue);
 	}
-
 }

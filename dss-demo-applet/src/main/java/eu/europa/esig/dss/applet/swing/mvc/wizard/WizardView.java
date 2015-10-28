@@ -43,7 +43,7 @@ import eu.europa.esig.dss.applet.view.DSSAppletView;
 public abstract class WizardView<M extends Model, C extends WizardController<M>> extends DSSAppletView<M, C> {
 
 	private final JButton backButton;
-	private final JButton nextButton;
+	protected final JButton nextButton;
 	private final JButton cancelButton;
 
 	/**
