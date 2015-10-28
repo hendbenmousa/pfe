@@ -30,7 +30,7 @@ import com.jgoodies.binding.beans.Model;
 import eu.europa.esig.dss.DigestAlgorithm;
 import eu.europa.esig.dss.applet.SignatureTokenType;
 import eu.europa.esig.dss.applet.main.FileType;
-import eu.europa.esig.dss.applet.main.Parameters;
+import eu.europa.esig.dss.applet.main.Level;
 import eu.europa.esig.dss.applet.util.FileTypeDetectorUtils;
 import eu.europa.esig.dss.signature.SignaturePackaging;
 import eu.europa.esig.dss.token.DSSPrivateKeyEntry;
@@ -72,7 +72,7 @@ public class SignatureModel extends Model {
 	private SignatureTokenType tokenType;
 	private SignatureForm form;
 	private SignaturePackaging packaging;
-	private Parameters.Level level;
+	private Level level;
 	private SignatureTokenConnection tokenConnection;
 	private List<DSSPrivateKeyEntry> privateKeys;
 	private DSSPrivateKeyEntry selectedPrivateKey;
@@ -140,17 +140,17 @@ public class SignatureModel extends Model {
 	/**
 	 * @return the level
 	 */
-	public Parameters.Level getLevel() {
+	public Level getLevel() {
 		return level;
 	}
 
 	/**
 	 * @param level the level to set
 	 */
-	public void setLevel(final Parameters.Level level) {
+	public void setLevel(final Level level) {
 
-		final Parameters.Level oldValue = this.level;
-		final Parameters.Level newValue = level;
+		final Level oldValue = this.level;
+		final Level newValue = level;
 		this.level = newValue;
 		firePropertyChange(PROPERTY_LEVEL, oldValue, newValue);
 	}

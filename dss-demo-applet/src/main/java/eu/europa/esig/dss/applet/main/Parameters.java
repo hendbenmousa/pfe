@@ -44,10 +44,10 @@ import eu.europa.esig.dss.x509.SignatureForm;
 import static eu.europa.esig.dss.applet.SignatureTokenType.MSCAPI;
 import static eu.europa.esig.dss.applet.SignatureTokenType.PKCS11;
 import static eu.europa.esig.dss.applet.SignatureTokenType.PKCS12;
-import static eu.europa.esig.dss.applet.main.Parameters.Level.BASELINE_B;
-import static eu.europa.esig.dss.applet.main.Parameters.Level.BASELINE_LT;
-import static eu.europa.esig.dss.applet.main.Parameters.Level.BASELINE_LTA;
-import static eu.europa.esig.dss.applet.main.Parameters.Level.BASELINE_T;
+import static eu.europa.esig.dss.applet.main.Level.BASELINE_B;
+import static eu.europa.esig.dss.applet.main.Level.BASELINE_LT;
+import static eu.europa.esig.dss.applet.main.Level.BASELINE_LTA;
+import static eu.europa.esig.dss.applet.main.Level.BASELINE_T;
 import static eu.europa.esig.dss.applet.model.ActivityAction.SIGN;
 import static eu.europa.esig.dss.applet.model.ActivityAction.VALIDATE;
 import static eu.europa.esig.dss.signature.SignaturePackaging.DETACHED;
@@ -493,9 +493,5 @@ public class Parameters {
 	@Override
 	public String toString() {
 		return ReflectionToStringBuilder.reflectionToString(this);
-	}
-
-	public enum Level {
-		BASELINE_B, BASELINE_T, BASELINE_LT, BASELINE_LTA
 	}
 }

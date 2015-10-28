@@ -24,7 +24,7 @@ import java.io.File;
 
 import org.apache.commons.lang.StringUtils;
 
-import eu.europa.esig.dss.applet.main.Parameters;
+import eu.europa.esig.dss.applet.main.Level;
 import eu.europa.esig.dss.applet.model.SignatureModel;
 import eu.europa.esig.dss.applet.swing.mvc.ControllerException;
 import eu.europa.esig.dss.applet.swing.mvc.wizard.WizardStep;
@@ -97,7 +97,7 @@ public class SaveStep extends WizardStep<SignatureModel, SignatureWizardControll
 		// Initialize the target file based on the current selected file
 		final SignaturePackaging signaturePackaging = model.getPackaging();
 		final SignatureForm signatureForm = model.getForm();
-		final Parameters.Level signatureLevel = model.getLevel();
+		final Level signatureLevel = model.getLevel();
 		final File targetFile = prepareTargetFileName(selectedFile, signaturePackaging, signatureForm, signatureLevel);
 
 		model.setTargetFile(targetFile);
@@ -115,7 +115,7 @@ public class SaveStep extends WizardStep<SignatureModel, SignatureWizardControll
 		return targetFile != null;
 	}
 
-	private File prepareTargetFileName(final File file, final SignaturePackaging signaturePackaging, SignatureForm signatureForm, final Parameters.Level signatureLevel) {
+	private File prepareTargetFileName(final File file, final SignaturePackaging signaturePackaging, SignatureForm signatureForm, final Level signatureLevel) {
 
 		final File parentDir = file.getParentFile();
 		final String originalName = StringUtils.substringBeforeLast(file.getName(), ".");

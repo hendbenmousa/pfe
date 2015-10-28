@@ -23,7 +23,6 @@ package eu.europa.esig.dss.applet.view.signature;
 import java.awt.*;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.util.ArrayList;
 import java.util.List;
 
 import javax.swing.*;
@@ -37,6 +36,7 @@ import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 import eu.europa.esig.dss.applet.component.model.AbstractComboBoxModel;
 import eu.europa.esig.dss.applet.main.FileType;
+import eu.europa.esig.dss.applet.main.Level;
 import eu.europa.esig.dss.applet.main.Parameters;
 import eu.europa.esig.dss.applet.model.SignatureModel;
 import eu.europa.esig.dss.applet.swing.mvc.AppletCore;
@@ -47,7 +47,6 @@ import eu.europa.esig.dss.applet.wizard.signature.SignatureWizardController;
 import eu.europa.esig.dss.signature.SignaturePackaging;
 import eu.europa.esig.dss.x509.SignatureForm;
 
-import static eu.europa.esig.dss.applet.main.Parameters.Level;
 import static eu.europa.esig.dss.x509.SignatureForm.CAdES;
 import static eu.europa.esig.dss.x509.SignatureForm.PAdES;
 import static eu.europa.esig.dss.x509.SignatureForm.XAdES;
@@ -252,56 +251,8 @@ public class SignatureView extends WizardView<SignatureModel, SignatureWizardCon
 		@Override
 		protected List<?> getElements() {
 
-			final SignatureModel model = getModel();
-			final SignatureForm signatureFormat = model.getForm();
-			final List<Parameters.Level> levelList = controller.getParameter().getLevelList();
-			final List<Level> elements = new ArrayList<Level>();
-			elements.add(levelList.get(0));
-
-			//			if (SignatureForm.PAdES == signatureFormat) {
-			//
-			//				if (levelList.contains(Level.BASELINE_B)) {
-			//					elements.add(PAdES_BASELINE_B.toString());
-			//				}
-			//				if (levelList.contains(Level.BASELINE_T)) {
-			//					elements.add(PAdES_BASELINE_T.toString());
-			//				}
-			//				if (levelList.contains(Level.BASELINE_LT)) {
-			//					elements.add(PAdES_BASELINE_LT.toString());
-			//				}
-			//				if (levelList.contains(Level.BASELINE_LTA)) {
-			//					elements.add(PAdES_BASELINE_LTA.toString());
-			//				}
-			//			} else if (SignatureForm.CAdES == signatureFormat) {
-			//
-			//				if (levelList.contains(Level.BASELINE_B)) {
-			//					elements.add(CAdES_BASELINE_B.toString());
-			//				}
-			//				if (levelList.contains(Level.BASELINE_T)) {
-			//					elements.add(CAdES_BASELINE_T.toString());
-			//				}
-			//				if (levelList.contains(Level.BASELINE_LT)) {
-			//					elements.add(SignatureLevel.CAdES_BASELINE_LT.toString());
-			//				}
-			//				if (levelList.contains(Level.BASELINE_LTA)) {
-			//					elements.add(SignatureLevel.CAdES_BASELINE_LTA.toString());
-			//				}
-			//			} else if (SignatureForm.XAdES == signatureFormat) {
-			//
-			//				if (levelList.contains(Level.BASELINE_B)) {
-			//					elements.add(XAdES_BASELINE_B.toString());
-			//				}
-			//				if (levelList.contains(Level.BASELINE_T)) {
-			//					elements.add(XAdES_BASELINE_T.toString());
-			//				}
-			//				if (levelList.contains(Level.BASELINE_LT)) {
-			//					elements.add(SignatureLevel.XAdES_BASELINE_LT.toString());
-			//				}
-			//				if (levelList.contains(Level.BASELINE_LTA)) {
-			//					elements.add(SignatureLevel.XAdES_BASELINE_LTA.toString());
-			//				}
-			//			}
-			return elements;
+			final List<Level> levelList = controller.getParameter().getLevelList();
+			return levelList;
 		}
 	}
 

@@ -39,7 +39,7 @@ import eu.europa.esig.dss.TimestampParameters;
 import eu.europa.esig.dss.applet.controller.ActivityController;
 import eu.europa.esig.dss.applet.controller.DSSWizardController;
 import eu.europa.esig.dss.applet.main.DSSAppletCore;
-import eu.europa.esig.dss.applet.main.Parameters;
+import eu.europa.esig.dss.applet.main.Level;
 import eu.europa.esig.dss.applet.model.SignatureModel;
 import eu.europa.esig.dss.applet.swing.mvc.wizard.WizardController;
 import eu.europa.esig.dss.applet.swing.mvc.wizard.WizardStep;
@@ -59,6 +59,7 @@ import eu.europa.esig.dss.token.SignatureTokenConnection;
 import eu.europa.esig.dss.x509.SignatureForm;
 import eu.europa.esig.dss.xades.XAdESSignatureParameters;
 
+import static eu.europa.esig.dss.SignatureLevel.*;
 import static eu.europa.esig.dss.SignatureLevel.CAdES_BASELINE_B;
 import static eu.europa.esig.dss.SignatureLevel.CAdES_BASELINE_T;
 import static eu.europa.esig.dss.SignatureLevel.PAdES_BASELINE_B;
@@ -67,6 +68,8 @@ import static eu.europa.esig.dss.SignatureLevel.PAdES_BASELINE_LTA;
 import static eu.europa.esig.dss.SignatureLevel.PAdES_BASELINE_T;
 import static eu.europa.esig.dss.SignatureLevel.XAdES_BASELINE_B;
 import static eu.europa.esig.dss.SignatureLevel.XAdES_BASELINE_T;
+import static eu.europa.esig.dss.applet.main.Level.*;
+import static eu.europa.esig.dss.x509.SignatureForm.*;
 
 /**
  * TODO
@@ -205,7 +208,7 @@ public class SignatureWizardController extends DSSWizardController<SignatureMode
 		parameters.setDigestAlgorithm(DigestAlgorithm.SHA256);
 
 		final SignatureForm form = model.getForm();
-		final Parameters.Level level = model.getLevel();
+		final Level level = model.getLevel();
 
 		SignatureLevel signatureLevel = getSignatureLevel(form, level);
 		parameters.setSignatureLevel(signatureLevel);
@@ -229,49 +232,49 @@ public class SignatureWizardController extends DSSWizardController<SignatureMode
 		}
 	}
 
-	private SignatureLevel getSignatureLevel(SignatureForm form, Parameters.Level level) {
+	private SignatureLevel getSignatureLevel(SignatureForm form, Level level) {
 
-		if (SignatureForm.PAdES == form) {
+		if (PAdES == form) {
 
-			if (level == Parameters.Level.BASELINE_B) {
+			if (level == BASELINE_B) {
 				return PAdES_BASELINE_B;
 			}
-			if (level == Parameters.Level.BASELINE_T) {
+			if (level == BASELINE_T) {
 				return PAdES_BASELINE_T;
 			}
-			if (level == Parameters.Level.BASELINE_LT) {
+			if (level == BASELINE_LT) {
 				return PAdES_BASELINE_LT;
 			}
-			if (level == Parameters.Level.BASELINE_LTA) {
+			if (level == BASELINE_LTA) {
 				return PAdES_BASELINE_LTA;
 			}
-		} else if (SignatureForm.CAdES == form) {
+		} else if (CAdES == form) {
 
-			if (level == Parameters.Level.BASELINE_B) {
+			if (level == BASELINE_B) {
 				return CAdES_BASELINE_B;
 			}
-			if (level == Parameters.Level.BASELINE_T) {
+			if (level == BASELINE_T) {
 				return CAdES_BASELINE_T;
 			}
-			if (level == Parameters.Level.BASELINE_LT) {
-				return SignatureLevel.CAdES_BASELINE_LT;
+			if (level == BASELINE_LT) {
+				return CAdES_BASELINE_LT;
 			}
-			if (level == Parameters.Level.BASELINE_LTA) {
-				return SignatureLevel.CAdES_BASELINE_LTA;
+			if (level == BASELINE_LTA) {
+				return CAdES_BASELINE_LTA;
 			}
-		} else if (SignatureForm.XAdES == form) {
+		} else if (XAdES == form) {
 
-			if (level == Parameters.Level.BASELINE_B) {
+			if (level == BASELINE_B) {
 				return XAdES_BASELINE_B;
 			}
-			if (level == Parameters.Level.BASELINE_T) {
+			if (level == BASELINE_T) {
 				return XAdES_BASELINE_T;
 			}
-			if (level == Parameters.Level.BASELINE_LT) {
-				return SignatureLevel.XAdES_BASELINE_LT;
+			if (level == BASELINE_LT) {
+				return XAdES_BASELINE_LT;
 			}
-			if (level == Parameters.Level.BASELINE_LTA) {
-				return SignatureLevel.XAdES_BASELINE_LTA;
+			if (level == BASELINE_LTA) {
+				return XAdES_BASELINE_LTA;
 			}
 		}
 		return null;

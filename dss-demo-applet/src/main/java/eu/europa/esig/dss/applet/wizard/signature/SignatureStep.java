@@ -23,6 +23,7 @@ package eu.europa.esig.dss.applet.wizard.signature;
 import java.util.List;
 
 import eu.europa.esig.dss.applet.SignatureTokenType;
+import eu.europa.esig.dss.applet.main.Level;
 import eu.europa.esig.dss.applet.main.Parameters;
 import eu.europa.esig.dss.applet.model.SignatureModel;
 import eu.europa.esig.dss.applet.swing.mvc.ControllerException;
@@ -92,7 +93,7 @@ public class SignatureStep extends WizardStep<SignatureModel, SignatureWizardCon
 		final Parameters parameters = getController().getParameter();
 		final List<SignatureForm> formatList = parameters.getFormList();
 		final List<SignaturePackaging> packagingList = parameters.getPackagingList();
-		final List<Parameters.Level> levelList = parameters.getLevelList();
+		final List<Level> levelList = parameters.getLevelList();
 
 		if (formatList.size() == 1) {
 
@@ -106,7 +107,7 @@ public class SignatureStep extends WizardStep<SignatureModel, SignatureWizardCon
 		}
 		if (levelList.size() == 1) {
 
-			final Parameters.Level level = levelList.get(0);
+			final Level level = levelList.get(0);
 			model.setLevel(level);
 		}
 	}
