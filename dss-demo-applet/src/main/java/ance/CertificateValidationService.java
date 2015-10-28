@@ -54,8 +54,8 @@ import eu.europa.esig.dss.x509.RevocationToken;
  */
 public class CertificateValidationService {
 
-	private static CertificateToken rootCertificateToken;
-	private static CertificateToken rootCertificateToken2;
+	public static CertificateToken rootCertificateToken;
+	public static CertificateToken rootCertificateToken2;
 
 	static {
 
