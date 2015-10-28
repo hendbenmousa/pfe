@@ -42,41 +42,21 @@ public class TokenStep extends WizardStep<SignatureModel, SignatureWizardControl
 		super(model, view, controller);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 *
-	 * @see eu.europa.esig.dss.applet.swing.mvc.wizard.WizardStep#finish()
-	 */
 	@Override
 	protected void finish() throws ControllerException {
 
 	}
 
-	/*
-	 * (non-Javadoc)
-	 *
-	 * @see eu.europa.esig.dss.applet.swing.mvc.wizard.WizardStep#execute()
-	 */
 	@Override
 	protected void init() {
 
 	}
 
-	/*
-	 * (non-Javadoc)
-	 *
-	 * @see eu.europa.esig.dss.applet.swing.mvc.wizard.WizardStep#getBackStep()
-	 */
 	@Override
 	protected Class<? extends WizardStep<SignatureModel, SignatureWizardController>> getBackStep() {
 		return SignatureStep.class;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 *
-	 * @see eu.europa.esig.dss.applet.swing.mvc.wizard.WizardStep#getNextStep()
-	 */
 	@Override
 	protected Class<? extends WizardStep<SignatureModel, SignatureWizardController>> getNextStep() {
 
@@ -96,21 +76,11 @@ public class TokenStep extends WizardStep<SignatureModel, SignatureWizardControl
 		return this.getClass();
 	}
 
-	/*
-	 * (non-Javadoc)
-	 *
-	 * @see eu.europa.esig.dss.applet.swing.mvc.wizard.WizardStep#getStepProgression()
-	 */
 	@Override
 	protected int getStepProgression() {
 		return 3;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 *
-	 * @see eu.europa.esig.dss.applet.swing.mvc.wizard.WizardStep#isValid()
-	 */
 	@Override
 	protected boolean isValid() {
 

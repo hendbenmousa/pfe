@@ -34,9 +34,8 @@ import com.jgoodies.binding.value.ValueModel;
 import com.jgoodies.forms.builder.PanelBuilder;
 import com.jgoodies.forms.layout.CellConstraints;
 import eu.europa.esig.dss.applet.controller.ActivityController;
-import eu.europa.esig.dss.applet.main.Parameters.AppletUsage;
+import eu.europa.esig.dss.applet.model.ActivityAction;
 import eu.europa.esig.dss.applet.model.ActivityModel;
-import eu.europa.esig.dss.applet.model.ActivityModel.ActivityAction;
 import eu.europa.esig.dss.applet.swing.mvc.AppletCore;
 import eu.europa.esig.dss.applet.util.ComponentFactory;
 import eu.europa.esig.dss.applet.util.ResourceUtils;
@@ -67,15 +66,22 @@ public class ActivityView extends DSSAppletView<ActivityModel, ActivityControlle
 
 		super(core, controller, model);
 
-		this.presentationModel = new PresentationModel<ActivityModel>(getModel());
+		presentationModel = new PresentationModel<ActivityModel>(getModel());
+
 		final ValueModel activityValue = presentationModel.getModel(ActivityModel.PROPERTY_ACTIVITY);
+
 		choice1 = ComponentFactory.createRadioButton(I18N_SIGN_DOCUMENT, activityValue, ActivityAction.SIGN);
-		choice2 = ComponentFactory.createRadioButton(I18N_VALIDATION, activityValue, ActivityAction.VALIDATION);
+		choice2 = ComponentFactory.createRadioButton(I18N_VALIDATION, activityValue, ActivityAction.VALIDATE);
 		nextButton = ComponentFactory.createNextButton(true, new NextActionListener());
 		nextButton.setName("next");
 
-		final List<AppletUsage> appletUsage = getController().getParameter().getUsageList();
-		for (final AppletUsage usage : appletUsage) {
+		final List<ActivityAction> appletUsage = getController().getParameter().getUsageList();
+		if (appletUsage.size() == 1) {
+
+			getModel().setAction(appletUsage.get(0));
+			return;
+		}
+		for (final ActivityAction usage : appletUsage) {
 
 			switch (usage) {
 				case SIGN: {
@@ -119,8 +125,6 @@ public class ActivityView extends DSSAppletView<ActivityModel, ActivityControlle
 	@Override
 	protected Container layout() {
 
-		doInit();
-
 		final boolean valid = getController().isValid();
 		nextButton.setEnabled(valid);
 
@@ -132,7 +136,12 @@ public class ActivityView extends DSSAppletView<ActivityModel, ActivityControlle
 
 		final boolean enabled = getController().isValid();
 		nextButton.setEnabled(enabled);
-        //wizardModelChange(evt);
+		//wizardModelChange(evt);
+	}
+
+	public void click() {
+
+		nextButton.doClick();
 	}
 
 	private final class NextActionListener implements ActionListener {

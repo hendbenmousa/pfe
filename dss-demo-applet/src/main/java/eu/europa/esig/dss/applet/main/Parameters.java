@@ -36,6 +36,7 @@ import eu.europa.esig.dss.DSSException;
 import eu.europa.esig.dss.DSSUtils;
 import eu.europa.esig.dss.DigestAlgorithm;
 import eu.europa.esig.dss.applet.SignatureTokenType;
+import eu.europa.esig.dss.applet.model.ActivityAction;
 import eu.europa.esig.dss.signature.SignaturePackaging;
 import eu.europa.esig.dss.validation.ValidationResourceManager;
 import eu.europa.esig.dss.x509.SignatureForm;
@@ -43,12 +44,12 @@ import eu.europa.esig.dss.x509.SignatureForm;
 import static eu.europa.esig.dss.applet.SignatureTokenType.MSCAPI;
 import static eu.europa.esig.dss.applet.SignatureTokenType.PKCS11;
 import static eu.europa.esig.dss.applet.SignatureTokenType.PKCS12;
-import static eu.europa.esig.dss.applet.main.Parameters.AppletUsage.SIGN;
-import static eu.europa.esig.dss.applet.main.Parameters.AppletUsage.VALIDATE;
 import static eu.europa.esig.dss.applet.main.Parameters.Level.B;
 import static eu.europa.esig.dss.applet.main.Parameters.Level.LT;
 import static eu.europa.esig.dss.applet.main.Parameters.Level.LTA;
 import static eu.europa.esig.dss.applet.main.Parameters.Level.T;
+import static eu.europa.esig.dss.applet.model.ActivityAction.SIGN;
+import static eu.europa.esig.dss.applet.model.ActivityAction.VALIDATE;
 import static eu.europa.esig.dss.signature.SignaturePackaging.DETACHED;
 import static eu.europa.esig.dss.signature.SignaturePackaging.ENVELOPED;
 import static eu.europa.esig.dss.signature.SignaturePackaging.ENVELOPING;
@@ -77,7 +78,7 @@ public class Parameters {
 	/**
 	 *
 	 */
-	private List<AppletUsage> usageList = new ArrayList<AppletUsage>() {{
+	private List<ActivityAction> usageList = new ArrayList<ActivityAction>() {{
 		add(SIGN);
 		add(VALIDATE);
 	}};
@@ -189,7 +190,7 @@ public class Parameters {
 
 			if (StringUtils.isNotEmpty(split)) {
 
-				final AppletUsage appletUsage = AppletUsage.valueOf(split.toUpperCase());
+				final ActivityAction appletUsage = ActivityAction.valueOf(split);
 				appletUsageList.add(appletUsage);
 			}
 		}
@@ -318,11 +319,11 @@ public class Parameters {
 		}
 	}
 
-	public List<AppletUsage> getUsageList() {
+	public List<ActivityAction> getUsageList() {
 		return usageList;
 	}
 
-	public void setUsageList(List<AppletUsage> usageList) {
+	public void setUsageList(List<ActivityAction> usageList) {
 		this.usageList = usageList;
 	}
 
@@ -492,10 +493,6 @@ public class Parameters {
 	@Override
 	public String toString() {
 		return ReflectionToStringBuilder.reflectionToString(this);
-	}
-
-	public enum AppletUsage {
-		SIGN, VALIDATE
 	}
 
 	public enum Level {

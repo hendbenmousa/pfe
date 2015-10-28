@@ -29,10 +29,6 @@ import com.jgoodies.binding.beans.Model;
 @SuppressWarnings("serial")
 public class ActivityModel extends Model {
 
-	public enum ActivityAction {
-		SIGN, VALIDATION
-	}
-
 	public static final String PROPERTY_ACTIVITY = "action";
 	private ActivityAction action;
 

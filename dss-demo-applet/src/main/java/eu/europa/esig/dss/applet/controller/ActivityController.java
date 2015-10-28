@@ -24,6 +24,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import eu.europa.esig.dss.applet.main.DSSAppletCore;
+import eu.europa.esig.dss.applet.main.Parameters;
 import eu.europa.esig.dss.applet.model.ActivityModel;
 import eu.europa.esig.dss.applet.view.ActivityView;
 import eu.europa.esig.dss.applet.wizard.signature.SignatureWizardController;
@@ -46,6 +47,7 @@ public class ActivityController extends DSSAppletController<ActivityModel> {
 	 * @param model
 	 */
 	public ActivityController(final DSSAppletCore core, final ActivityModel model) {
+
 		super(core, model);
 		view = new ActivityView(getCore(), this, getModel());
 	}
@@ -54,7 +56,12 @@ public class ActivityController extends DSSAppletController<ActivityModel> {
 	 *
 	 */
 	public void display() {
+
 		view.show();
+		final Parameters parameter = getParameter();
+		if (parameter.getTokenTypeList().size() == 1) {
+			view.click();
+		}
 	}
 
 	/**
@@ -66,7 +73,7 @@ public class ActivityController extends DSSAppletController<ActivityModel> {
 			case SIGN:
 				getCore().getController(SignatureWizardController.class).start();
 				break;
-			case VALIDATION:
+			case VALIDATE:
 				// TODO-Bob (26/10/2015):  Validation to be implemented
 				//				getCore().getController(ValidationPolicyWizardController.class).start();
 				break;
