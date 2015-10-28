@@ -62,6 +62,9 @@ public class PKCS12Step extends WizardStep<SignatureModel, SignatureWizardContro
 
 		final Parameters parameters = getController().getParameter();
 		if (parameters.getTokenTypeList().size() == 1) {
+			if (parameters.getFormList().size() == 1 && parameters.getPackagingList().size() == 1 && parameters.getLevelList().size() == 1) {
+				return FileStep.class;
+			}
 			return SignatureStep.class;
 		} else {
 			return TokenStep.class;

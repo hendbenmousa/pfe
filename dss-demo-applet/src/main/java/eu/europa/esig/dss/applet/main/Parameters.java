@@ -71,8 +71,11 @@ public class Parameters {
 	public static final String TOKEN = "TOKEN";
 	public static final String PKCS11_FILE = "PKCS11_FILE";
 	public static final String PKCS12_FILE = "PKCS12_FILE";
+	public static final String CLAIMED_ROLE = "CLAIMED_ROLE";
+
 	public static final String SIGNATURE_HASH = "SIGNATURE_HASH";
 	public static final String TIMESTAMP_HASH = "TIMESTAMP_HASH";
+
 	public static final String TIMESTAMP_SERVER_URL = "TIMESTAMP_SERVER_URL";
 	public static final String VALIDATION_POLICY = "VALIDATION_POLICY";
 
@@ -153,6 +156,11 @@ public class Parameters {
 	private String timestampServerUrl;
 
 	/**
+	 *
+	 */
+	private String claimedRole;
+
+	/**
 	 * The default constructor for Parameters.
 	 *
 	 * @param setupPath
@@ -185,6 +193,7 @@ public class Parameters {
 			initPkcs12File(properties);
 			initValidationPolicy(properties);
 			initTimestampServerUrl(properties);
+			initClaimedRole(properties);
 		} catch (IOException e) {
 			throw new DSSException(e);
 		}
@@ -335,6 +344,15 @@ public class Parameters {
 			return;
 		}
 		setTimestampServerUrl(token);
+	}
+
+	private void initClaimedRole(final Properties properties) {
+
+		final String token = properties.getProperty(CLAIMED_ROLE);
+		if (token == null) {
+			return;
+		}
+		setClaimedRole(token.trim());
 	}
 
 	public List<ActivityAction> getUsageList() {
@@ -515,6 +533,14 @@ public class Parameters {
 
 	public void setTimestampServerUrl(String timestampServerUrl) {
 		this.timestampServerUrl = timestampServerUrl;
+	}
+
+	public String getClaimedRole() {
+		return claimedRole;
+	}
+
+	public void setClaimedRole(String claimedRole) {
+		this.claimedRole = claimedRole;
 	}
 
 	@Override

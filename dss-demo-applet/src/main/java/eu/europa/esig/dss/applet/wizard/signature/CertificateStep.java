@@ -21,9 +21,11 @@
 package eu.europa.esig.dss.applet.wizard.signature;
 
 import java.io.File;
+import java.util.List;
 
 import eu.europa.esig.dss.DSSException;
 import eu.europa.esig.dss.applet.PinInputDialog;
+import eu.europa.esig.dss.applet.SignatureTokenType;
 import eu.europa.esig.dss.applet.main.Parameters;
 import eu.europa.esig.dss.applet.model.SignatureModel;
 import eu.europa.esig.dss.applet.swing.mvc.ControllerException;
@@ -60,7 +62,16 @@ public class CertificateStep extends WizardStep<SignatureModel, SignatureWizardC
 		//		return SignatureDigestAlgorithmStep.class;
 
 		final Parameters parameter = getController().getParameter();
-		if (parameter.getTokenTypeList().size() == 1) {
+		final List<SignatureTokenType> tokenTypeList = parameter.getTokenTypeList();
+		if (tokenTypeList.size() == 1) {
+
+			final SignatureTokenType signatureTokenType = tokenTypeList.get(0);
+			if (signatureTokenType == SignatureTokenType.PKCS12) {
+				return PKCS12Step.class;
+			}
+			if (signatureTokenType == SignatureTokenType.PKCS11) {
+				return PKCS11Step.class;
+			}
 			if (parameter.getFormList().size() == 1 && parameter.getPackagingList().size() == 1 && parameter.getLevelList().size() == 1) {
 				return FileStep.class;
 			}
@@ -71,7 +82,13 @@ public class CertificateStep extends WizardStep<SignatureModel, SignatureWizardC
 
 	@Override
 	protected Class<? extends WizardStep<SignatureModel, SignatureWizardController>> getNextStep() {
-		return PersonalDataStep.class;
+
+		final Parameters parameter = getController().getParameter();
+		final String claimedRole = parameter.getClaimedRole();
+		if (claimedRole != null) {
+			return PersonalDataStep.class;
+		}
+		return SaveStep.class;
 	}
 
 	@Override

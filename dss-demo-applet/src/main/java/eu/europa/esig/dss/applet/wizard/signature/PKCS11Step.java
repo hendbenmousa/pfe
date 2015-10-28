@@ -34,6 +34,7 @@ import eu.europa.esig.dss.applet.swing.mvc.wizard.WizardView;
  * TODO
  */
 public class PKCS11Step extends WizardStep<SignatureModel, SignatureWizardController> {
+
 	/**
 	 * The default constructor for PKCS11Step.
 	 *
@@ -51,56 +52,34 @@ public class PKCS11Step extends WizardStep<SignatureModel, SignatureWizardContro
 
 	}
 
-	/*
-	 * (non-Javadoc)
-	 *
-	 * @see eu.europa.esig.dss.applet.swing.mvc.wizard.WizardStep#getBackStep()
-	 */
 	@Override
 	protected Class<? extends WizardStep<SignatureModel, SignatureWizardController>> getBackStep() {
 
 		final Parameters parameters = getController().getParameter();
-		if (parameters.getTokenTypeList().size()==1) {
+		if (parameters.getTokenTypeList().size() == 1) {
+			if (parameters.getFormList().size() == 1 && parameters.getPackagingList().size() == 1 && parameters.getLevelList().size() == 1) {
+				return FileStep.class;
+			}
 			return SignatureStep.class;
 		} else {
 			return TokenStep.class;
 		}
 	}
 
-	/*
-	 * (non-Javadoc)
-	 *
-	 * @see eu.europa.esig.dss.applet.swing.mvc.wizard.WizardStep#getNextStep()
-	 */
 	@Override
 	protected Class<? extends WizardStep<SignatureModel, SignatureWizardController>> getNextStep() {
 		return CertificateStep.class;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 *
-	 * @see eu.europa.esig.dss.applet.swing.mvc.wizard.WizardStep#getStepProgression()
-	 */
 	@Override
 	protected int getStepProgression() {
 		return 3;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 *
-	 * @see eu.europa.esig.dss.applet.swing.mvc.wizard.WizardStep#execute()
-	 */
 	@Override
 	protected void init() {
 	}
 
-	/*
-	 * (non-Javadoc)
-	 *
-	 * @see eu.europa.esig.dss.applet.swing.mvc.wizard.WizardStep#isValid()
-	 */
 	@Override
 	protected boolean isValid() {
 

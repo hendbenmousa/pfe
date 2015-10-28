@@ -66,6 +66,7 @@ public final class ComponentFactory extends BasicComponentFactory {
 	private static final Icon ICON_WARNING;
 	private static final Icon ICON_UNSURE;
 	private static final Icon ICON_INFO;
+	private static final Icon ICON_ERROR;
 
 	private static final Icon ICON_SUCCESS;
 
@@ -86,6 +87,7 @@ public final class ComponentFactory extends BasicComponentFactory {
 		ICON_UNSURE = new ImageIcon(ResourceUtils.class.getResource("/eu/europa/esig/dss/applet/report/unsure_16.png"));
 		ICON_INFO = new ImageIcon(ResourceUtils.class.getResource("/eu/europa/esig/dss/applet/report/info_16.png"));
 		ICON_SUCCESS = new ImageIcon(ResourceUtils.class.getResource("/eu/europa/esig/dss/applet/wizard/big_ok.png"));
+		ICON_ERROR = new ImageIcon(ResourceUtils.class.getResource("/eu/europa/esig/dss/applet/wizard/big_error.png"));
 	}
 
 	private ComponentFactory() {
@@ -461,6 +463,13 @@ public final class ComponentFactory extends BasicComponentFactory {
 	/**
 	 * @return
 	 */
+	public static Icon iconError() {
+		return ICON_ERROR;
+	}
+
+	/**
+	 * @return
+	 */
 	public static Icon iconSuccess() {
 		return ICON_SUCCESS;
 	}
@@ -543,7 +552,6 @@ public final class ComponentFactory extends BasicComponentFactory {
 			applet.getContentPane().add(panel);
 			applet.getContentPane().validate();
 			applet.getContentPane().repaint();
-
 		}
 	}
 }

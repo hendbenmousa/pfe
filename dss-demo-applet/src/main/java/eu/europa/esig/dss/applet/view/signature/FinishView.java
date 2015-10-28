@@ -36,7 +36,7 @@ import eu.europa.esig.dss.applet.wizard.signature.SignatureWizardController;
  */
 public class FinishView extends WizardView<SignatureModel, SignatureWizardController> {
 
-	private final JLabel message;
+	private JLabel message;
 
 	/**
 	 * The default constructor for SignView.
@@ -48,11 +48,6 @@ public class FinishView extends WizardView<SignatureModel, SignatureWizardContro
 	public FinishView(final AppletCore core, final SignatureWizardController controller, final SignatureModel model) {
 
 		super(core, controller, model);
-		if (controller.isSuccessful()) {
-			message = ComponentFactory.createLabel(ResourceUtils.getI18n("SIGNED_FILE_SAVED"), ComponentFactory.iconSuccess());
-		} else {
-			message = ComponentFactory.createLabel(ResourceUtils.getI18n("SIGNATURE_CREATION_ERROR"), ComponentFactory.iconInvalid());
-		}
 	}
 
 	@Override
@@ -64,6 +59,11 @@ public class FinishView extends WizardView<SignatureModel, SignatureWizardContro
 	protected Container doLayout() {
 
 		final JPanel panel = ComponentFactory.createPanel();
+		if (getController().isSuccessful()) {
+			message = ComponentFactory.createLabel(ResourceUtils.getI18n("SIGNED_FILE_SAVED"), ComponentFactory.iconSuccess());
+		} else {
+			message = ComponentFactory.createLabel(ResourceUtils.getI18n("SIGNATURE_CREATION_ERROR"), ComponentFactory.iconError());
+		}
 		panel.add(message);
 		return panel;
 	}

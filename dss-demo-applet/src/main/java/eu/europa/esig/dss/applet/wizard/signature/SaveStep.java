@@ -25,6 +25,7 @@ import java.io.File;
 import org.apache.commons.lang.StringUtils;
 
 import eu.europa.esig.dss.applet.main.Level;
+import eu.europa.esig.dss.applet.main.Parameters;
 import eu.europa.esig.dss.applet.model.SignatureModel;
 import eu.europa.esig.dss.applet.swing.mvc.ControllerException;
 import eu.europa.esig.dss.applet.swing.mvc.wizard.WizardStep;
@@ -36,6 +37,7 @@ import eu.europa.esig.dss.x509.SignatureForm;
  * TODO
  */
 public class SaveStep extends WizardStep<SignatureModel, SignatureWizardController> {
+
 	/**
 	 * The default constructor for SaveStep.
 	 *
@@ -53,41 +55,28 @@ public class SaveStep extends WizardStep<SignatureModel, SignatureWizardControll
 
 	}
 
-	/*
-	 * (non-Javadoc)
-	 *
-	 * @see eu.europa.esig.dss.applet.swing.mvc.wizard.WizardStep#getBackStep()
-	 */
 	@Override
 	protected Class<? extends WizardStep<SignatureModel, SignatureWizardController>> getBackStep() {
-		return PersonalDataStep.class;
+
+		final Parameters parameter = getController().getParameter();
+		final String claimedRole = parameter.getClaimedRole();
+		if (claimedRole != null) {
+			return PersonalDataStep.class;
+		}
+
+		return CertificateStep.class;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 *
-	 * @see eu.europa.esig.dss.applet.swing.mvc.wizard.WizardStep#getNextStep()
-	 */
 	@Override
 	protected Class<? extends WizardStep<SignatureModel, SignatureWizardController>> getNextStep() {
 		return FinishStep.class;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 *
-	 * @see eu.europa.esig.dss.applet.swing.mvc.wizard.WizardStep#getStepProgression()
-	 */
 	@Override
 	protected int getStepProgression() {
 		return 6;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 *
-	 * @see eu.europa.esig.dss.applet.swing.mvc.wizard.WizardStep#execute()
-	 */
 	@Override
 	protected void init() {
 
@@ -104,11 +93,6 @@ public class SaveStep extends WizardStep<SignatureModel, SignatureWizardControll
 
 	}
 
-	/*
-	 * (non-Javadoc)
-	 *
-	 * @see eu.europa.esig.dss.applet.swing.mvc.wizard.WizardStep#isValid()
-	 */
 	@Override
 	protected boolean isValid() {
 		final File targetFile = getModel().getTargetFile();
