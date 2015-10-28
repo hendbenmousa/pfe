@@ -1,7 +1,7 @@
 /*******************************************************************************
  * Digital Signature Applet
  * <p/>
- * Copyright (C) 2014 European Commission, Directorate-General for Justice (DG  JUSTICE), B-1049 Bruxelles/Brussel
+ * Copyright (C) 2014 European Commission, Directorate-General for Justice (DG  JUSTICE), BASELINE_B-1049 Bruxelles/Brussel
  * <p/>
  * Developed by: ARHS Developments S.A. (rue Nicolas Bové 2B, L-1253 Luxembourg)
  * <p/>

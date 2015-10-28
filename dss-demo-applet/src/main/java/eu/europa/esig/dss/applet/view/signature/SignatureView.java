@@ -35,7 +35,6 @@ import com.jgoodies.binding.value.ValueModel;
 import com.jgoodies.forms.builder.PanelBuilder;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
-import eu.europa.esig.dss.SignatureLevel;
 import eu.europa.esig.dss.applet.component.model.AbstractComboBoxModel;
 import eu.europa.esig.dss.applet.main.FileType;
 import eu.europa.esig.dss.applet.main.Parameters;
@@ -48,14 +47,6 @@ import eu.europa.esig.dss.applet.wizard.signature.SignatureWizardController;
 import eu.europa.esig.dss.signature.SignaturePackaging;
 import eu.europa.esig.dss.x509.SignatureForm;
 
-import static eu.europa.esig.dss.SignatureLevel.CAdES_BASELINE_B;
-import static eu.europa.esig.dss.SignatureLevel.CAdES_BASELINE_T;
-import static eu.europa.esig.dss.SignatureLevel.PAdES_BASELINE_B;
-import static eu.europa.esig.dss.SignatureLevel.PAdES_BASELINE_LT;
-import static eu.europa.esig.dss.SignatureLevel.PAdES_BASELINE_LTA;
-import static eu.europa.esig.dss.SignatureLevel.PAdES_BASELINE_T;
-import static eu.europa.esig.dss.SignatureLevel.XAdES_BASELINE_B;
-import static eu.europa.esig.dss.SignatureLevel.XAdES_BASELINE_T;
 import static eu.europa.esig.dss.applet.main.Parameters.Level;
 import static eu.europa.esig.dss.x509.SignatureForm.CAdES;
 import static eu.europa.esig.dss.x509.SignatureForm.PAdES;
@@ -102,7 +93,7 @@ public class SignatureView extends WizardView<SignatureModel, SignatureWizardCon
 
 		final Parameters parameter = controller.getParameter();
 		final List<SignatureForm> formList = parameter.getFormList();
-		if (formList.size() > 1) {
+		if (formList.size() > 0) {
 
 			if (formList.contains(XAdES)) {
 				xadesButton = ComponentFactory.createRadioButton(XAdES.name(), formatValueHolder, XAdES);
@@ -130,7 +121,20 @@ public class SignatureView extends WizardView<SignatureModel, SignatureWizardCon
 	}
 
 	private JPanel doFormatLayout() {
-		return ComponentFactory.createPanel(cadesButton, xadesButton); //, padesButton, asicsButton, asiceButton);
+
+		if(cadesButton!=null && xadesButton!=null && padesButton!=null)
+			return ComponentFactory.createPanel(cadesButton, xadesButton, padesButton);//, asicsButton, asiceButton);
+		if(cadesButton!=null && xadesButton!=null)
+			return ComponentFactory.createPanel(cadesButton, xadesButton);//, asicsButton, asiceButton);
+		if(xadesButton!=null && padesButton!=null)
+			return ComponentFactory.createPanel(xadesButton, padesButton);//, asicsButton, asiceButton);
+		if(cadesButton!=null && padesButton!=null)
+			return ComponentFactory.createPanel(cadesButton, padesButton);//, asicsButton, asiceButton);
+		if(cadesButton!=null)
+			return ComponentFactory.createPanel(cadesButton);//, asicsButton, asiceButton);
+		if(xadesButton!=null)
+			return ComponentFactory.createPanel(xadesButton);//, asicsButton, asiceButton);
+		return ComponentFactory.createPanel(padesButton);//, asicsButton, asiceButton);
 	}
 
 	@Override
@@ -140,8 +144,9 @@ public class SignatureView extends WizardView<SignatureModel, SignatureWizardCon
 		final SignaturePackaging packaging = model.getPackaging();
 		final SignatureForm format = model.getForm();
 		final FileType fileType = model.getFileType();
-
-		//		padesButton.setEnabled(FileType.PDF == fileType);
+		if (padesButton != null) {
+			padesButton.setEnabled(FileType.PDF == fileType);
+		}
 
 		formatValueHolder.setValue(format);
 		packagingValueHolder.setValue(packaging);
@@ -183,7 +188,9 @@ public class SignatureView extends WizardView<SignatureModel, SignatureWizardCon
 	@Override
 	public void wizardModelChange(final PropertyChangeEvent evt) {
 
-		if (SignatureModel.PROPERTY_FORMAT.equals(evt.getPropertyName())) {
+		final String propertyName = evt.getPropertyName();
+		System.out.println("*** " + propertyName);
+		if (SignatureModel.PROPERTY_FORMAT.equals(propertyName)) {
 
 			final SignatureForm form = getModel().getForm();
 
@@ -248,50 +255,52 @@ public class SignatureView extends WizardView<SignatureModel, SignatureWizardCon
 			final SignatureModel model = getModel();
 			final SignatureForm signatureFormat = model.getForm();
 			final List<Parameters.Level> levelList = controller.getParameter().getLevelList();
-			final List<String> elements = new ArrayList<String>();
-			if (SignatureForm.PAdES == signatureFormat) {
+			final List<Level> elements = new ArrayList<Level>();
+			elements.add(levelList.get(0));
 
-				if (levelList.contains(Level.B)) {
-					elements.add(PAdES_BASELINE_B.toString());
-				}
-				if (levelList.contains(Level.T)) {
-					elements.add(PAdES_BASELINE_T.toString());
-				}
-				if (levelList.contains(Level.LT)) {
-					elements.add(PAdES_BASELINE_LT.toString());
-				}
-				if (levelList.contains(Level.LTA)) {
-					elements.add(PAdES_BASELINE_LTA.toString());
-				}
-			} else if (SignatureForm.CAdES == signatureFormat) {
-
-				if (levelList.contains(Level.B)) {
-					elements.add(CAdES_BASELINE_B.toString());
-				}
-				if (levelList.contains(Level.T)) {
-					elements.add(CAdES_BASELINE_T.toString());
-				}
-				if (levelList.contains(Level.LT)) {
-					elements.add(SignatureLevel.CAdES_BASELINE_LT.toString());
-				}
-				if (levelList.contains(Level.LTA)) {
-					elements.add(SignatureLevel.CAdES_BASELINE_LTA.toString());
-				}
-			} else if (SignatureForm.XAdES == signatureFormat) {
-
-				if (levelList.contains(Level.B)) {
-					elements.add(XAdES_BASELINE_B.toString());
-				}
-				if (levelList.contains(Level.T)) {
-					elements.add(XAdES_BASELINE_T.toString());
-				}
-				if (levelList.contains(Level.LT)) {
-					elements.add(SignatureLevel.XAdES_BASELINE_LT.toString());
-				}
-				if (levelList.contains(Level.LTA)) {
-					elements.add(SignatureLevel.XAdES_BASELINE_LTA.toString());
-				}
-			}
+			//			if (SignatureForm.PAdES == signatureFormat) {
+			//
+			//				if (levelList.contains(Level.BASELINE_B)) {
+			//					elements.add(PAdES_BASELINE_B.toString());
+			//				}
+			//				if (levelList.contains(Level.BASELINE_T)) {
+			//					elements.add(PAdES_BASELINE_T.toString());
+			//				}
+			//				if (levelList.contains(Level.BASELINE_LT)) {
+			//					elements.add(PAdES_BASELINE_LT.toString());
+			//				}
+			//				if (levelList.contains(Level.BASELINE_LTA)) {
+			//					elements.add(PAdES_BASELINE_LTA.toString());
+			//				}
+			//			} else if (SignatureForm.CAdES == signatureFormat) {
+			//
+			//				if (levelList.contains(Level.BASELINE_B)) {
+			//					elements.add(CAdES_BASELINE_B.toString());
+			//				}
+			//				if (levelList.contains(Level.BASELINE_T)) {
+			//					elements.add(CAdES_BASELINE_T.toString());
+			//				}
+			//				if (levelList.contains(Level.BASELINE_LT)) {
+			//					elements.add(SignatureLevel.CAdES_BASELINE_LT.toString());
+			//				}
+			//				if (levelList.contains(Level.BASELINE_LTA)) {
+			//					elements.add(SignatureLevel.CAdES_BASELINE_LTA.toString());
+			//				}
+			//			} else if (SignatureForm.XAdES == signatureFormat) {
+			//
+			//				if (levelList.contains(Level.BASELINE_B)) {
+			//					elements.add(XAdES_BASELINE_B.toString());
+			//				}
+			//				if (levelList.contains(Level.BASELINE_T)) {
+			//					elements.add(XAdES_BASELINE_T.toString());
+			//				}
+			//				if (levelList.contains(Level.BASELINE_LT)) {
+			//					elements.add(SignatureLevel.XAdES_BASELINE_LT.toString());
+			//				}
+			//				if (levelList.contains(Level.BASELINE_LTA)) {
+			//					elements.add(SignatureLevel.XAdES_BASELINE_LTA.toString());
+			//				}
+			//			}
 			return elements;
 		}
 	}

@@ -27,6 +27,7 @@ import java.beans.PropertyChangeEvent;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStream;
+import java.util.List;
 
 import javax.swing.*;
 
@@ -38,12 +39,15 @@ import com.jgoodies.forms.layout.FormLayout;
 import eu.europa.esig.dss.DSSException;
 import eu.europa.esig.dss.DSSUtils;
 import eu.europa.esig.dss.DSSXMLUtils;
+import eu.europa.esig.dss.applet.main.Parameters;
 import eu.europa.esig.dss.applet.model.SignatureModel;
 import eu.europa.esig.dss.applet.swing.mvc.AppletCore;
 import eu.europa.esig.dss.applet.swing.mvc.wizard.WizardView;
 import eu.europa.esig.dss.applet.util.ComponentFactory;
 import eu.europa.esig.dss.applet.util.ResourceUtils;
 import eu.europa.esig.dss.applet.wizard.signature.SignatureWizardController;
+import eu.europa.esig.dss.signature.SignaturePackaging;
+import eu.europa.esig.dss.x509.SignatureForm;
 
 /**
  * TODO
@@ -162,12 +166,23 @@ public class FileView extends WizardView<SignatureModel, SignatureWizardControll
 				final File toSignFile = selectedFile.getAbsoluteFile();
 				if (!toSignFile.exists()) {
 
-					throw new DSSException(String.format("File '%' does not exist!", toSignFile.getAbsolutePath()));
+					throw new DSSException(String.format("File '%s' does not exist!", toSignFile.getAbsolutePath()));
 				}
 				setFileContent(toSignFile);
 				getModel().setSelectedFile(selectedFile);
-				getModel().setForm(null);
-				getModel().setPackaging(null);
+				final Parameters parameter = getController().getParameter();
+				final List<SignatureForm> formList = parameter.getFormList();
+				if (formList.size() == 1) {
+					getModel().setForm(formList.get(0));
+				} else {
+					getModel().setForm(null);
+				}
+				final List<SignaturePackaging> packagingList = parameter.getPackagingList();
+				if (packagingList.size() == 1) {
+					getModel().setPackaging(packagingList.get(0));
+				} else {
+					getModel().setPackaging(null);
+				}
 			}
 		}
 	}

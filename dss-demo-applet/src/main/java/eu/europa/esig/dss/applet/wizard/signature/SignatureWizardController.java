@@ -233,44 +233,44 @@ public class SignatureWizardController extends DSSWizardController<SignatureMode
 
 		if (SignatureForm.PAdES == form) {
 
-			if (level == Parameters.Level.B) {
+			if (level == Parameters.Level.BASELINE_B) {
 				return PAdES_BASELINE_B;
 			}
-			if (level == Parameters.Level.T) {
+			if (level == Parameters.Level.BASELINE_T) {
 				return PAdES_BASELINE_T;
 			}
-			if (level == Parameters.Level.LT) {
+			if (level == Parameters.Level.BASELINE_LT) {
 				return PAdES_BASELINE_LT;
 			}
-			if (level == Parameters.Level.LTA) {
+			if (level == Parameters.Level.BASELINE_LTA) {
 				return PAdES_BASELINE_LTA;
 			}
 		} else if (SignatureForm.CAdES == form) {
 
-			if (level == Parameters.Level.B) {
+			if (level == Parameters.Level.BASELINE_B) {
 				return CAdES_BASELINE_B;
 			}
-			if (level == Parameters.Level.T) {
+			if (level == Parameters.Level.BASELINE_T) {
 				return CAdES_BASELINE_T;
 			}
-			if (level == Parameters.Level.LT) {
+			if (level == Parameters.Level.BASELINE_LT) {
 				return SignatureLevel.CAdES_BASELINE_LT;
 			}
-			if (level == Parameters.Level.LTA) {
+			if (level == Parameters.Level.BASELINE_LTA) {
 				return SignatureLevel.CAdES_BASELINE_LTA;
 			}
 		} else if (SignatureForm.XAdES == form) {
 
-			if (level == Parameters.Level.B) {
+			if (level == Parameters.Level.BASELINE_B) {
 				return XAdES_BASELINE_B;
 			}
-			if (level == Parameters.Level.T) {
+			if (level == Parameters.Level.BASELINE_T) {
 				return XAdES_BASELINE_T;
 			}
-			if (level == Parameters.Level.LT) {
+			if (level == Parameters.Level.BASELINE_LT) {
 				return SignatureLevel.XAdES_BASELINE_LT;
 			}
-			if (level == Parameters.Level.LTA) {
+			if (level == Parameters.Level.BASELINE_LTA) {
 				return SignatureLevel.XAdES_BASELINE_LTA;
 			}
 		}

@@ -44,10 +44,10 @@ import eu.europa.esig.dss.x509.SignatureForm;
 import static eu.europa.esig.dss.applet.SignatureTokenType.MSCAPI;
 import static eu.europa.esig.dss.applet.SignatureTokenType.PKCS11;
 import static eu.europa.esig.dss.applet.SignatureTokenType.PKCS12;
-import static eu.europa.esig.dss.applet.main.Parameters.Level.B;
-import static eu.europa.esig.dss.applet.main.Parameters.Level.LT;
-import static eu.europa.esig.dss.applet.main.Parameters.Level.LTA;
-import static eu.europa.esig.dss.applet.main.Parameters.Level.T;
+import static eu.europa.esig.dss.applet.main.Parameters.Level.BASELINE_B;
+import static eu.europa.esig.dss.applet.main.Parameters.Level.BASELINE_LT;
+import static eu.europa.esig.dss.applet.main.Parameters.Level.BASELINE_LTA;
+import static eu.europa.esig.dss.applet.main.Parameters.Level.BASELINE_T;
 import static eu.europa.esig.dss.applet.model.ActivityAction.SIGN;
 import static eu.europa.esig.dss.applet.model.ActivityAction.VALIDATE;
 import static eu.europa.esig.dss.signature.SignaturePackaging.DETACHED;
@@ -94,10 +94,10 @@ public class Parameters {
 	 *
 	 */
 	private List<Level> levelList = new ArrayList<Level>() {{
-		add(B);
-		add(T);
-		add(LT);
-		add(LTA);
+		add(BASELINE_B);
+		add(BASELINE_T);
+		add(BASELINE_LT);
+		add(BASELINE_LTA);
 	}};
 	/**
 	 *
@@ -244,8 +244,8 @@ public class Parameters {
 
 			if (StringUtils.isNotEmpty(split)) {
 
-				final SignaturePackaging level = SignaturePackaging.valueOf(split);
-				packagingList.add(level);
+				final SignaturePackaging signaturePackaging = SignaturePackaging.valueOf(split);
+				packagingList.add(signaturePackaging);
 			}
 		}
 		if (!packagingList.isEmpty()) {
@@ -262,8 +262,8 @@ public class Parameters {
 
 			if (StringUtils.isNotEmpty(split)) {
 
-				final SignatureTokenType level = SignatureTokenType.valueOf(split);
-				tokenTypeList.add(level);
+				final SignatureTokenType signatureTokenType = SignatureTokenType.valueOf(split);
+				tokenTypeList.add(signatureTokenType);
 			}
 		}
 		if (!tokenTypeList.isEmpty()) {
@@ -496,6 +496,6 @@ public class Parameters {
 	}
 
 	public enum Level {
-		B, T, LT, LTA
+		BASELINE_B, BASELINE_T, BASELINE_LT, BASELINE_LTA
 	}
 }
