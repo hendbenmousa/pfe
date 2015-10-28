@@ -28,6 +28,7 @@ import eu.europa.esig.dss.applet.main.Parameters;
 import eu.europa.esig.dss.applet.model.ActivityModel;
 import eu.europa.esig.dss.applet.view.ActivityView;
 import eu.europa.esig.dss.applet.wizard.signature.SignatureWizardController;
+import eu.europa.esig.dss.applet.wizard.validation.ValidationWizardController;
 
 /**
  * TODO
@@ -74,8 +75,7 @@ public class ActivityController extends DSSAppletController<ActivityModel> {
 				getCore().getController(SignatureWizardController.class).start();
 				break;
 			case VALIDATE:
-				// TODO-Bob (26/10/2015):  Validation to be implemented
-				//				getCore().getController(ValidationPolicyWizardController.class).start();
+				getCore().getController(ValidationWizardController.class).start();
 				break;
 			default:
 				logger.error("Unknown action : " + getModel().getAction());
