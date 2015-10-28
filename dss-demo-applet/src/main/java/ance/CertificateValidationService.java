@@ -28,6 +28,7 @@ import java.util.Date;
 import java.util.List;
 
 import eu.europa.esig.dss.DSSUtils;
+import eu.europa.esig.dss.client.crl.OnlineCRLSource;
 import eu.europa.esig.dss.client.ocsp.OnlineOCSPSource;
 import eu.europa.esig.dss.validation.CertificateVerifier;
 import eu.europa.esig.dss.validation.CommonCertificateVerifier;
@@ -73,7 +74,7 @@ public class CertificateValidationService {
 	public CertificateValidationService() {
 
 		certificateVerifier = new CommonCertificateVerifier();
-		//		certificateVerifier.setCrlSource(new OnlineCRLSource());
+		certificateVerifier.setCrlSource(new OnlineCRLSource());
 		certificateVerifier.setOcspSource(new OnlineOCSPSource());
 	}
 
