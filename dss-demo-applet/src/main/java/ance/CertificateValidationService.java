@@ -23,6 +23,7 @@
 package ance;
 
 import java.io.File;
+import java.io.InputStream;
 import java.util.Date;
 import java.util.List;
 
@@ -57,11 +58,13 @@ public class CertificateValidationService {
 
 	static {
 
-		final File rootCertificateFile = new File("C:\\git\\ance-4.5.0\\dss-demo-applet\\src\\main\\resources\\tun-root.pem");
+		final InputStream rootCertificateFile = CertificateValidationService.class.getResourceAsStream("/tun-root.pem");
 		rootCertificateToken = DSSUtils.loadCertificate(rootCertificateFile);
+		System.out.println("OK");
 
-		final File rootCertificateFile2 = new File("C:\\git\\ecna-4.5.0\\dss-demo-applet\\src\\main\\resources\\TunServerCA2.crt");
+		final InputStream rootCertificateFile2 = CertificateValidationService.class.getResourceAsStream("/TunServerCA2.crt");
 		rootCertificateToken2 = DSSUtils.loadCertificate(rootCertificateFile2);
+		System.out.println("OK");
 	}
 
 	private final CertificateVerifier certificateVerifier;
