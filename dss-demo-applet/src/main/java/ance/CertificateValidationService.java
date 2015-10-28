@@ -149,7 +149,7 @@ public class CertificateValidationService {
 				final boolean nonRepudiation = keyUsageBits.contains(CertificateToken.NON_REPUDIATION);
 				keyUsage = digitalSignature || nonRepudiation;
 			}
-			valid = validOn && signatureValid && !revoked;
+			valid = validOn && signatureValid && revoked != null && !revoked;
 			if (!valid) {
 				break;
 			}
