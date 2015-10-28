@@ -219,45 +219,35 @@ public class SignatureView extends WizardView<SignatureModel, SignatureWizardCon
 	public void wizardModelChange(final PropertyChangeEvent evt) {
 
 		final String propertyName = evt.getPropertyName();
-		System.out.println("*** " + propertyName);
 		if (SignatureModel.PROPERTY_FORMAT.equals(propertyName)) {
 
 			final SignatureForm form = getModel().getForm();
-
 			if (CAdES.equals(form)) {
-				envelopingButton.setEnabled(true);
-				detachedButton.setEnabled(true);
+
+				JRadioButton selectedButton = enableJRadioButton(null, envelopingButton);
+				selectedButton = enableJRadioButton(selectedButton, detachedButton);
 				envelopedButton.setEnabled(false);
-				if (envelopedButton.isSelected()) {
-					envelopedButton.setSelected(false);
-				}
-				envelopingButton.doClick();
+				selectedButton.doClick();
 			}
 
 			if (PAdES.equals(form)) {
-				envelopingButton.setEnabled(false);
-				detachedButton.setEnabled(false);
-				envelopedButton.setEnabled(true);
-				if (envelopingButton.isSelected() || detachedButton.isSelected()) {
-					envelopingButton.setSelected(false);
-					detachedButton.setSelected(false);
+
+				if (envelopingButton != null) {
+					envelopingButton.setEnabled(false);
+				}
+				if (detachedButton != null) {
+					detachedButton.setEnabled(false);
+				}
+				if (envelopedButton != null) {
+					envelopedButton.setEnabled(true);
 				}
 				envelopedButton.doClick();
 			}
 
 			if (XAdES.equals(form)) {
 
-				JRadioButton selectedButton = null;
-				if (envelopingButton != null) {
-					envelopingButton.setEnabled(true);
-					selectedButton = envelopingButton;
-				}
-				if (detachedButton != null) {
-					detachedButton.setEnabled(true);
-					if (selectedButton == null) {
-						selectedButton = detachedButton;
-					}
-				}
+				JRadioButton selectedButton = enableJRadioButton(null, envelopingButton);
+				selectedButton = enableJRadioButton(selectedButton, detachedButton);
 				if (envelopedButton != null) {
 					envelopedButton.setEnabled(FileType.XML == getModel().getFileType());
 					if (selectedButton == null) {
@@ -271,6 +261,18 @@ public class SignatureView extends WizardView<SignatureModel, SignatureWizardCon
 				levelComboBox.setSelectedIndex(0);
 			}
 		}
+	}
+
+	private JRadioButton enableJRadioButton(final JRadioButton selectedButton, final JRadioButton jRadioButton) {
+
+		if (jRadioButton != null) {
+
+			jRadioButton.setEnabled(true);
+			if (selectedButton == null) {
+				return jRadioButton;
+			}
+		}
+		return selectedButton;
 	}
 
 	@Override
