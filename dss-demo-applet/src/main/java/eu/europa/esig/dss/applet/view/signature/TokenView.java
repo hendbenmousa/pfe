@@ -29,12 +29,17 @@ import com.jgoodies.binding.value.ValueModel;
 import com.jgoodies.forms.builder.PanelBuilder;
 import com.jgoodies.forms.layout.CellConstraints;
 import eu.europa.esig.dss.applet.SignatureTokenType;
+import eu.europa.esig.dss.applet.main.Parameters;
 import eu.europa.esig.dss.applet.model.SignatureModel;
 import eu.europa.esig.dss.applet.swing.mvc.AppletCore;
 import eu.europa.esig.dss.applet.swing.mvc.wizard.WizardView;
 import eu.europa.esig.dss.applet.util.ComponentFactory;
 import eu.europa.esig.dss.applet.util.ResourceUtils;
 import eu.europa.esig.dss.applet.wizard.signature.SignatureWizardController;
+
+import static eu.europa.esig.dss.applet.SignatureTokenType.MSCAPI;
+import static eu.europa.esig.dss.applet.SignatureTokenType.PKCS11;
+import static eu.europa.esig.dss.applet.SignatureTokenType.PKCS12;
 
 /**
  * TODO
@@ -66,9 +71,9 @@ public class TokenView extends WizardView<SignatureModel, SignatureWizardControl
 
 		final ValueModel tokenValue = presentationModel.getModel(SignatureModel.PROPERTY_TOKEN_TYPE);
 
-		pkcs11Button = ComponentFactory.createRadioButton(I18N_TOKEN_PKCS11, tokenValue, SignatureTokenType.PKCS11);
-		pkcs12Button = ComponentFactory.createRadioButton(I18N_TOKEN_PKCS12, tokenValue, SignatureTokenType.PKCS12);
-		msCapiButton = ComponentFactory.createRadioButton(I18N_TOKEN_MSCAPI, tokenValue, SignatureTokenType.MSCAPI);
+		pkcs11Button = ComponentFactory.createRadioButton(I18N_TOKEN_PKCS11, tokenValue, PKCS11);
+		pkcs12Button = ComponentFactory.createRadioButton(I18N_TOKEN_PKCS12, tokenValue, PKCS12);
+		msCapiButton = ComponentFactory.createRadioButton(I18N_TOKEN_MSCAPI, tokenValue, MSCAPI);
 	}
 
 	@Override
@@ -81,9 +86,17 @@ public class TokenView extends WizardView<SignatureModel, SignatureWizardControl
 		final CellConstraints cc = new CellConstraints();
 
 		builder.addSeparator(ResourceUtils.getI18n("TOKEN_API"), cc.xyw(2, 2, 3));
-		builder.add(pkcs11Button, cc.xy(2, 4));
-		builder.add(pkcs12Button, cc.xy(2, 6));
-		builder.add(msCapiButton, cc.xy(2, 8));
+		final Parameters parameter = getController().getParameter();
+		final java.util.List<SignatureTokenType> tokenTypeList = parameter.getTokenTypeList();
+		if (tokenTypeList.contains(PKCS11)) {
+			builder.add(pkcs11Button, cc.xy(2, 4));
+		}
+		if (tokenTypeList.contains(PKCS12)) {
+			builder.add(pkcs12Button, cc.xy(2, 6));
+		}
+		if (tokenTypeList.contains(MSCAPI)) {
+			builder.add(msCapiButton, cc.xy(2, 8));
+		}
 		//        if (new MOCCAAdapter().isMOCCAAvailable()) {
 		//            builder.add(moccaButton, cc.xy(2, 10));
 		//        }

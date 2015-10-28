@@ -60,7 +60,7 @@ public class ActivityController extends DSSAppletController<ActivityModel> {
 
 		view.show();
 		final Parameters parameter = getParameter();
-		if (parameter.getTokenTypeList().size() == 1) {
+		if (parameter.getUsageList().size() == 1) {
 			view.click();
 		}
 	}

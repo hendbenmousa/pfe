@@ -42,7 +42,6 @@ import eu.europa.esig.dss.applet.wizard.validation.ValidationWizardController;
  */
 public class ValidationView extends WizardView<ValidationModel, ValidationWizardController> {
 
-	private static final boolean DISPLAY_LEGACY_VALIDATION = false;
 	private static final String I18N_NO_FILE_SELECTED = ResourceUtils.getI18n("NO_FILE_SELECTED");
 	private static final String I18N_BROWSE_SIGNED = ResourceUtils.getI18n("BROWSE_SIGNED");
 	private static final String I18N_BROWSE_ORIGINAL = ResourceUtils.getI18n("BROWSE_ORIGINAL");
@@ -98,7 +97,7 @@ public class ValidationView extends WizardView<ValidationModel, ValidationWizard
 		builder.addSeparator(I18N_ORIGINAL_FILE, cc.xyw(2, row = row + 2, 6));
 		builder.add(selectFileB, cc.xy(2, row = row + 2));
 		builder.add(fileB, cc.xyw(4, row, 4));
-		builder.add(clear, cc.xy(2, row = row + 2));
+		builder.add(clear, cc.xy(2, row + 2));
 
 		return ComponentFactory.createPanel(builder);
 	}
@@ -135,6 +134,7 @@ public class ValidationView extends WizardView<ValidationModel, ValidationWizard
 
 		@Override
 		public void actionPerformed(final ActionEvent e) {
+
 			final ValidationModel model = getModel();
 			model.setOriginalFile(null);
 			model.setSignedFile(null);
@@ -151,7 +151,6 @@ public class ValidationView extends WizardView<ValidationModel, ValidationWizard
 
 			final JFileChooser chooser = new JFileChooser(getModel().getSignedFile());
 			final int result = chooser.showOpenDialog(getCore());
-
 			if (result == JFileChooser.APPROVE_OPTION) {
 				getModel().setSignedFile(chooser.getSelectedFile());
 			}
@@ -165,9 +164,9 @@ public class ValidationView extends WizardView<ValidationModel, ValidationWizard
 
 		@Override
 		public void actionPerformed(final ActionEvent e) {
+
 			final JFileChooser chooser = new JFileChooser();
 			final int result = chooser.showOpenDialog(getCore());
-
 			if (result == JFileChooser.APPROVE_OPTION) {
 				getModel().setOriginalFile(chooser.getSelectedFile());
 			}

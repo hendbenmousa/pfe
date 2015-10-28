@@ -41,17 +41,13 @@ public class ValidationModel extends Model {
 	 *
 	 */
 	public static final String CHANGE_PROPERTY_ORIGINAL_FILE = "originalFile";
-	public static final String CHANGE_PROPERTY_VALIDATION_LEGACY_CHOSEN = "validationLegacyChosen";
 	public static final String CHANGE_PROPERTY_DEFAULT_POLICY = "defaultPolicy";
-	public static final String CHANGE_PROPERTY_SELECTED_POLICY_FILE = "selectedPolicyFile";
 	public static final String CHANGE_PROPERTY_DIAGNOSTIC_DATA_ = "diagnosticData";
 	public static final String CHANGE_PROPERTY_DETAILED_REPORT = "detailedReport";
 	public static final String CHANGE_PROPERTY_SIMPLE_REPORT_ = "simpleReport";
 	private File signedFile;
 	private File originalFile;
-	private boolean validationLegacyChosen = false;
 	private boolean defaultPolicy = true;
-	private File selectedPolicyFile;
 	private XmlDom diagnosticData;
 	private XmlDom detailedReport;
 	private XmlDom simpleReport;
@@ -100,40 +96,16 @@ public class ValidationModel extends Model {
 		return ReflectionToStringBuilder.reflectionToString(this);
 	}
 
-	public boolean isValidationLegacyChosen() {
-		return validationLegacyChosen;
-	}
-
-	/**
-	 * @param validationLegacyChosen the validationLegacyChosen to set
-	 */
-	public void setValidationLegacyChosen(final boolean validationLegacyChosen) {
-		final boolean oldValue = this.validationLegacyChosen;
-		final boolean newValue = validationLegacyChosen;
-		this.validationLegacyChosen = newValue;
-		firePropertyChange(CHANGE_PROPERTY_VALIDATION_LEGACY_CHOSEN, oldValue, newValue);
-	}
-
 	public boolean isDefaultPolicy() {
 		return defaultPolicy;
 	}
 
 	public void setDefaultPolicy(boolean defaultPolicy) {
+
 		final boolean oldValue = this.defaultPolicy;
 		final boolean newValue = defaultPolicy;
 		this.defaultPolicy = newValue;
 		firePropertyChange(CHANGE_PROPERTY_DEFAULT_POLICY, oldValue, newValue);
-	}
-
-	public File getSelectedPolicyFile() {
-		return selectedPolicyFile;
-	}
-
-	public void setSelectedPolicyFile(File selectedPolicyFile) {
-		final File oldValue = this.selectedPolicyFile;
-		final File newValue = selectedPolicyFile;
-		this.selectedPolicyFile = newValue;
-		firePropertyChange(CHANGE_PROPERTY_SELECTED_POLICY_FILE, oldValue, newValue);
 	}
 
 	public XmlDom getDetailedReport() {

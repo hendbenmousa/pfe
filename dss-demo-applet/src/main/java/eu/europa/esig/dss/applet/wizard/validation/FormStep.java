@@ -31,6 +31,7 @@ import eu.europa.esig.dss.applet.swing.mvc.wizard.WizardView;
  * TODO
  */
 public class FormStep extends WizardStep<ValidationModel, ValidationWizardController> {
+
 	/**
 	 * The default constructor for FormStep.
 	 *
@@ -71,23 +72,12 @@ public class FormStep extends WizardStep<ValidationModel, ValidationWizardContro
 
 		final File signedFile = getModel().getSignedFile();
 		final File originalFile = getModel().getOriginalFile();
-		final boolean validationLegacyChosen = getModel().isValidationLegacyChosen();
-		final boolean defaultPolicy = getModel().isDefaultPolicy();
-		final File selectedPolicyFile = getModel().getSelectedPolicyFile();
-
 
 		boolean valid = signedFile != null && signedFile.exists() && signedFile.isFile();
 
 		if (originalFile != null) {
 			valid &= originalFile.exists() && originalFile.isFile();
 		}
-
-		if (!validationLegacyChosen) {
-			if (!defaultPolicy) {
-				valid &= selectedPolicyFile != null && selectedPolicyFile.exists() && selectedPolicyFile.isFile();
-			}
-		}
-
 		return valid;
 	}
 }

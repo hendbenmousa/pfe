@@ -67,6 +67,7 @@ public class ValidationWizardController extends DSSWizardController<ValidationMo
 
 	@Override
 	protected void doCancel() {
+
 		getCore().getController(ActivityController.class).display();
 	}
 
