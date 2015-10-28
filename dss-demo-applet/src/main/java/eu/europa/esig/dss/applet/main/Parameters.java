@@ -156,7 +156,7 @@ public class Parameters {
 		try {
 
 			File file = new File(setupPath);
-			if (file.exists() && file.isFile()) {
+			if (!(file.exists() && file.isFile())) {
 				LOG.warn("Applet configuration does not exist: " + setupPath);
 				return;
 			}
@@ -183,7 +183,7 @@ public class Parameters {
 	private void initUsage(final Properties properties) {
 
 		final String usage = properties.getProperty(USAGE);
-		final String[] splitArray = usage.split("|");
+		final String[] splitArray = usage.split("\\|");
 		final List appletUsageList = new ArrayList();
 		for (final String split : splitArray) {
 
@@ -201,7 +201,7 @@ public class Parameters {
 	private void initForm(final Properties properties) {
 
 		final String form = properties.getProperty(FORM);
-		final String[] splitArray = form.split("|");
+		final String[] splitArray = form.split("\\|");
 		final List formList = new ArrayList();
 		for (final String split : splitArray) {
 
@@ -219,7 +219,7 @@ public class Parameters {
 	private void initLevel(final Properties properties) {
 
 		final String form = properties.getProperty(LEVEL);
-		final String[] splitArray = form.split("|");
+		final String[] splitArray = form.split("\\|");
 		final List levelList = new ArrayList();
 		for (final String split : splitArray) {
 
@@ -237,13 +237,13 @@ public class Parameters {
 	private void initPackaging(final Properties properties) {
 
 		final String packaging = properties.getProperty(PACKAGING);
-		final String[] splitArray = packaging.split("|");
+		final String[] splitArray = packaging.split("\\|");
 		final List packagingList = new ArrayList();
 		for (final String split : splitArray) {
 
 			if (StringUtils.isNotEmpty(split)) {
 
-				final Level level = Level.valueOf(split);
+				final SignaturePackaging level = SignaturePackaging.valueOf(split);
 				packagingList.add(level);
 			}
 		}
@@ -255,13 +255,13 @@ public class Parameters {
 	private void initTokenType(final Properties properties) {
 
 		final String token = properties.getProperty(TOKEN);
-		final String[] splitArray = token.split("|");
+		final String[] splitArray = token.split("\\|");
 		final List tokenTypeList = new ArrayList();
 		for (final String split : splitArray) {
 
 			if (StringUtils.isNotEmpty(split)) {
 
-				final Level level = Level.valueOf(split);
+				final SignatureTokenType level = SignatureTokenType.valueOf(split);
 				tokenTypeList.add(level);
 			}
 		}
@@ -285,6 +285,9 @@ public class Parameters {
 	private void initPkcs11File(final Properties properties) {
 
 		final String token = properties.getProperty(PKCS11_FILE);
+		if(StringUtils.isBlank(token)) {
+			return;
+		}
 		final File file = new File(token);
 		if (file.exists() && file.isFile()) {
 			setPkcs11File(file);
@@ -294,6 +297,9 @@ public class Parameters {
 	private void initPkcs12File(final Properties properties) {
 
 		final String token = properties.getProperty(PKCS12_FILE);
+		if(StringUtils.isBlank(token)) {
+			return;
+		}
 		final File file = new File(token);
 		if (file.exists() && file.isFile()) {
 			setPkcs12File(file);
@@ -303,6 +309,9 @@ public class Parameters {
 	private void initValidationPolicy(final Properties properties) {
 
 		final String token = properties.getProperty(VALIDATION_POLICY);
+		if(StringUtils.isBlank(token)) {
+			return;
+		}
 		final File file = new File(token);
 		if (file.exists() && file.isFile()) {
 			setValidationPolicy(file.getAbsolutePath());

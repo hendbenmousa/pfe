@@ -48,6 +48,7 @@ public class DSSAppletCore extends AppletCore {
 
 	@Override
 	protected void registerControllers() {
+
 		getControllers().put(ActivityController.class, new ActivityController(this, new ActivityModel()));
 		getControllers().put(SignatureWizardController.class, new SignatureWizardController(this, new SignatureModel()));
 	}
