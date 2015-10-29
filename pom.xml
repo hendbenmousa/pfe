@@ -21,6 +21,7 @@
 		<module>validation-policy</module>
 		<module>dss-cades</module>
 		<module>dss-xades</module>
+		<module>dss-pades</module>
 	</modules>
 
 	<properties>
@@ -141,6 +142,11 @@
 			<dependency>
 				<groupId>eu.europa.ec.joinup.sd-dss</groupId>
 				<artifactId>dss-xades</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>eu.europa.ec.joinup.sd-dss</groupId>
+				<artifactId>dss-pades</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 			<dependency>
