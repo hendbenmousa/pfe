@@ -402,6 +402,17 @@ public final class ComponentFactory extends BasicComponentFactory {
 	}
 
 	/**
+	 * @param label
+	 * @param enabled
+	 * @param actionListener
+	 * @return
+	 */
+	public static JButton createOpenButton(final String label, final boolean enabled, final ActionListener actionListener) {
+
+		return ComponentFactory.createButton(label, enabled, actionListener, ICON_FILE);
+	}
+
+	/**
 	 * @param component
 	 * @return
 	 */

@@ -136,7 +136,7 @@ public class ReportView extends WizardView<ValidationModel, ValidationWizardCont
 		builder.addSeparator("Simple Validation Report XML", cc.xyw(2, 2, 1));
 		final JScrollPane scrollPane = ComponentFactory.createScrollPane(simpleReportText);
 		builder.add(scrollPane, cc.xyw(2, 4, 1));
-		builder.add(ComponentFactory.createSaveButton("Open Validation report", true, new ActionListener() {
+		builder.add(ComponentFactory.createOpenButton("Open Validation report", true, new ActionListener() {
 
 			@Override
 			public void actionPerformed(ActionEvent event) {

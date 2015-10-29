@@ -55,18 +55,11 @@ public class CertificateValidationService {
 
 	public static CertificateToken rootCertificateToken;
 	public static CertificateToken rootCertificateToken2;
-	public static final CommonTrustedCertificateSource trustedCertificateSource = getCommonTrustedCertificateSource();
 
-	static {
-
-		final InputStream rootCertificateFile = CertificateValidationService.class.getResourceAsStream("/tun-root.pem");
-		rootCertificateToken = DSSUtils.loadCertificate(rootCertificateFile);
-
-		final InputStream rootCertificateFile2 = CertificateValidationService.class.getResourceAsStream("/TunServerCA2.crt");
-		rootCertificateToken2 = DSSUtils.loadCertificate(rootCertificateFile2);
-	}
+	public final static CommonTrustedCertificateSource trustedCertificateSource = getCommonTrustedCertificateSource();
 
 	private final CertificateVerifier certificateVerifier;
+
 	private Date currentValidationTime;
 
 	public CertificateValidationService() {
@@ -102,6 +95,12 @@ public class CertificateValidationService {
 	//	}
 
 	private static CommonTrustedCertificateSource getCommonTrustedCertificateSource() {
+
+		final InputStream rootCertificateFile = CertificateValidationService.class.getResourceAsStream("/tun-root.pem");
+		rootCertificateToken = DSSUtils.loadCertificate(rootCertificateFile);
+
+		final InputStream rootCertificateFile2 = CertificateValidationService.class.getResourceAsStream("/TunServerCA2.crt");
+		rootCertificateToken2 = DSSUtils.loadCertificate(rootCertificateFile2);
 
 		final CommonTrustedCertificateSource trustedCertificateSource = new CommonTrustedCertificateSource();
 
