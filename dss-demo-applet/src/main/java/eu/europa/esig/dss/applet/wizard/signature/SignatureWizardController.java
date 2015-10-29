@@ -34,7 +34,6 @@ import ance.CertificateValidationService;
 import eu.europa.esig.dss.AbstractSignatureParameters;
 import eu.europa.esig.dss.DSSDocument;
 import eu.europa.esig.dss.DSSException;
-import eu.europa.esig.dss.DigestAlgorithm;
 import eu.europa.esig.dss.SignatureLevel;
 import eu.europa.esig.dss.TimestampParameters;
 import eu.europa.esig.dss.applet.controller.ActivityController;
@@ -223,7 +222,7 @@ public class SignatureWizardController extends DSSWizardController<SignatureMode
 		}
 		signatureParameters.setSigningCertificate(privateKey.getCertificate());
 		signatureParameters.setCertificateChain(privateKey.getCertificateChain());
-		signatureParameters.setDigestAlgorithm(DigestAlgorithm.SHA256);
+		signatureParameters.setDigestAlgorithm(getParameter().getSignatureHashAlgorithm());
 
 		final SignatureForm form = model.getForm();
 		final Level level = model.getLevel();
@@ -233,7 +232,7 @@ public class SignatureWizardController extends DSSWizardController<SignatureMode
 		signatureParameters.setSignaturePackaging(model.getPackaging());
 
 		final TimestampParameters signatureTimestampParameters = new TimestampParameters();
-		signatureTimestampParameters.setDigestAlgorithm(DigestAlgorithm.SHA1);
+		signatureTimestampParameters.setDigestAlgorithm(getParameter().getTimestampHashAlgorithm());
 		signatureParameters.setSignatureTimestampParameters(signatureTimestampParameters);
 
 		final DSSDocument signedDocument = SigningUtils.signDocument(fileToSign, signatureParameters, privateKey, tokenConnection, model);
