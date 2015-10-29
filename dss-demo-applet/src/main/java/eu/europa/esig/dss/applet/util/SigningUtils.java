@@ -33,16 +33,16 @@ import eu.europa.esig.dss.DigestAlgorithm;
 import eu.europa.esig.dss.FileDocument;
 import eu.europa.esig.dss.SignatureValue;
 import eu.europa.esig.dss.ToBeSigned;
-import eu.europa.esig.dss.applet.PinInputDialog;
+import eu.europa.esig.dss.applet.SignatureTokenType;
 import eu.europa.esig.dss.applet.model.SignatureModel;
 import eu.europa.esig.dss.cades.signature.CAdESService;
+import eu.europa.esig.dss.client.http.DataLoader;
 import eu.europa.esig.dss.client.tsp.OnlineTSPSource;
 import eu.europa.esig.dss.pades.signature.PAdESService;
 import eu.europa.esig.dss.signature.AbstractSignatureService;
 import eu.europa.esig.dss.token.DSSPrivateKeyEntry;
 import eu.europa.esig.dss.token.SignatureTokenConnection;
 import eu.europa.esig.dss.validation.CommonCertificateVerifier;
-import eu.europa.esig.dss.xades.XAdESSignatureParameters;
 import eu.europa.esig.dss.xades.signature.XAdESService;
 
 /**
@@ -53,10 +53,6 @@ public final class SigningUtils {
 	private static final Logger logger = LoggerFactory.getLogger(SigningUtils.class);
 
 	private static OnlineTSPSource onlineTSPSource;
-
-	private static AnceDataLoader dataLoader;
-
-	private static PinInputDialog pinInputDialog;
 
 	private SigningUtils() {
 	}
@@ -82,6 +78,22 @@ public final class SigningUtils {
 			}
 			//			pinInputDialog = new PinInputDialog(null);
 			//			dataLoader.setPinInputDialog(pinInputDialog);
+			final DataLoader dataLoader = onlineTSPSource.getDataLoader();
+			if (dataLoader instanceof AnceDataLoader) {
+
+				final AnceDataLoader anceDataLoader = (AnceDataLoader) dataLoader;
+				final SignatureTokenType tokenType = model.getTokenType();
+				if (tokenType == SignatureTokenType.MSCAPI) {
+
+					anceDataLoader.setMscapi();
+				} else if (tokenType == SignatureTokenType.PKCS11) {
+
+					anceDataLoader.setPkcs11(model.getPkcs11File(), model.getPkcs11Password());
+				} else if (tokenType == SignatureTokenType.PKCS12) {
+
+					anceDataLoader.setPkcs12(model.getPkcs12File(), model.getPkcs12Password());
+				}
+			}
 			signatureService.setTspSource(onlineTSPSource);
 
 			final ToBeSigned toBeSigned = signatureService.getDataToSign(toSignDocument, parameters);

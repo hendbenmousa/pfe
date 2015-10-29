@@ -20,6 +20,8 @@
  */
 package eu.europa.esig.dss.token;
 
+import java.security.KeyStore;
+import java.security.KeyStoreException;
 import java.security.Signature;
 
 import org.slf4j.Logger;
@@ -75,4 +77,6 @@ public abstract class AbstractSignatureTokenConnection implements SignatureToken
 
 	}
 
+	@SuppressWarnings("restriction")
+	public abstract KeyStore getKeyStore() throws KeyStoreException;
 }

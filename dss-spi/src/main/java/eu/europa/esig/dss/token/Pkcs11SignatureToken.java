@@ -166,6 +166,7 @@ public class Pkcs11SignatureToken extends AbstractSignatureTokenConnection {
 		smartCardNameIndex++;
 	}
 
+	@Override
 	@SuppressWarnings("restriction")
 	public KeyStore getKeyStore() throws KeyStoreException {
 

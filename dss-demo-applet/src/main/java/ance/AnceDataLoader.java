@@ -1,6 +1,7 @@
 package ance;
 
 import java.io.ByteArrayInputStream;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.security.KeyStore;
@@ -26,8 +27,12 @@ import org.slf4j.LoggerFactory;
 import eu.europa.esig.dss.DSSException;
 import eu.europa.esig.dss.DSSUtils;
 import eu.europa.esig.dss.applet.PinInputDialog;
+import eu.europa.esig.dss.applet.SignatureTokenType;
 import eu.europa.esig.dss.client.http.DataLoader;
+import eu.europa.esig.dss.token.AbstractSignatureTokenConnection;
 import eu.europa.esig.dss.token.MSCAPISignatureToken;
+import eu.europa.esig.dss.token.Pkcs11SignatureToken;
+import eu.europa.esig.dss.token.Pkcs12SignatureToken;
 
 /**
  * TODO
@@ -40,6 +45,10 @@ public class AnceDataLoader implements DataLoader {
 	static protected PinInputDialog pinInputDialog;
 	public static final String CONTENT_TYPE = "Content-Type";
 	protected String contentType;
+
+	private SignatureTokenType tokenType = null;
+	private File pkcsFile;
+	private String pkcsPassword;
 
 	public void setPinInputDialog(final PinInputDialog pinInputDialog) {
 		this.pinInputDialog = pinInputDialog;
@@ -65,10 +74,20 @@ public class AnceDataLoader implements DataLoader {
 
 		try {
 
+			AbstractSignatureTokenConnection token = null;
+			switch (tokenType) {
+				case MSCAPI:
+					token = new MSCAPISignatureToken(null);
+					break;
+				case PKCS11:
+					token = new Pkcs11SignatureToken(pkcsFile.getAbsolutePath(), pinInputDialog);
+					break;
+				case PKCS12:
+					token = new Pkcs12SignatureToken(pkcsPassword, pkcsFile);
+					break;
+			}
 			//			Pkcs11SignatureToken pkcs11 = new Pkcs11SignatureToken("C:\\Temp\\gem\\BIN\\gclib.dll", "435707".toCharArray());
-			//			Pkcs11SignatureToken pkcs11 = new Pkcs11SignatureToken("C:\\Temp\\gem\\BIN\\gclib.dll", pinInputDialog);
-			final MSCAPISignatureToken mscapi = new MSCAPISignatureToken(null);
-			final KeyStore clientKeyStore = mscapi.getKeyStore();
+			final KeyStore clientKeyStore = token.getKeyStore();
 			//			final KeyStore clientKeyStore = pkcs11.getKeyStore();
 
 			final KeyStore trustKeyStore = KeyStore.getInstance("Windows-ROOT");
@@ -148,5 +167,24 @@ public class AnceDataLoader implements DataLoader {
 	public void setContentType(String contentType) {
 
 		this.contentType = contentType;
+	}
+
+	public void setMscapi() {
+
+		tokenType = SignatureTokenType.MSCAPI;
+	}
+
+	public void setPkcs11(final File pkcs11File, final String pkcs11Password) {
+
+		tokenType = SignatureTokenType.PKCS11;
+		pkcsFile = pkcs11File;
+		pkcsPassword = pkcs11Password;
+	}
+
+	public void setPkcs12(final File pkcs12File, final String pkcs12Password) {
+
+		tokenType = SignatureTokenType.PKCS12;
+		pkcsFile = pkcs12File;
+		pkcsPassword = pkcs12Password;
 	}
 }

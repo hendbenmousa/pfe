@@ -60,18 +60,17 @@ public class FinishStep extends WizardStep<SignatureModel, SignatureWizardContro
 		try {
 			getController().signDocument();
 		} catch (final IOException e) {
-			throw new ControllerException(e);
+			throw new DSSException(e);
 		} catch (final NoSuchAlgorithmException e) {
-			throw new ControllerException(e);
+			throw new DSSException(e);
 		} catch (DSSException e) {
 			if (e.getCause() != null && (e.getCause() instanceof SignatureException && getModel().getTokenType() == SignatureTokenType.MSCAPI) || (e
 				  .getCause() instanceof javax.crypto.BadPaddingException && getModel().getTokenType() == SignatureTokenType.PKCS11)) {
 				// probably because the digest algorithm is not supported by the card
-				throw new ControllerException(
-					  String.format("Error when signing. The chosen digest algorithm (%s) might not be supported by your signing device.", getModel().getSignatureDigestAlgorithm()),
-					  e);
+				throw new ControllerException(String.format("Error when signing. The chosen digest algorithm (%s) might not be supported by your signing device.",
+					  getModel().getSignatureDigestAlgorithm()), e);
 			}
-			throw new ControllerException(e);
+			throw e;
 		}
 
 	}

@@ -175,4 +175,7 @@ public class OnlineTSPSource implements TSPSource {
 		}
 	}
 
+	public DataLoader getDataLoader() {
+		return dataLoader;
+	}
 }

@@ -24,6 +24,7 @@ import java.io.InputStream;
 import java.security.KeyStore;
 import java.security.KeyStore.PasswordProtection;
 import java.security.KeyStore.PrivateKeyEntry;
+import java.security.KeyStoreException;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.List;
@@ -94,5 +95,10 @@ public class JKSSignatureToken extends AbstractSignatureTokenConnection {
 			throw new DSSException(e);
 		}
 		return list;
+	}
+
+	@Override
+	public KeyStore getKeyStore() throws KeyStoreException {
+		return null;
 	}
 }
