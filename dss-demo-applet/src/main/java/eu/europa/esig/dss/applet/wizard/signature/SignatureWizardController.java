@@ -55,11 +55,11 @@ import eu.europa.esig.dss.applet.view.signature.SignatureDigestAlgorithmView;
 import eu.europa.esig.dss.applet.view.signature.SignatureView;
 import eu.europa.esig.dss.applet.view.signature.TokenView;
 import eu.europa.esig.dss.cades.CAdESSignatureParameters;
+import eu.europa.esig.dss.pades.PAdESSignatureParameters;
 import eu.europa.esig.dss.token.DSSPrivateKeyEntry;
 import eu.europa.esig.dss.token.SignatureTokenConnection;
 import eu.europa.esig.dss.x509.SignatureForm;
 import eu.europa.esig.dss.xades.XAdESSignatureParameters;
-
 import static eu.europa.esig.dss.SignatureLevel.CAdES_BASELINE_B;
 import static eu.europa.esig.dss.SignatureLevel.CAdES_BASELINE_LT;
 import static eu.europa.esig.dss.SignatureLevel.CAdES_BASELINE_LTA;
@@ -218,6 +218,9 @@ public class SignatureWizardController extends DSSWizardController<SignatureMode
 				break;
 			case CAdES:
 				signatureParameters = new CAdESSignatureParameters();
+				break;
+			case PAdES:
+				signatureParameters = new PAdESSignatureParameters();
 				break;
 		}
 		signatureParameters.setSigningCertificate(privateKey.getCertificate());
