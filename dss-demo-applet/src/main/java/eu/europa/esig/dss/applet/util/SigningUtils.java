@@ -37,6 +37,7 @@ import eu.europa.esig.dss.applet.PinInputDialog;
 import eu.europa.esig.dss.applet.model.SignatureModel;
 import eu.europa.esig.dss.cades.signature.CAdESService;
 import eu.europa.esig.dss.client.tsp.OnlineTSPSource;
+import eu.europa.esig.dss.pades.signature.PAdESService;
 import eu.europa.esig.dss.signature.AbstractSignatureService;
 import eu.europa.esig.dss.token.DSSPrivateKeyEntry;
 import eu.europa.esig.dss.token.SignatureTokenConnection;
@@ -74,6 +75,9 @@ public final class SigningUtils {
 					break;
 				case CAdES:
 					signatureService = new CAdESService(new CommonCertificateVerifier());
+					break;
+				case PAdES:
+					signatureService = new PAdESService(new CommonCertificateVerifier());
 					break;
 			}
 			//			pinInputDialog = new PinInputDialog(null);
