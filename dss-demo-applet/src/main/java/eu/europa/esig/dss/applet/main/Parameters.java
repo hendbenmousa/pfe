@@ -164,7 +164,7 @@ public class Parameters {
 	/**
 	 *
 	 */
-	private String validationOutPath;
+	private String validationOutPath = System.getProperty("java.io.tmpdir") + "/ance-rapport.html";
 
 	/**
 	 * The default constructor for Parameters.
