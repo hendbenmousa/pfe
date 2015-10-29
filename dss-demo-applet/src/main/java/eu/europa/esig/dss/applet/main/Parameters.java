@@ -79,7 +79,7 @@ public class Parameters {
 	public static final String TIMESTAMP_HASH = "TIMESTAMP_HASH";
 
 	public static final String TIMESTAMP_SERVER_URL = "TIMESTAMP_SERVER_URL";
-	public static final String VALIDATION_POLICY = "VALIDATION_POLICY";
+	public static final String VALIDATION_POLICY = "VALIDATION_POLICY_PATH";
 
 	/**
 	 *
@@ -151,7 +151,7 @@ public class Parameters {
 	/**
 	 *
 	 */
-	private String validationPolicy;
+	private String validationPolicyPath;
 	/**
 	 *
 	 */
@@ -340,7 +340,7 @@ public class Parameters {
 		}
 		final File file = new File(token);
 		if (file.exists() && file.isFile()) {
-			setValidationPolicy(file.getAbsolutePath());
+			setValidationPolicyPath(file.getAbsolutePath());
 		}
 	}
 
@@ -525,21 +525,21 @@ public class Parameters {
 	/**
 	 * @return the validation policy. Can be null.
 	 */
-	public String getValidationPolicy() {
+	public String getValidationPolicyPath() {
 
-		if (validationPolicy == null) {
+		if (validationPolicyPath == null) {
 			return ValidationResourceManager.defaultPolicyConstraintsLocation;
 		}
-		return validationPolicy;
+		return validationPolicyPath;
 	}
 
 	/**
 	 * Set the default policy file for validation. Can be null.
 	 *
-	 * @param validationPolicy
+	 * @param validationPolicyPath
 	 */
-	public void setValidationPolicy(String validationPolicy) {
-		this.validationPolicy = validationPolicy;
+	public void setValidationPolicyPath(String validationPolicyPath) {
+		this.validationPolicyPath = validationPolicyPath;
 	}
 
 

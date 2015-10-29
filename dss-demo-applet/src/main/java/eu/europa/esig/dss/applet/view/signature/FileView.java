@@ -74,26 +74,16 @@ public class FileView extends WizardView<SignatureModel, SignatureWizardControll
 		super(core, controller, model);
 		fileSourceLabel = ComponentFactory.createLabel(I18N_NO_FILE_SELECTED);
 		selectFileSource = ComponentFactory.createFileChooser(I18N_BROWSE_SIGNED, true, new SelectFileAEventListener());
-		textDocument = new JTextArea(5,200);
+		textDocument = new JTextArea(5, 200);
 		textDocument.setEditable(false);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 *
-	 * @see eu.europa.esig.dss.applet.view.DSSAppletView#doInit()
-	 */
 	@Override
 	public void doInit() {
 		final File selectedFile = getModel().getSelectedFile();
 		fileSourceLabel.setText(selectedFile != null ? selectedFile.getName() : I18N_NO_FILE_SELECTED);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 *
-	 * @see eu.europa.esig.dss.applet.view.DSSAppletView#doLayout()
-	 */
 	@Override
 	protected Container doLayout() {
 
@@ -107,17 +97,11 @@ public class FileView extends WizardView<SignatureModel, SignatureWizardControll
 		return ComponentFactory.createPanel(builder);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 *
-	 * @see
-	 * eu.europa.esig.dss.applet.swing.mvc.wizard.WizardView#wizardModelChange(java.beans.PropertyChangeEvent
-	 * )
-	 */
 	@Override
 	public void wizardModelChange(final PropertyChangeEvent evt) {
 
 		if (evt.getPropertyName().equals(SignatureModel.PROPERTY_SELECTED_FILE)) {
+
 			final File selectedFile = getModel().getSelectedFile();
 			final String text = selectedFile == null ? I18N_NO_FILE_SELECTED : selectedFile.getName();
 			fileSourceLabel.setText(text);
@@ -130,8 +114,15 @@ public class FileView extends WizardView<SignatureModel, SignatureWizardControll
 		try {
 
 			inputStream = new FileInputStream(toSignFile);
-			if (toSignFile.getAbsolutePath().toLowerCase().endsWith(".xml")) {
+			final String lowerCase = toSignFile.getAbsolutePath().toLowerCase();
+			if (lowerCase.endsWith(".xml")) {
+
 				DSSXMLUtils.buildDOM(inputStream);
+			} else if (lowerCase.endsWith(".pdf")) {
+
+				textDocument.setText("File opened with an external reader.");
+				Desktop.getDesktop().open(toSignFile);
+				return;
 			}
 			inputStream = new FileInputStream(toSignFile);
 			final byte[] bytes = DSSUtils.toByteArray(inputStream);

@@ -27,6 +27,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.lang.StringUtils;
+
 import ance.CertificateValidationService;
 import eu.europa.esig.dss.DSSDocument;
 import eu.europa.esig.dss.DSSException;
@@ -50,7 +52,6 @@ import eu.europa.esig.dss.validation.report.DetailedReport;
 import eu.europa.esig.dss.validation.report.DiagnosticData;
 import eu.europa.esig.dss.validation.report.Reports;
 import eu.europa.esig.dss.validation.report.SimpleReport;
-import eu.europa.esig.dss.x509.CommonTrustedCertificateSource;
 
 /**
  * TODO
@@ -141,10 +142,7 @@ public class ValidationWizardController extends DSSWizardController<ValidationMo
 
 		certificateVerifier.setDataLoader(new FileCacheDataLoader());
 
-		final CommonTrustedCertificateSource trustedCertificateSource = new CommonTrustedCertificateSource();
-		trustedCertificateSource.addCertificate(CertificateValidationService.rootCertificateToken);
-		trustedCertificateSource.addCertificate(CertificateValidationService.rootCertificateToken2);
-		certificateVerifier.setTrustedCertSource(trustedCertificateSource);
+		certificateVerifier.setTrustedCertSource(CertificateValidationService.trustedCertificateSource);
 
 		validator.setCertificateVerifier(certificateVerifier);
 
@@ -155,7 +153,9 @@ public class ValidationWizardController extends DSSWizardController<ValidationMo
 			validator.setDetachedContents(detachedContents);
 		}
 
-		final Reports reports = validator.validateDocument();
+		final String validationPolicyPath = getParameter().getValidationPolicyPath();
+		final File validationPolicy = (StringUtils.isNotBlank(validationPolicyPath)) ? new File(validationPolicyPath) : null;
+		final Reports reports = validator.validateDocument(validationPolicy);
 
 		final SimpleReport simpleReport = reports.getSimpleReport();
 		model.setSimpleReport(simpleReport);

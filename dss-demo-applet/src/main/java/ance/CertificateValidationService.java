@@ -22,7 +22,6 @@
 
 package ance;
 
-import java.io.File;
 import java.io.InputStream;
 import java.util.Date;
 import java.util.List;
@@ -56,16 +55,15 @@ public class CertificateValidationService {
 
 	public static CertificateToken rootCertificateToken;
 	public static CertificateToken rootCertificateToken2;
+	public static final CommonTrustedCertificateSource trustedCertificateSource = getCommonTrustedCertificateSource();
 
 	static {
 
 		final InputStream rootCertificateFile = CertificateValidationService.class.getResourceAsStream("/tun-root.pem");
 		rootCertificateToken = DSSUtils.loadCertificate(rootCertificateFile);
-		System.out.println("OK");
 
 		final InputStream rootCertificateFile2 = CertificateValidationService.class.getResourceAsStream("/TunServerCA2.crt");
 		rootCertificateToken2 = DSSUtils.loadCertificate(rootCertificateFile2);
-		System.out.println("OK");
 	}
 
 	private final CertificateVerifier certificateVerifier;
@@ -78,29 +76,46 @@ public class CertificateValidationService {
 		certificateVerifier.setOcspSource(new OnlineOCSPSource());
 	}
 
-	public static void main(String[] args) {
+	//	public static void main(String[] args) {
+	//
+	//		final File certificateFile = new File("c:/tsa.cer");
+	//		final CertificateToken certificateToken = DSSUtils.loadCertificate(certificateFile);
+	//
+	//		final File rootCertificateFile = new File("C:\\git\\ance-4.5.0\\dss-demo-applet\\src\\main\\resources\\tun-root.pem");
+	//		rootCertificateToken = DSSUtils.loadCertificate(rootCertificateFile);
+	//
+	//		final File rootCertificateFile2 = new File("C:\\git\\ecna-4.5.0\\dss-demo-applet\\src\\main\\resources\\TunServerCA2.crt");
+	//		rootCertificateToken2 = DSSUtils.loadCertificate(rootCertificateFile2);
+	//
+	//		final File expCertificateFile = new File("C:\\git\\ance-4.5.0\\dss-demo-applet\\src\\main\\resources\\user1.crt");
+	//		final CertificateToken expCertificateToken = DSSUtils.loadCertificate(expCertificateFile);
+	//
+	//		final File revokedCertificateFile = new File("C:\\git\\ance-4.5.0\\dss-demo-applet\\src\\main\\resources\\user2.crt");
+	//		final CertificateToken revokedCertificateToken = DSSUtils.loadCertificate(revokedCertificateFile);
+	//
+	//		final File revoked2CertificateFile = new File("C:\\git\\ance-4.5.0\\dss-demo-applet\\src\\main\\resources\\Abdelkader_Mustapha_SFAXI.cer");
+	//		final CertificateToken revoked2CertificateToken = DSSUtils.loadCertificate(revoked2CertificateFile);
+	//
+	//
+	//		final CertificateValidationService certificateValidationService = new CertificateValidationService();
+	//		certificateValidationService.validate(certificateToken);
+	//	}
 
-		final File certificateFile = new File("c:/tsa.cer");
-		final CertificateToken certificateToken = DSSUtils.loadCertificate(certificateFile);
+	private static CommonTrustedCertificateSource getCommonTrustedCertificateSource() {
 
-		final File rootCertificateFile = new File("C:\\git\\ance-4.5.0\\dss-demo-applet\\src\\main\\resources\\tun-root.pem");
-		rootCertificateToken = DSSUtils.loadCertificate(rootCertificateFile);
+		final CommonTrustedCertificateSource trustedCertificateSource = new CommonTrustedCertificateSource();
 
-		final File rootCertificateFile2 = new File("C:\\git\\ecna-4.5.0\\dss-demo-applet\\src\\main\\resources\\TunServerCA2.crt");
-		rootCertificateToken2 = DSSUtils.loadCertificate(rootCertificateFile2);
+		//		TrustedListsCertificateSource tslCertificateSource = new TrustedListsCertificateSource();
+		//		tslCertificateSource.setDataLoader(new FileCacheDataLoader());
+		//		tslCertificateSource.setCheckSignature(true);
+		//		tslCertificateSource.setLotlCertificate("");
+		//		tslCertificateSource.setLotlUrl("URL");
+		//		tslCertificateSource.init();
 
-		final File expCertificateFile = new File("C:\\git\\ance-4.5.0\\dss-demo-applet\\src\\main\\resources\\user1.crt");
-		final CertificateToken expCertificateToken = DSSUtils.loadCertificate(expCertificateFile);
-
-		final File revokedCertificateFile = new File("C:\\git\\ance-4.5.0\\dss-demo-applet\\src\\main\\resources\\user2.crt");
-		final CertificateToken revokedCertificateToken = DSSUtils.loadCertificate(revokedCertificateFile);
-
-		final File revoked2CertificateFile = new File("C:\\git\\ance-4.5.0\\dss-demo-applet\\src\\main\\resources\\Abdelkader_Mustapha_SFAXI.cer");
-		final CertificateToken revoked2CertificateToken = DSSUtils.loadCertificate(revoked2CertificateFile);
-
-
-		final CertificateValidationService certificateValidationService = new CertificateValidationService();
-		certificateValidationService.validate(certificateToken);
+		trustedCertificateSource.addCertificate(rootCertificateToken);
+		trustedCertificateSource.addCertificate(rootCertificateToken2);
+		return trustedCertificateSource;
+		//		return tslCertificateSource;
 	}
 
 	/**
@@ -111,9 +126,6 @@ public class CertificateValidationService {
 	 */
 	public boolean validate(final CertificateToken certificateToken) {
 
-		final CommonTrustedCertificateSource trustedCertificateSource = new CommonTrustedCertificateSource();
-		trustedCertificateSource.addCertificate(rootCertificateToken);
-		trustedCertificateSource.addCertificate(rootCertificateToken2);
 		certificateVerifier.setTrustedCertSource(trustedCertificateSource);
 
 		final ValidationContext validationContext = new SignatureValidationContext();

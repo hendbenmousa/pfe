@@ -900,7 +900,7 @@ public class SignatureAcceptanceValidation extends BasicValidationProcess implem
 
 		final List<XmlDom> certifiedRoleXmlDomList = certifiedRolesXmlDom.getElements("./CertifiedRole");
 		final List<String> certifiedRoles = XmlDom.convertToStringList(certifiedRoleXmlDomList);
-		constraint.setExpectedValue(constraint.getIdentifiers().toString());
+		constraint.setExpectedValue(constraint.getIdentifierList().toString());
 		constraint.setValue(certifiedRoles);
 		constraint.setIndications(INVALID, SIG_CONSTRAINTS_FAILURE, BBB_SAV_ICERRM_ANS);
 

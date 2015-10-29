@@ -68,23 +68,30 @@ public class Constraint implements NodeName, NodeValue, AttributeName, Attribute
 	/**
 	 * This field represents the list of acceptable identifiers
 	 */
-	protected List<String> identifiers;
+	protected List<String> identifierList;
 	protected String indication;
 	protected String subIndication;
 	protected MessageTag failureMessageTag;
 	protected Map<String, String> messageAttributes = new HashMap<String, String>();
 	protected Conclusion conclusion;
-
 	/**
 	 * This {@code Map} contains the list of Info attributes to be added to the constraint node.
 	 */
 	protected Map<String, String> infoAttributes = null;
-
 	/**
-	 * This field represent the {@code List} of {@code String} values of the constraint
+	 * This field represents the {@code List} of {@code String} values of the constraint
 	 */
 	protected List<String> valueList;
+
+	/**
+	 * Message {@code Level} associated to the constraint.
+	 */
 	protected Level level;
+
+	/**
+	 * Defines the {@code Membership} of the {@code List} of value. The default value is {@code Membership.ALL}
+	 */
+	private Membership membership = Membership.ALL;
 
 	/**
 	 * This is the default constructor. It takes a level of the constraint as parameter. The string representing the level is trimmed and capitalized. If there is no corresponding
@@ -191,6 +198,15 @@ public class Constraint implements NodeName, NodeValue, AttributeName, Attribute
 	}
 
 	/**
+	 * Defines the {@code Membership} of the element(s) to check.
+	 *
+	 * @param membership expected {@code Membership}
+	 */
+	public void setMembership(final Membership membership) {
+		this.membership = membership;
+	}
+
+	/**
 	 * @param validationDataXmlNode this {@code XmlNode} is used to add the constraint nodes
 	 * @param conclusion            the {@code Conclusion} which indicates the result of the process
 	 */
@@ -221,7 +237,7 @@ public class Constraint implements NodeName, NodeValue, AttributeName, Attribute
 
 			if (!"*".equals(expectedValue)) {
 
-				error = (expectedValue != null) && !expectedValue.equals(value);
+				error = expectedValue != null && !expectedValue.equals(value);
 			}
 		}
 		if (error) {
@@ -229,16 +245,18 @@ public class Constraint implements NodeName, NodeValue, AttributeName, Attribute
 			if (warn()) {
 
 				node.addChild(STATUS, WARN);
-				final XmlNode xmlNode = node.addChild(WARNING, failureMessageTag, messageAttributes);
-				if (StringUtils.isNotBlank(expectedValue) && !expectedValue.equals("true") && !expectedValue.equals("false")) {
-					xmlNode.setAttribute(EXPECTED_VALUE, expectedValue).setAttribute(CONSTRAINT_VALUE, value);
+				node.addChild(WARNING, failureMessageTag, messageAttributes);
+				if (StringUtils.isNotBlank(expectedValue) && !TRUE.equals(expectedValue) && !FALSE.equals(expectedValue)) {
+					messageAttributes.put(EXPECTED_VALUE, expectedValue);
+					messageAttributes.put(CONSTRAINT_VALUE, value);
 				}
 				conclusion.addWarning(failureMessageTag, messageAttributes);
 				return true;
 			}
 			node.addChild(STATUS, KO);
-			if (StringUtils.isNotBlank(expectedValue) && !expectedValue.equals("true") && !expectedValue.equals("false")) {
-				node.addChild(INFO).setAttribute(EXPECTED_VALUE, expectedValue).setAttribute(CONSTRAINT_VALUE, value);
+			if (StringUtils.isNotBlank(expectedValue) && !TRUE.equals(expectedValue) && !FALSE.equals(expectedValue)) {
+				messageAttributes.put(EXPECTED_VALUE, expectedValue);
+				messageAttributes.put(CONSTRAINT_VALUE, value);
 			}
 			if (StringUtils.isNotBlank(indication)) {
 
@@ -266,35 +284,48 @@ public class Constraint implements NodeName, NodeValue, AttributeName, Attribute
 		if (inform()) {
 
 			node.addChild(STATUS, INFORMATION);
-			node.addChild(INFO, null, messageAttributes).setAttribute("ExpectedValue", expectedValue).setAttribute("ConstraintValue", value);
+			node.addChild(INFO, null, messageAttributes).setAttribute(EXPECTED_VALUE, expectedValue).setAttribute(CONSTRAINT_VALUE, value);
 			return true;
 		}
-		final boolean contains;
-		if ((value != null) && "*".equals(expectedValue)) {
+		boolean contains = false;
+		if (value != null && "*".equals(expectedValue)) {
 			contains = true;
 		} else if (CollectionUtils.isNotEmpty(valueList)) {
-			contains = valueList.containsAll(identifiers);
+
+			if (membership == Membership.ALL) {
+				contains = valueList.containsAll(identifierList);
+			} else {
+
+				for (final String value : valueList) {
+					if (identifierList.contains(value)) {
+
+						contains = membership == Membership.ANY ? true : false /*NONE*/;
+						break;
+					}
+				}
+			}
 			value = valueList.toString();
 		} else {
-			contains = RuleUtils.contains1(value, identifiers);
+			contains = RuleUtils.contains1(value, identifierList);
 		}
 		if (!contains) {
 
 			if (warn()) {
 
 				node.addChild(STATUS, WARN);
-				node.addChild(WARNING, failureMessageTag, messageAttributes).setAttribute(EXPECTED_VALUE, expectedValue).setAttribute(CONSTRAINT_VALUE, value);
+				messageAttributes.put(EXPECTED_VALUE, expectedValue);
+				messageAttributes.put(CONSTRAINT_VALUE, value);
 				conclusion.addWarning(failureMessageTag, messageAttributes);
 				return true;
 			}
 			node.addChild(STATUS, KO);
-			node.addChild(INFO).setAttribute(EXPECTED_VALUE, expectedValue).setAttribute(CONSTRAINT_VALUE, value);
 			conclusion.setIndication(indication, subIndication);
+			messageAttributes.put(EXPECTED_VALUE, expectedValue);
+			messageAttributes.put(CONSTRAINT_VALUE, value);
 			conclusion.addError(failureMessageTag, messageAttributes);
 			return false;
 		}
-		node.addChild(STATUS, OK);
-		node.addChild(INFO, null, messageAttributes);
+		addOkNode();
 		return true;
 	}
 
@@ -332,15 +363,15 @@ public class Constraint implements NodeName, NodeValue, AttributeName, Attribute
 		this.conclusion = conclusion;
 	}
 
-	public List<String> getIdentifiers() {
-		return identifiers;
+	public List<String> getIdentifierList() {
+		return identifierList;
 	}
 
 	/**
-	 * @param identifiers the {@code List} of identifiers to set.
+	 * @param identifierList the {@code List} of identifiers to set.
 	 */
-	public void setIdentifiers(final List<String> identifiers) {
-		this.identifiers = identifiers;
+	public void setIdentifierList(final List<String> identifierList) {
+		this.identifierList = identifierList;
 	}
 
 	/**
@@ -434,4 +465,6 @@ public class Constraint implements NodeName, NodeValue, AttributeName, Attribute
 	}
 
 	public enum Level {IGNORE, INFORM, WARN, FAIL}
+
+	public enum Membership {ALL, ANY, NONE}
 }

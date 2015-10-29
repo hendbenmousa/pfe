@@ -122,7 +122,7 @@ public class SignaturePolicyConstraint extends Constraint {
 
 			if (SignaturePolicy.NO_POLICY.equals(identifier)) {
 
-				if (!identifiers.contains(identifier)) {
+				if (!identifierList.contains(identifier)) {
 
 					if (warn()) {
 
@@ -139,7 +139,7 @@ public class SignaturePolicyConstraint extends Constraint {
 				}
 			} else {
 
-				if (!identifiers.contains(RuleConstant.ANY_POLICY)) {
+				if (!identifierList.contains(RuleConstant.ANY_POLICY)) {
 
 					if (!policyValidity) {
 
@@ -158,7 +158,7 @@ public class SignaturePolicyConstraint extends Constraint {
 						error.setAttribute(NodeName.ERROR, processingError);
 						return false;
 					}
-					if (!identifiers.contains(identifier)) {
+					if (!identifierList.contains(identifier)) {
 
 						if (warn()) {
 

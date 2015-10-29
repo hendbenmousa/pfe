@@ -133,7 +133,7 @@ public class EtsiValidationPolicy extends ValidationPolicy implements AttributeN
 
 			final List<XmlDom> policyList = getElements(XP_ROOT + "/MainSignature/AcceptablePolicies/Id");
 			final List<String> identifierList = XmlDom.convertToStringList(policyList);
-			constraint.setIdentifiers(identifierList);
+			constraint.setIdentifierList(identifierList);
 			constraint.setExpectedValue(identifierList.toString());
 			return constraint;
 		}
@@ -151,7 +151,7 @@ public class EtsiValidationPolicy extends ValidationPolicy implements AttributeN
 			final List<XmlDom> signatureFormats = getElements(xpRoot + "/Format");
 			final List<String> signatureFormatList = XmlDom.convertToStringList(signatureFormats);
 			constraint.setExpectedValue(signatureFormatList.toString());
-			constraint.setIdentifiers(signatureFormatList);
+			constraint.setIdentifierList(signatureFormatList);
 			return constraint;
 		}
 		return null;
@@ -211,7 +211,7 @@ public class EtsiValidationPolicy extends ValidationPolicy implements AttributeN
 			final List<XmlDom> commitmentTypeIndications = getElements(xpRoot + "/Identifier");
 			final List<String> identifierList = XmlDom.convertToStringList(commitmentTypeIndications);
 			constraint.setExpectedValue(identifierList.toString());
-			constraint.setIdentifiers(identifierList);
+			constraint.setIdentifierList(identifierList);
 			return constraint;
 		}
 		return null;
@@ -258,7 +258,7 @@ public class EtsiValidationPolicy extends ValidationPolicy implements AttributeN
 			final List<XmlDom> claimedRoles = getElements(xpRoot + "/Role");
 			final List<String> claimedRoleList = XmlDom.convertToStringList(claimedRoles);
 			constraint.setExpectedValue(claimedRoleList.toString());
-			constraint.setIdentifiers(claimedRoleList);
+			constraint.setIdentifierList(claimedRoleList);
 			return constraint;
 		}
 		return null;
@@ -284,9 +284,9 @@ public class EtsiValidationPolicy extends ValidationPolicy implements AttributeN
 			final List<String> certifiedRoleList = XmlDom.convertToStringList(certifiedRoleXmlDomList);
 
 			constraint.setExpectedValue(certifiedRoleList.toString());
-			constraint.setIdentifiers(certifiedRoleList);
+			constraint.setIdentifierList(certifiedRoleList);
 			return constraint;
-	}
+		}
 		return null;
 	}
 
@@ -401,10 +401,12 @@ public class EtsiValidationPolicy extends ValidationPolicy implements AttributeN
 		if (StringUtils.isNotBlank(level)) {
 
 			final Constraint constraint = new Constraint(level);
+			final String membership = getValue(XP_ROOT + "/%s/SigningCertificate/KeyUsage/@Membership", context);
+			constraint.setMembership(Constraint.Membership.valueOf(membership));
 			final List<XmlDom> keyUsages = getElements(XP_ROOT + "/%s/SigningCertificate/KeyUsage/Identifier", context);
 			final List<String> identifierList = XmlDom.convertToStringList(keyUsages);
 			constraint.setExpectedValue(identifierList.toString());
-			constraint.setIdentifiers(identifierList);
+			constraint.setIdentifierList(identifierList);
 			return constraint;
 		}
 		return null;
