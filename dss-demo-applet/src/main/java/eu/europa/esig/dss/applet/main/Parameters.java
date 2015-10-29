@@ -73,6 +73,8 @@ public class Parameters {
 	public static final String PKCS12_FILE = "PKCS12_FILE";
 	public static final String CLAIMED_ROLE = "CLAIMED_ROLE";
 
+	public static final String VALIDATION_OUT_PATH = "VALIDATION_OUT_PATH";
+
 	public static final String SIGNATURE_HASH = "SIGNATURE_HASH";
 	public static final String TIMESTAMP_HASH = "TIMESTAMP_HASH";
 
@@ -159,6 +161,10 @@ public class Parameters {
 	 *
 	 */
 	private String claimedRole;
+	/**
+	 *
+	 */
+	private String validationOutPath;
 
 	/**
 	 * The default constructor for Parameters.
@@ -194,6 +200,7 @@ public class Parameters {
 			initValidationPolicy(properties);
 			initTimestampServerUrl(properties);
 			initClaimedRole(properties);
+			initValidationOutPath(properties);
 		} catch (IOException e) {
 			throw new DSSException(e);
 		}
@@ -343,7 +350,7 @@ public class Parameters {
 		if (StringUtils.isBlank(token)) {
 			return;
 		}
-		setTimestampServerUrl(token);
+		setTimestampServerUrl(token.trim());
 	}
 
 	private void initClaimedRole(final Properties properties) {
@@ -353,6 +360,15 @@ public class Parameters {
 			return;
 		}
 		setClaimedRole(token.trim());
+	}
+
+	private void initValidationOutPath(final Properties properties) {
+
+		final String token = properties.getProperty(VALIDATION_OUT_PATH);
+		if (token == null) {
+			return;
+		}
+		setValidationOutPath(token.trim());
 	}
 
 	public List<ActivityAction> getUsageList() {
@@ -541,6 +557,14 @@ public class Parameters {
 
 	public void setClaimedRole(String claimedRole) {
 		this.claimedRole = claimedRole;
+	}
+
+	public String getValidationOutPath() {
+		return validationOutPath;
+	}
+
+	public void setValidationOutPath(String validationOutPath) {
+		this.validationOutPath = validationOutPath;
 	}
 
 	@Override

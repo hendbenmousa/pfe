@@ -24,6 +24,7 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.Date;
@@ -49,6 +50,7 @@ import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.TransformerFactoryConfigurationError;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
@@ -967,6 +969,34 @@ public final class DSSXMLUtils {
 		} catch (TransformerConfigurationException e) {
 			throw new DSSException(e);
 		} catch (TransformerException e) {
+			throw new DSSException(e);
+		}
+	}
+
+	/**
+	 * <p>Transforms and writes the XML {@code Document} to a {@code OutputStream}.</p>
+	 *
+	 * @param domDocument  {@code Document}  to transform
+	 * @param outputStream {@code OutputStream}
+	 * @throws DSSException
+	 */
+	public static void transform(final Document domDocument, final OutputStream outputStream) throws DSSException {
+
+		try {
+
+			final TransformerFactory transformerFactory = TransformerFactory.newInstance();
+			final Transformer transformer = transformerFactory.newTransformer();
+			final String xmlEncoding = domDocument.getXmlEncoding();
+			if (StringUtils.isNotBlank(xmlEncoding)) {
+				transformer.setOutputProperty(OutputKeys.ENCODING, xmlEncoding);
+			}
+
+			final DOMSource xmlSource = new DOMSource(domDocument);
+			final StreamResult outputTarget = new StreamResult(outputStream);
+			transformer.transform(xmlSource, outputTarget);
+		} catch (TransformerException e) {
+			throw new DSSException(e);
+		} catch (TransformerFactoryConfigurationError e) {
 			throw new DSSException(e);
 		}
 	}

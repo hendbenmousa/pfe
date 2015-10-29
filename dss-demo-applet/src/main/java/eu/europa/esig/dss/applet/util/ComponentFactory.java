@@ -156,7 +156,6 @@ public final class ComponentFactory extends BasicComponentFactory {
 	 * @return
 	 */
 	public static PanelBuilder createBuilder(final FormLayout layout) {
-		// return new PanelBuilder(layout, new FormDebugPanel());
 		return new PanelBuilder(layout);
 	}
 

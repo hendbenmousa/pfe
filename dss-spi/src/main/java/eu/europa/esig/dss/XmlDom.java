@@ -217,12 +217,13 @@ public class XmlDom {
 
 			final boolean isDot = ".".equals(token);
 			final boolean isCount = "count(".equals(token) || "count(.".equals(token);
+			final boolean isBoolean = "boolean(".equals(token) || "boolean(.".equals(token);
 			final boolean isDoubleDot = "..".equals(token);
 			final boolean isAt = token.startsWith("@");
 			final boolean isText = token.equals("text()");
 			final boolean isDoubleSlash = token.equals("{#double}");
-			final String slash = isDot || isCount || isDoubleSlash ? "" : "/";
-			String prefix = isDot || isCount || isDoubleDot || isAt || isText || isDoubleSlash ? "" : "dss:";
+			final String slash = isDot || isCount || isBoolean || isDoubleSlash ? "" : "/";
+			String prefix = isDot || isCount || isBoolean || isDoubleDot || isAt || isText || isDoubleSlash ? "" : "dss:";
 
 			stringBuilder.append(slash).append(prefix).append(token);
 		}
@@ -282,11 +283,10 @@ public class XmlDom {
 	public boolean getBoolValue(final String xPath, final Object... params) {
 
 		String value = getValue(xPath, params);
-		if (value.equals("true")) {
+		if ("true".equals(value)) {
 			return true;
-
-		} else if (value.isEmpty() || value.equals("false")) {
-
+		}
+		if (value.isEmpty() || "false".equals(value)) {
 			return false;
 		}
 		throw new DSSException("Expected values are: true, false and not '" + value + "'.");

@@ -21,16 +21,28 @@
 package eu.europa.esig.dss.applet.view.validation;
 
 import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
 
 import javax.swing.*;
+
+import org.apache.commons.io.IOUtils;
+import org.w3c.dom.Document;
 
 import com.jgoodies.binding.value.ValueHolder;
 import com.jgoodies.forms.builder.PanelBuilder;
 import com.jgoodies.forms.layout.CellConstraints;
+import eu.europa.esig.dss.DSSXMLUtils;
+import eu.europa.esig.dss.applet.main.Parameters;
 import eu.europa.esig.dss.applet.model.ValidationModel;
 import eu.europa.esig.dss.applet.swing.mvc.AppletCore;
 import eu.europa.esig.dss.applet.swing.mvc.wizard.WizardView;
 import eu.europa.esig.dss.applet.util.ComponentFactory;
+import eu.europa.esig.dss.applet.util.XsltConverter;
 import eu.europa.esig.dss.applet.wizard.validation.ValidationWizardController;
 import eu.europa.esig.dss.validation.report.SimpleReport;
 
@@ -64,8 +76,8 @@ public class ReportView extends WizardView<ValidationModel, ValidationWizardCont
 		final ValidationModel model = getModel();
 
 		final SimpleReport simpleReport = model.getSimpleReport();
-		final String simpleReportText = simpleReport.toString();
-		simpleReportValueHolder.setValue(simpleReportText);
+		final String simpleReportString = simpleReport.toString();
+		simpleReportValueHolder.setValue(simpleReportString);
 
 		//		final XmlDom detailedReport = model.getDetailedReport();
 		//		final String reportText = detailedReport.toString();
@@ -100,53 +112,54 @@ public class ReportView extends WizardView<ValidationModel, ValidationWizardCont
 		return simpleReportText;
 	}
 
-	private JPanel getHtmlPanel(final String textWithMnemonic) {
+	//	private JPanel getHtmlPanel(final String textWithMnemonic) {
+	//
+	//		final String[] columnSpecs = new String[]{"5dlu", "pref", "5dlu", "fill:default:grow", "5dlu"};
+	//		final String[] rowSpecs = new String[]{"5dlu", "pref", "5dlu", "fill:default:grow", "5dlu", "pref", "5dlu"};
+	//		final PanelBuilder builder = ComponentFactory.createBuilder(columnSpecs, rowSpecs);
+	//		final CellConstraints cc = new CellConstraints();
+	//
+	//		builder.addSeparator(textWithMnemonic, cc.xyw(2, 2, 3));
+	//		scrollPane = ComponentFactory.createScrollPane(simpleReportText);
+	//		builder.add(scrollPane, cc.xyw(2, 4, 3));
+	//
+	//		return ComponentFactory.createPanel(builder);
+	//	}
+	//
+	private JPanel getSimpleReportText() {
 
-		final String[] columnSpecs = new String[]{"5dlu", "pref", "5dlu", "fill:default:grow", "5dlu"};
+		final String[] columnSpecs = new String[]{"5dlu", "fill:default:grow", "5dlu"};
 		final String[] rowSpecs = new String[]{"5dlu", "pref", "5dlu", "fill:default:grow", "5dlu", "pref", "5dlu"};
 		final PanelBuilder builder = ComponentFactory.createBuilder(columnSpecs, rowSpecs);
 		final CellConstraints cc = new CellConstraints();
 
-		builder.addSeparator(textWithMnemonic, cc.xyw(2, 2, 3));
-		builder.add(ComponentFactory.createScrollPane(simpleReportText), cc.xyw(2, 4, 3));
-		//		builder.add(ComponentFactory.createSaveButton("Save as PDF", true, new ActionListener() {
-		//			@Override
-		//			public void actionPerformed(ActionEvent event) {
-		//				final JFileChooser fileChooser = new JFileChooser();
-		//				int returnValue = fileChooser.showSaveDialog(simpleReportScrollPane);
-		//				if (returnValue == JFileChooser.APPROVE_OPTION) {
-		//					try {
-		//						OutputStream os = new FileOutputStream(fileChooser.getSelectedFile());
-		//						ITextRenderer renderer = new ITextRenderer();
-		//						renderer.setDocument(htmlPanel.getDocument(), "file:///");
-		//						renderer.layout();
-		//						renderer.createPDF(os);
-		//
-		//						os.close();
-		//					} catch (FileNotFoundException e) {
-		//						throw new RuntimeException(e);
-		//					} catch (DocumentException e) {
-		//						throw new RuntimeException(e);
-		//					} catch (IOException e) {
-		//						throw new RuntimeException(e);
-		//					}
-		//
-		//				}
-		//			}
-		//		}), cc.xyw(2, 6, 1));
+		builder.addSeparator("Simple Validation Report XML", cc.xyw(2, 2, 1));
+		final JScrollPane scrollPane = ComponentFactory.createScrollPane(simpleReportText);
+		builder.add(scrollPane, cc.xyw(2, 4, 1));
+		builder.add(ComponentFactory.createSaveButton("Open Validation report", true, new ActionListener() {
 
-		return ComponentFactory.createPanel(builder);
-	}
+			@Override
+			public void actionPerformed(ActionEvent event) {
 
-	private JPanel getSimpleReportText() {
-
-		final String[] columnSpecs = new String[]{"5dlu", "fill:default:grow", "5dlu"};
-		final String[] rowSpecs = new String[]{"5dlu", "pref", "5dlu", "fill:default:grow", "5dlu"};
-		final PanelBuilder builder = ComponentFactory.createBuilder(columnSpecs, rowSpecs);
-		final CellConstraints cc = new CellConstraints();
-
-		builder.addSeparator("Detailed Report XML", cc.xyw(2, 2, 1));
-		builder.add(ComponentFactory.createScrollPane(simpleReportText), cc.xyw(2, 4, 1));
+				try {
+					final Parameters parameter = getController().getParameter();
+					final String outPath = parameter.getValidationOutPath();
+					final FileOutputStream htmlOutputStream = new FileOutputStream(outPath);
+					final SimpleReport simpleReportXmlDom = getModel().getSimpleReport();
+					final String xsltPath = "/simpleReport.xslt";
+					final Document document = XsltConverter.renderAsHtml(simpleReportXmlDom, xsltPath, null);
+					DSSXMLUtils.transform(document, htmlOutputStream);
+					IOUtils.closeQuietly(htmlOutputStream);
+					System.out.println("Transformation done: " + outPath);
+					final File htmlFile = new File(outPath);
+					Desktop.getDesktop().browse(htmlFile.toURI());
+				} catch (FileNotFoundException e) {
+					e.printStackTrace();
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+			}
+		}), cc.xyw(2, 6, 1));
 
 		return ComponentFactory.createPanel(builder);
 	}

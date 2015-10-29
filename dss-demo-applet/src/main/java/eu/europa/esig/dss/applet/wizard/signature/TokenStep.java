@@ -21,6 +21,7 @@
 package eu.europa.esig.dss.applet.wizard.signature;
 
 import eu.europa.esig.dss.applet.SignatureTokenType;
+import eu.europa.esig.dss.applet.main.Parameters;
 import eu.europa.esig.dss.applet.model.SignatureModel;
 import eu.europa.esig.dss.applet.swing.mvc.ControllerException;
 import eu.europa.esig.dss.applet.swing.mvc.wizard.WizardStep;
@@ -54,6 +55,11 @@ public class TokenStep extends WizardStep<SignatureModel, SignatureWizardControl
 
 	@Override
 	protected Class<? extends WizardStep<SignatureModel, SignatureWizardController>> getBackStep() {
+
+		final Parameters parameters = getController().getParameter();
+		if (parameters.getFormList().size() == 1 && parameters.getPackagingList().size() == 1 && parameters.getLevelList().size() == 1) {
+			return FileStep.class;
+		}
 		return SignatureStep.class;
 	}
 

@@ -68,14 +68,14 @@ public abstract class WizardController<M extends Model> extends DSSAppletControl
 	}
 
 	/**
-	 * @throws Exception
+	 *
 	 */
 	public void doBack() {
 
 		if (!hasBack()) {
 			return;
 		}
-		final WizardStep<M, ? extends WizardController<M>> step = wizardSteps.get(this.currentStep.getBackStep());
+		final WizardStep<M, ? extends WizardController<M>> step = wizardSteps.get(currentStep.getBackStep());
 		execute(step);
 	}
 
@@ -85,7 +85,7 @@ public abstract class WizardController<M extends Model> extends DSSAppletControl
 	protected abstract void doCancel();
 
 	/**
-	 * @throws Exception
+	 *
 	 */
 	public void doNext() {
 
@@ -97,24 +97,20 @@ public abstract class WizardController<M extends Model> extends DSSAppletControl
 		final WizardStep<M, ? extends WizardController<M>> nextStep = wizardSteps.get(this.currentStep.getNextStep());
 
 		final SwingWorker<Object, Object> worker = new SwingWorker<Object, Object>() {
-			/*
-			 * (non-Javadoc)
-			 *
-			 * @see javax.swing.SwingWorker#doInBackground()
-			 */
+
 			@Override
 			protected Object doInBackground() throws Exception {
+
 				try {
 
 					// Finish current wizard step
-					LOG.info("Finish wizard step {}", new Object[]{currentStep});
-					final JPanel glassPanel = new WaitingGlassPanel();
-					getCore().setGlassPane(glassPanel);
+					LOG.info("Finish wizard step: {}", new Object[]{currentStep.getClass().getSimpleName()});
+					getCore().setGlassPane(WaitingGlassPanel.getInstance());
 					getCore().getGlassPane().setVisible(true);
 					currentStep.finish();
 
 					// Init the next wizard step
-					LOG.info("Init wizard step {}", new Object[]{nextStep});
+					LOG.info("Init wizard step: {}", new Object[]{nextStep.getClass().getSimpleName()});
 					setCurrentWizardStep(nextStep);
 					currentView = nextStep.getView();
 					nextStep.init();
@@ -145,22 +141,18 @@ public abstract class WizardController<M extends Model> extends DSSAppletControl
 
 	/**
 	 * @param wizardStep
-	 * @throws Exception
 	 */
 	private void execute(final WizardStep<M, ? extends WizardController<M>> wizardStep) {
 
 		final SwingWorker<Object, Object> worker = new SwingWorker<Object, Object>() {
-			/*
-			 * (non-Javadoc)
-			 *
-			 * @see javax.swing.SwingWorker#doInBackground()
-			 */
+
 			@Override
 			protected Object doInBackground() throws Exception {
+
 				try {
-					LOG.info("Execute step {}", new Object[]{wizardStep});
-					final JPanel glassPanel = new WaitingGlassPanel();
-					getCore().setGlassPane(glassPanel);
+
+					LOG.info("Execute step: {}", new Object[]{wizardStep.getClass().getSimpleName()});
+					getCore().setGlassPane(WaitingGlassPanel.getInstance());
 					getCore().getGlassPane().setVisible(true);
 					setCurrentWizardStep(wizardStep);
 					currentView = wizardStep.getView();
@@ -175,9 +167,7 @@ public abstract class WizardController<M extends Model> extends DSSAppletControl
 					return null;
 				}
 			}
-
 		};
-
 		worker.execute();
 	}
 
