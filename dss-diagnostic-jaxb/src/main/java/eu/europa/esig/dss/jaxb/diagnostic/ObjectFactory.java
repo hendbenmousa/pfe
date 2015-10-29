@@ -44,7 +44,15 @@ public class ObjectFactory {
         return new DiagnosticData();
     }
 
-    /**
+	/**
+	 * Create an instance of {@link XmlDetachedContents }
+	 *
+	 */
+	public XmlDetachedContents createXmlDetachedContents() {
+		return new XmlDetachedContents();
+	}
+
+	/**
      * Create an instance of {@link XmlSignature }
      * 
      */

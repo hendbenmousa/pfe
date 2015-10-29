@@ -81,4 +81,17 @@ public class DSSAppletCore extends AppletCore {
 
 		LOG.info("Parameters - {}", parameters);
 	}
+
+//	public static void main(String args[]) {
+//
+//		DSSAppletCore applet = new DSSAppletCore();
+//
+//		JFrame frame = new JFrame("Your Test Applet");
+//		frame.getContentPane().add(applet);
+//		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+//		frame.setSize(640,480);
+//		frame.setLocationRelativeTo(null);
+//		frame.setVisible(true);
+//		applet.init();
+//	}
 }

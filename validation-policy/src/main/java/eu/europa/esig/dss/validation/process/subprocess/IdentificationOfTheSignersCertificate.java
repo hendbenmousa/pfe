@@ -20,6 +20,8 @@
  */
 package eu.europa.esig.dss.validation.process.subprocess;
 
+import java.util.List;
+
 import org.apache.commons.lang.StringUtils;
 
 import eu.europa.esig.dss.DSSException;
@@ -27,14 +29,28 @@ import eu.europa.esig.dss.XPathQueryHolder;
 import eu.europa.esig.dss.XmlDom;
 import eu.europa.esig.dss.validation.policy.Constraint;
 import eu.europa.esig.dss.validation.policy.ProcessParameters;
+import eu.europa.esig.dss.validation.policy.ValidationPolicy;
 import eu.europa.esig.dss.validation.policy.XmlNode;
-import eu.europa.esig.dss.validation.policy.rules.AttributeValue;
 import eu.europa.esig.dss.validation.policy.rules.ExceptionMessage;
 import eu.europa.esig.dss.validation.policy.rules.Indication;
-import eu.europa.esig.dss.validation.policy.rules.MessageTag;
 import eu.europa.esig.dss.validation.policy.rules.NodeName;
+import eu.europa.esig.dss.validation.policy.rules.NodeValue;
 import eu.europa.esig.dss.validation.policy.rules.SubIndication;
+import eu.europa.esig.dss.validation.process.BasicValidationProcess;
 import eu.europa.esig.dss.validation.report.Conclusion;
+
+import static eu.europa.esig.dss.validation.policy.rules.MessageTag.BBB_ICS_AIDNASNE;
+import static eu.europa.esig.dss.validation.policy.rules.MessageTag.BBB_ICS_AIDNASNE_ANS;
+import static eu.europa.esig.dss.validation.policy.rules.MessageTag.BBB_ICS_ICDVV;
+import static eu.europa.esig.dss.validation.policy.rules.MessageTag.BBB_ICS_ICDVV_ANS;
+import static eu.europa.esig.dss.validation.policy.rules.MessageTag.BBB_ICS_ISACDP;
+import static eu.europa.esig.dss.validation.policy.rules.MessageTag.BBB_ICS_ISACDP_ANS;
+import static eu.europa.esig.dss.validation.policy.rules.MessageTag.BBB_ICS_ISASCP;
+import static eu.europa.esig.dss.validation.policy.rules.MessageTag.BBB_ICS_ISASCP_ANS;
+import static eu.europa.esig.dss.validation.policy.rules.MessageTag.BBB_ICS_ISCI;
+import static eu.europa.esig.dss.validation.policy.rules.MessageTag.BBB_ICS_ISCI_ANS;
+import static eu.europa.esig.dss.validation.policy.rules.MessageTag.BBB_ICS_ISCS;
+import static eu.europa.esig.dss.validation.policy.rules.MessageTag.BBB_ICS_ISCS_ANS;
 
 /**
  * 5.1 Identification of the Signer's Certificate (ISC)
@@ -51,18 +67,13 @@ import eu.europa.esig.dss.validation.report.Conclusion;
  * • In case of failure, i.e. the signer's certificate cannot be identified, the output shall be the indication INDETERMINATE and the sub indication NO_SIGNER_CERTIFICATE_FOUND.
  * NOTE: If the signature is compliant with the CD 2011/130/EU, this process will never return INDETERMINATE, since the signer's certificate is present in the signature.
  */
-public class IdentificationOfTheSignersCertificate {
+public class IdentificationOfTheSignersCertificate extends BasicValidationProcess implements Indication, SubIndication, NodeName, NodeValue, ExceptionMessage {
 
 	/**
 	 * The following variables are used only in order to simplify the writing of the rules!
 	 */
 
 	private ProcessParameters params = null;
-
-	/**
-	 * See {@link ProcessParameters#getDiagnosticData()}
-	 */
-	private XmlDom diagnosticData;
 
 	/**
 	 * // TODO: (Bob: 2014 Mar 12)
@@ -81,31 +92,27 @@ public class IdentificationOfTheSignersCertificate {
 
 	private void prepareParameters() {
 
-		this.diagnosticData = params.getDiagnosticData();
 		this.contextElement = params.getContextElement();
 		isInitialised();
 	}
 
 	private void isInitialised() {
 
-		if (params.getCurrentValidationPolicy() == null) {
-			throw new DSSException(String.format(ExceptionMessage.EXCEPTION_TCOPPNTBI, getClass().getSimpleName(), "validationPolicy"));
-		}
-		if (diagnosticData == null) {
-			throw new DSSException(String.format(ExceptionMessage.EXCEPTION_TCOPPNTBI, getClass().getSimpleName(), "diagnosticData"));
-		}
+		assertDiagnosticData(params.getDiagnosticData(), getClass());
+		assertValidationPolicy(params.getValidationPolicy(), getClass());
 		if (contextElement == null) {
-			throw new DSSException(String.format(ExceptionMessage.EXCEPTION_TCOPPNTBI, getClass().getSimpleName(), "contextElement"));
+			throw new DSSException(String.format(EXCEPTION_TCOPPNTBI, getClass().getSimpleName(), "contextElement"));
 		}
 	}
 
 	/**
 	 * This method prepares the execution of the ISC process.
 	 *
-	 * @param params validation process parameters
+	 * @param params        validation process parameters
+	 * @param parentXmlNode
 	 * @return the {@code Conclusion} which indicates the result of the process
 	 */
-	public Conclusion run(final ProcessParameters params, final String contextName) {
+	public Conclusion run(final ProcessParameters params, XmlNode parentXmlNode, final String contextName) {
 
 		this.params = params;
 		this.contextName = contextName;
@@ -114,18 +121,18 @@ public class IdentificationOfTheSignersCertificate {
 		/**
 		 * 5.1 Identification of the signer's certificate (ISC)
 		 */
-		validationDataXmlNode = new XmlNode(NodeName.ISC);
-		validationDataXmlNode.setNameSpace(XmlDom.NAMESPACE);
+		validationDataXmlNode = parentXmlNode.addChild(ISC);
 
 		final Conclusion conclusion = process(params);
 
-		conclusion.setValidationData(validationDataXmlNode);
+		final XmlNode conclusionXmlNode = conclusion.toXmlNode();
+		validationDataXmlNode.addChild(conclusionXmlNode);
 		return conclusion;
 	}
 
 	/**
 	 * This method implements ISC process.
-	 *
+	 * <p/>
 	 * 5.1.4 Processing
 	 * The common way to unambiguously identify the signer's certificate is by using a property/attribute of the signature
 	 * containing a reference to it, which includes the digest computed over the certificates encoded value. The certificate or a
@@ -141,12 +148,13 @@ public class IdentificationOfTheSignersCertificate {
 	private Conclusion process(final ProcessParameters params) {
 
 		final Conclusion conclusion = new Conclusion();
+		conclusion.setLocation(validationDataXmlNode.getLocation());
 
 		// The signing certificate Id and the signing certificate are reset.
 		params.setSigningCertificateId(null);
 		params.setSigningCertificate(null);
 
-		final String signingCertificateId = contextElement.getValue("./SigningCertificate/@Id");
+		final String signingCertificateId = contextElement.getValue(XP_SIGNING_CERTIFICATE_ID);
 		final XmlDom signingCertificateXmlDom = params.getCertificate(signingCertificateId);
 		final boolean signingCertificateRecognised = signingCertificateXmlDom != null;
 		if (!checkRecognitionConstraint(conclusion, signingCertificateRecognised, signingCertificateId)) {
@@ -187,9 +195,28 @@ public class IdentificationOfTheSignersCertificate {
 				return conclusion;
 			}
 		}
+		// Custom constraints
+		if (MAIN_SIGNATURE.equals(contextName)) {
+
+			final List<Constraint> customizedConstraintList = getCustomizedConstraints();
+			if (!customizedConstraintList.isEmpty()) {
+				for (final Constraint customizedConstraint : customizedConstraintList) {
+					if (!customizedConstraint.checkCustomized(validationDataXmlNode, conclusion)) {
+						return conclusion;
+					}
+				}
+			}
+		}
 		// This validation process returns VALID
-		conclusion.setIndication(Indication.VALID);
+		conclusion.setIndication(VALID);
 		return conclusion;
+	}
+
+	private List<Constraint> getCustomizedConstraints() {
+
+		final ValidationPolicy currentValidationPolicy = params.getCurrentValidationPolicy();
+		final List<Constraint> customizedConstraintList = currentValidationPolicy.getISCCustomizedConstraints();
+		return customizedConstraintList;
 	}
 
 	/**
@@ -205,25 +232,32 @@ public class IdentificationOfTheSignersCertificate {
 		if (constraint == null) {
 			return true;
 		}
-		constraint.create(validationDataXmlNode, MessageTag.BBB_ICS_ISCI);
+		constraint.create(validationDataXmlNode, BBB_ICS_ISCI);
 		constraint.setValue(signingCertificateRecognised);
-		if (StringUtils.isNotBlank(signingCertificateId) && !signingCertificateId.equals("0")) {
-			constraint.setAttribute(AttributeValue.CERTIFICATE_ID, signingCertificateId);
+		final boolean signingCertificateIdentified = StringUtils.isNotBlank(signingCertificateId) && !signingCertificateId.equals("0");
+		if (signingCertificateIdentified) {
+			constraint.setAttribute(CERTIFICATE_ID, signingCertificateId);
 		}
-		constraint.setIndications(Indication.INDETERMINATE, SubIndication.NO_SIGNER_CERTIFICATE_FOUND, MessageTag.BBB_ICS_ISCI_ANS);
+		if(TIMESTAMP.equals(contextName)) {
+			final String timestampId = contextElement.getAttribute(ID);
+			constraint.setAttribute(TIMESTAMP_ID, timestampId);
+		}
+		constraint.setIndications(INDETERMINATE, NO_SIGNER_CERTIFICATE_FOUND, BBB_ICS_ISCI_ANS);
 		constraint.setConclusionReceiver(conclusion);
-
+		if (signingCertificateIdentified) {
+			constraint.addInfo(CERTIFICATE_ID);
+		}
 		return constraint.check();
 	}
 
 
 	private boolean checkSignedSigningCertificateConstraint(final Constraint constraint, final Conclusion conclusion, final String signedElement) {
 
-		constraint.create(validationDataXmlNode, MessageTag.BBB_ICS_ISCS);
+		constraint.create(validationDataXmlNode, BBB_ICS_ISCS);
 		final boolean signed = XPathQueryHolder.XMLE_X509CERTIFICATE.equals(signedElement) || XPathQueryHolder.XMLE_X509DATA.equals(signedElement) || XPathQueryHolder.XMLE_KEYINFO
-				.equals(signedElement);
+			  .equals(signedElement);
 		constraint.setValue(signed);
-		constraint.setIndications(Indication.INVALID, SubIndication.FORMAT_FAILURE, MessageTag.BBB_ICS_ISCS_ANS);
+		constraint.setIndications(INVALID, FORMAT_FAILURE, BBB_ICS_ISCS_ANS);
 		constraint.setConclusionReceiver(conclusion);
 
 		return constraint.check();
@@ -235,10 +269,10 @@ public class IdentificationOfTheSignersCertificate {
 		if (constraint == null) {
 			return true;
 		}
-		constraint.create(validationDataXmlNode, MessageTag.BBB_ICS_ISASCP);
+		constraint.create(validationDataXmlNode, BBB_ICS_ISASCP);
 		final boolean digestValueMatch = contextElement.getBoolValue("./SigningCertificate/AttributePresent/text()");
 		constraint.setValue(digestValueMatch);
-		constraint.setIndications(Indication.INVALID, SubIndication.FORMAT_FAILURE, MessageTag.BBB_ICS_ISASCP_ANS);
+		constraint.setIndications(INVALID, FORMAT_FAILURE, BBB_ICS_ISASCP_ANS);
 		constraint.setConclusionReceiver(conclusion);
 
 		return constraint.check();
@@ -256,10 +290,10 @@ public class IdentificationOfTheSignersCertificate {
 		if (constraint == null) {
 			return true;
 		}
-		constraint.create(validationDataXmlNode, MessageTag.BBB_ICS_ISACDP);
+		constraint.create(validationDataXmlNode, BBB_ICS_ISACDP);
 		final boolean digestValueMatch = contextElement.getBoolValue("./SigningCertificate/DigestValuePresent/text()");
 		constraint.setValue(digestValueMatch);
-		constraint.setIndications(Indication.INVALID, SubIndication.FORMAT_FAILURE, MessageTag.BBB_ICS_ISACDP_ANS);
+		constraint.setIndications(INVALID, FORMAT_FAILURE, BBB_ICS_ISACDP_ANS);
 		constraint.setConclusionReceiver(conclusion);
 
 		return constraint.check();
@@ -303,10 +337,10 @@ public class IdentificationOfTheSignersCertificate {
 		if (constraint == null) {
 			return true;
 		}
-		constraint.create(validationDataXmlNode, MessageTag.BBB_ICS_ICDVV);
+		constraint.create(validationDataXmlNode, BBB_ICS_ICDVV);
 		final boolean digestValueMatch = contextElement.getBoolValue("./SigningCertificate/DigestValueMatch/text()");
 		constraint.setValue(digestValueMatch);
-		constraint.setIndications(Indication.INVALID, SubIndication.FORMAT_FAILURE, MessageTag.BBB_ICS_ICDVV_ANS);
+		constraint.setIndications(INVALID, FORMAT_FAILURE, BBB_ICS_ICDVV_ANS);
 		constraint.setConclusionReceiver(conclusion);
 
 		return constraint.check();
@@ -319,12 +353,12 @@ public class IdentificationOfTheSignersCertificate {
 	 * 2) If the ds:KeyInfo contains the ds:X509IssuerSerial element, check that the issuer and the serial
 	 * number indicated in that element and IssuerSerial from SigningCertificate are the same. If they do
 	 * not match, the validation of this property shall be taken as failed and INDETERMINATE is returned.<br/>
-	 *
+	 * <p/>
 	 * For CAdES:<br/>
 	 * 2) Compare the details of the issuer's name and the serial number of the certificate with those indicated in the
 	 * reference. If any of them does not match, the validation of this attribute shall be taken as failed and
 	 * INDETERMINATE is returned.<br/>
-	 *
+	 * <p/>
 	 * For PAdES:<br/>
 	 * The signing certificate shall be checked against the references present in one of the following attributes:
 	 * ESS-signing-certificate or ESS-signing-certificate-v2, since one of these attributes shall contain a reference to the
@@ -339,10 +373,10 @@ public class IdentificationOfTheSignersCertificate {
 		if (constraint == null) {
 			return true;
 		}
-		constraint.create(validationDataXmlNode, MessageTag.BBB_ICS_AIDNASNE);
+		constraint.create(validationDataXmlNode, BBB_ICS_AIDNASNE);
 		final boolean issuerSerialMatch = contextElement.getBoolValue("./SigningCertificate/IssuerSerialMatch/text()");
 		constraint.setValue(issuerSerialMatch);
-		constraint.setIndications(Indication.INDETERMINATE, SubIndication.NO_SIGNER_CERTIFICATE_FOUND, MessageTag.BBB_ICS_AIDNASNE_ANS);
+		constraint.setIndications(INDETERMINATE, NO_SIGNER_CERTIFICATE_FOUND, BBB_ICS_AIDNASNE_ANS);
 		constraint.setConclusionReceiver(conclusion);
 
 		return constraint.check();

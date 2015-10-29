@@ -1,19 +1,19 @@
 /**
  * DSS - Digital Signature Services
  * Copyright (C) 2015 European Commission, provided under the CEF programme
- *
+ * <p/>
  * This file is part of the "DSS - Digital Signature Services" project.
- *
+ * <p/>
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 2.1 of the License, or (at your option) any later version.
- *
+ * <p/>
  * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
- *
+ * <p/>
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
@@ -36,14 +36,14 @@ import eu.europa.esig.dss.validation.policy.rules.AttributeName;
 import eu.europa.esig.dss.validation.policy.rules.Indication;
 import eu.europa.esig.dss.validation.policy.rules.MessageTag;
 import eu.europa.esig.dss.validation.policy.rules.NodeName;
+import eu.europa.esig.dss.validation.policy.rules.SubIndication;
+import eu.europa.esig.dss.validation.process.ValidationXPathQueryHolder;
 
 /**
  * This class represents the conclusion (result) of the process, with at least the Indication, SubIndication (if any)...
  * This class can be derived to handle specific needs of the process.
- *
- *
  */
-public class Conclusion {
+public class Conclusion implements Indication, SubIndication, NodeName, AttributeName, ValidationXPathQueryHolder {
 
 	private String indication;
 	private String subIndication;
@@ -65,259 +65,22 @@ public class Conclusion {
 	 */
 	private List<Error> errorList;
 
+	private String location;
+
 	/**
-	 * This class expresses an information.
+	 * @return {@code String} indicates exact location within the detailed report
 	 */
-	static public class Info extends BasicInfo {
-
-		public Info() {
-			super(NodeName.INFO);
-		}
-
-		public Info(final String value) {
-			super(NodeName.INFO, value);
-		}
-
-		public Info(final String nameId, final String value) {
-			super(nameId, NodeName.INFO, value);
-		}
-
-		public Info(final MessageTag messageTag) {
-			super(NodeName.INFO, messageTag);
-		}
-
-		public Info(final MessageTag messageTag, final String... dynamicParameters) {
-			super(NodeName.INFO, messageTag, dynamicParameters);
-		}
-
-		public Info(final MessageTag messageTag, final Map<String, String> attributes) {
-			super(NodeName.INFO, messageTag, attributes);
-		}
+	public String getLocation() {
+		return location;
 	}
 
-	/**
-	 * This class expresses a warning.
-	 */
-	static public class Warning extends BasicInfo {
-
-		public Warning() {
-			super(NodeName.WARNING);
-		}
-
-		public Warning(final String value) {
-			super(NodeName.WARNING, value);
-		}
-
-		public Warning(final String nameId, final String value) {
-			super(nameId, NodeName.WARNING, value);
-		}
-
-		public Warning(final MessageTag messageTag) {
-			super(NodeName.WARNING, messageTag);
-		}
-
-		public Warning(final MessageTag messageTag, final Map<String, String> attributes) {
-			super(NodeName.WARNING, messageTag, attributes);
-		}
-	}
-
-	/**
-	 * This class expresses a warning.
-	 */
-	static public class Error extends BasicInfo {
-
-		public Error() {
-			super(NodeName.ERROR);
-		}
-
-		public Error(String value) {
-			super(NodeName.ERROR, value);
-		}
-
-		public Error(final String nameId, final String value) {
-			super(nameId, NodeName.ERROR, value);
-		}
-
-		public Error(final MessageTag messageTag) {
-			super(NodeName.ERROR, messageTag);
-		}
-
-		public Error(final MessageTag messageTag, final Map<String, String> attributes) {
-			super(NodeName.ERROR, messageTag, attributes);
-		}
-	}
-
-	/**
-	 * This class contains information provided by the validation process and to be included in the conclusion.
-	 */
-	static public class BasicInfo {
-
-		/**
-		 * The tag to use to express the basic information: Info or Warning
-		 */
-		protected final String tag;
-
-		/**
-		 * The content of the basic information
-		 */
-		protected String value;
-
-		/**
-		 * The {@code HashMap} containing the node's attributes and their values.
-		 */
-		protected HashMap<String, String> attributes = new HashMap<String, String>();
-
-		/**
-		 * @param tag indicates the info type: Info or Warning
-		 */
-		protected BasicInfo(final String tag) {
-
-			this.tag = tag;
-		}
-
-		public BasicInfo(final String tag, final String value) {
-
-			this.tag = tag;
-			this.value = value;
-		}
-
-		/**
-		 * @param nameId indicates the unique message identifier
-		 * @param tag    indicates the info type: Info or Warning
-		 * @param value  the value of the information
-		 */
-		protected BasicInfo(final String nameId, final String tag, final String value) {
-
-			setAttribute(AttributeName.NAME_ID, nameId);
-			this.tag = tag;
-			this.value = value;
-		}
-
-		/**
-		 * @param tag        indicates the info type: Info or Warning
-		 * @param messageTag indicates the unique message identifier
-		 */
-		protected BasicInfo(final String tag, final MessageTag messageTag) {
-
-			setAttribute(AttributeName.NAME_ID, messageTag.name());
-			this.tag = tag;
-			this.value = messageTag.getMessage();
-		}
-
-		/**
-		 * @param tag        indicates the info type: Info or Warning
-		 * @param messageTag indicates the unique message identifier
-		 */
-		protected BasicInfo(final String tag, final MessageTag messageTag, final String... dynamicParameters) {
-
-			setAttribute(AttributeName.NAME_ID, messageTag.name());
-			this.tag = tag;
-			final String message = String.format(messageTag.getMessage(), dynamicParameters);
-			this.value = message;
-		}
-
-		/**
-		 * @param tag        indicates the info type: Info or Warning
-		 * @param messageTag indicates the unique message identifier
-		 * @param attributes the value of the information
-		 */
-		protected BasicInfo(final String tag, final MessageTag messageTag, final Map<String, String> attributes) {
-
-			setAttribute(AttributeName.NAME_ID, messageTag.name());
-			this.tag = tag;
-			this.value = messageTag.getMessage();
-			if (attributes != null) {
-				this.attributes.putAll(attributes);
-			}
-		}
-
-		/**
-		 * This method adds the given pair: attribute name, attribute value, to the {@code BasicInfo}. If the attribute exists already then its value is updated.
-		 *
-		 * @param name  attribute name
-		 * @param value attribute value
-		 * @return the instance of the current object
-		 */
-		public BasicInfo setAttribute(final String name, final String value) {
-
-			attributes.put(name, value);
-			return this;
-		}
-
-		public boolean hasAttribute(final String name) {
-
-			return attributes.containsKey(name);
-		}
-
-		public boolean hasAttribute(final String name, final String value) {
-
-			if (attributes.isEmpty()) {
-				return false;
-			}
-			final String attributeValue = attributes.get(name);
-			return (attributeValue != null) && attributeValue.equals(value);
-		}
-
-		public String getAttributeValue(final String name) {
-
-			if (attributes.isEmpty()) {
-				return null;
-			}
-			final String attributeValue = attributes.get(name);
-			return attributeValue;
-		}
-
-		public String getValue() {
-			return value;
-		}
-
-		public void setValue(final String value) {
-			this.value = value;
-		}
-
-		/**
-		 * This method adds the Info {@code XmlNode} to the given {@code XmlNode}
-		 *
-		 * @param xmlNode The node to which the Info node is added
-		 */
-		public void addTo(final XmlNode xmlNode) {
-
-			final XmlNode info = xmlNode.addChild(NodeName.INFO, value);
-
-			for (final Entry<String, String> entry : attributes.entrySet()) {
-
-				info.setAttribute(entry.getKey(), entry.getValue());
-			}
-		}
-
-		public HashMap<String, String> getAttributes() {
-			return attributes;
-		}
-
-
-		@Override
-		public String toString() {
-
-			String attributeString = "";
-			for (Entry<String, String> entry : attributes.entrySet()) {
-
-				if ("NameId".equals(entry.getKey())) {
-					continue;
-				}
-				attributeString += (attributeString.isEmpty() ? "" : ", ") + entry.getKey() + "=" + entry.getValue();
-			}
-
-			if (!value.isEmpty() && !attributeString.isEmpty()) {
-				attributeString = " [" + attributeString + "]";
-
-			}
-			return value + (attributeString.isEmpty() ? "" : attributeString);
-		}
+	public void setLocation(String location) {
+		this.location = location;
 	}
 
 	public boolean isValid() {
 
-		return Indication.VALID.equals(indication);
+		return VALID.equals(indication);
 	}
 
 	/**
@@ -357,6 +120,10 @@ public class Conclusion {
 	 */
 	public void setSubIndication(final String subIndication) {
 		this.subIndication = subIndication;
+	}
+
+	public List<Info> getInfoList() {
+		return infoList;
 	}
 
 	/**
@@ -422,7 +189,7 @@ public class Conclusion {
 	 */
 	public void addInfo(final Conclusion conclusion) {
 
-		if ((conclusion.infoList != null) && !conclusion.infoList.isEmpty()) {
+		if (conclusion.infoList != null && !conclusion.infoList.isEmpty()) {
 
 			ensureInfoList();
 			infoList.addAll(conclusion.infoList);
@@ -436,7 +203,7 @@ public class Conclusion {
 	 */
 	public void addInfo(final List<XmlDom> infoList) {
 
-		if ((infoList == null) || infoList.isEmpty()) {
+		if (infoList == null || infoList.isEmpty()) {
 
 			return;
 		}
@@ -470,7 +237,7 @@ public class Conclusion {
 	public void addInfo(final XmlNode infoContainerXmlNode) {
 
 		List<XmlNode> children;
-		if ((infoContainerXmlNode == null) || (children = infoContainerXmlNode.getChildren()).isEmpty()) {
+		if (infoContainerXmlNode == null || (children = infoContainerXmlNode.getChildren()).isEmpty()) {
 
 			return;
 		}
@@ -500,14 +267,11 @@ public class Conclusion {
 		final String name = xmlNode.getName();
 		final String value = xmlNode.getValue();
 		BasicInfo basicInfo = null;
-		if (NodeName.ERROR.equals(name)) {
-
+		if (ERROR.equals(name)) {
 			basicInfo = addError();
-		} else if (NodeName.WARNING.equals(name)) {
-
+		} else if (WARNING.equals(name)) {
 			basicInfo = addWarning();
-		} else if (NodeName.INFO.equals(name)) {
-
+		} else if (INFO.equals(name)) {
 			basicInfo = addInfo();
 
 		}
@@ -519,6 +283,10 @@ public class Conclusion {
 		}
 	}
 
+	public List<Error> getErrorList() {
+		return errorList;
+	}
+
 	private BasicInfo addError() {
 
 		final Error error = new Error();
@@ -528,14 +296,59 @@ public class Conclusion {
 	}
 
 	/**
+	 * This method adds an {@code Warning} to the warning list.
+	 *
+	 * @param messageTag {@code MessageTag} contains the unique message identifier and the content of the warning
+	 * @return created {@code Warning}
+	 */
+	public Error addError(final MessageTag messageTag) {
+
+		Map<String, String> attributes = new HashMap<String, String>();
+		if (location != null) {
+			// TODO-Bob (10/10/2015):  uncomment for OPOCE
+			//			attributes.put(LOCATION, location);
+		}
+		final Error error = new Error(messageTag, attributes);
+		ensureErrorList();
+		errorList.add(error);
+		return error;
+	}
+
+	/**
+	 * This method adds an {@code Error} to the error list.
+	 *
+	 * @param messageTag {@code MessageTag} contains the unique message identifier and the content of the error
+	 * @param attributes {@code Map} contains all attributes associated to the error.
+	 * @return created {@code Error}
+	 */
+	public Error addError(final MessageTag messageTag, final Map<String, String> attributes) {
+
+		Map<String, String> allAttributes = new HashMap<String, String>(attributes);
+		if (location != null) {
+			// TODO-Bob (10/10/2015):  uncomment for OPOCE
+			//			allAttributes.put(LOCATION, location);
+		}
+		final Error error = new Error(messageTag, allAttributes);
+		ensureErrorList();
+		errorList.add(error);
+		return error;
+	}
+
+	private void ensureErrorList() {
+
+		if (errorList == null) {
+			errorList = new ArrayList<Error>();
+		}
+	}
+
+	/**
 	 * This method adds the content of nodes contained in the given {@code List} of {@code XmlDom}(s) as error.
 	 *
 	 * @param errors the {@code List} of {@code XmlDom}(s) to be integrated.
 	 */
 	private void addErrors(final List<XmlDom> errors) {
 
-		if ((errors == null) || errors.isEmpty()) {
-
+		if (errors == null || errors.isEmpty()) {
 			return;
 		}
 		ensureErrorList();
@@ -545,6 +358,20 @@ public class Conclusion {
 			final Error error = new Error(value);
 			copyAttributes(errorXmlDom, error);
 			errorList.add(error);
+		}
+	}
+
+	/**
+	 * Adds to this conclusion the warning list contained in the {@code conclusion} parameter.
+	 *
+	 * @param conclusion from which the warning list must be integrated to the current one.
+	 */
+	public void addErrors(final Conclusion conclusion) {
+
+		if (conclusion.errorList != null && !conclusion.errorList.isEmpty()) {
+
+			ensureErrorList();
+			errorList.addAll(conclusion.errorList);
 		}
 	}
 
@@ -579,6 +406,10 @@ public class Conclusion {
 			}
 		}
 		return null;
+	}
+
+	public List<Warning> getWarningList() {
+		return warningList;
 	}
 
 	private BasicInfo addWarning() {
@@ -623,9 +454,9 @@ public class Conclusion {
 	 *
 	 * @param warnings the {@code List} of {@code XmlDom}(s) to be integrated.
 	 */
-	private void addWarnings(List<XmlDom> warnings) {
+	private void addWarnings(final List<XmlDom> warnings) {
 
-		if ((warnings == null) || warnings.isEmpty()) {
+		if (warnings == null || warnings.isEmpty()) {
 
 			return;
 		}
@@ -646,7 +477,7 @@ public class Conclusion {
 	 */
 	public void addWarnings(final Conclusion conclusion) {
 
-		if ((conclusion.warningList != null) && !conclusion.warningList.isEmpty()) {
+		if (conclusion.warningList != null && !conclusion.warningList.isEmpty()) {
 
 			ensureWarningList();
 			warningList.addAll(conclusion.warningList);
@@ -657,42 +488,6 @@ public class Conclusion {
 
 		if (warningList == null) {
 			warningList = new ArrayList<Warning>();
-		}
-	}
-
-	/**
-	 * This method adds an {@code Warning} to the warning list.
-	 *
-	 * @param messageTag {@code MessageTag} contains the unique message identifier and the content of the warning
-	 * @return created {@code Warning}
-	 */
-	public Error addError(final MessageTag messageTag) {
-
-		final Error error = new Error(messageTag);
-		ensureErrorList();
-		errorList.add(error);
-		return error;
-	}
-
-	/**
-	 * This method adds an {@code Error} to the error list.
-	 *
-	 * @param messageTag {@code MessageTag} contains the unique message identifier and the content of the error
-	 * @param attributes {@code Map} contains all attributes associated to the error.
-	 * @return created {@code Error}
-	 */
-	public Error addError(final MessageTag messageTag, Map<String, String> attributes) {
-
-		final Error error = new Error(messageTag, attributes);
-		ensureErrorList();
-		errorList.add(error);
-		return error;
-	}
-
-	private void ensureErrorList() {
-
-		if (errorList == null) {
-			errorList = new ArrayList<Error>();
 		}
 	}
 
@@ -721,11 +516,11 @@ public class Conclusion {
 	 */
 	public XmlNode toXmlNode() {
 
-		final XmlNode conclusion = new XmlNode(NodeName.CONCLUSION);
-		conclusion.addChild(NodeName.INDICATION, indication);
+		final XmlNode conclusion = new XmlNode(CONCLUSION);
+		conclusion.addChild(INDICATION, indication);
 		if (subIndication != null) {
 
-			conclusion.addChild(NodeName.SUB_INDICATION, subIndication);
+			conclusion.addChild(SUB_INDICATION, subIndication);
 		}
 		infoToXmlNode(conclusion);
 		warningToXmlNode(conclusion);
@@ -735,17 +530,17 @@ public class Conclusion {
 
 	public void infoToXmlNode(final XmlNode conclusion) {
 
-		basicInfoToXmlNode(infoList, NodeName.INFO, conclusion);
+		basicInfoToXmlNode(infoList, INFO, conclusion);
 	}
 
 	public void warningToXmlNode(final XmlNode conclusion) {
 
-		basicInfoToXmlNode(warningList, NodeName.WARNING, conclusion);
+		basicInfoToXmlNode(warningList, WARNING, conclusion);
 	}
 
 	public void errorToXmlNode(final XmlNode conclusion) {
 
-		basicInfoToXmlNode(errorList, NodeName.ERROR, conclusion);
+		basicInfoToXmlNode(errorList, ERROR, conclusion);
 	}
 
 	private void basicInfoToXmlNode(List<?> basicInfoList, final String infoLevel, final XmlNode conclusion) {
@@ -764,38 +559,321 @@ public class Conclusion {
 		}
 	}
 
-	public void copyConclusion(final XmlDom conclusionXmlDom) {
+	public void copyConclusionAndAddBasicInfo(final XmlDom conclusionXmlDom) {
 
-		final String indication = conclusionXmlDom.getValue("./Indication/text()");
+		final String indication = conclusionXmlDom.getValue(XP_INDICATION);
 		if (!indication.isEmpty()) {
 			this.indication = indication;
 		}
 
-		final String subIndication = conclusionXmlDom.getValue("./SubIndication/text()");
+		final String subIndication = conclusionXmlDom.getValue(XP_SUB_INDICATION);
 		if (!subIndication.isEmpty()) {
 			this.subIndication = subIndication;
 		}
+		addBasicInfo(conclusionXmlDom);
+	}
 
-		final List<XmlDom> errors = conclusionXmlDom.getElements("./Error");
+	public void addBasicInfo(final XmlDom conclusionXmlDom) {
+
+		final List<XmlDom> errors = conclusionXmlDom.getElements(XP_ERROR);
 		addErrors(errors);
 
-		final List<XmlDom> warnings = conclusionXmlDom.getElements("./Warning");
+		final List<XmlDom> warnings = conclusionXmlDom.getElements(XP_WARNING);
 		addWarnings(warnings);
 
-		final List<XmlDom> info = conclusionXmlDom.getElements("./Info");
+		final List<XmlDom> info = conclusionXmlDom.getElements(XP_INFO);
 		addInfo(info);
+	}
+
+	public void copyConclusion(final Conclusion conclusion) {
+
+		this.indication = conclusion.indication;
+		this.subIndication = conclusion.subIndication;
+
+		this.validationData = conclusion.validationData;
+
+		if (conclusion.infoList != null) {
+		this.infoList = new ArrayList<Info>(conclusion.infoList);
+		}
+		if (conclusion.warningList != null) {
+		this.warningList = new ArrayList<Warning>(conclusion.warningList);
+		}
+		if (conclusion.errorList != null) {
+		this.errorList = new ArrayList<Error>(conclusion.errorList);
+	}
+	}
+
+	public void addBasicInfo(final Conclusion conclusion) {
+
+		addInfo(conclusion);
+		addWarnings(conclusion);
+		addErrors(conclusion);
 	}
 
 	public void copyWarnings(final XmlDom conclusionXmlDom) {
 
-
-		final List<XmlDom> warnings = conclusionXmlDom.getElements("./Warning");
+		final List<XmlDom> warnings = conclusionXmlDom.getElements(XP_WARNING);
 		addWarnings(warnings);
 	}
 
-	@Override
+	public void copyErrors(final XmlDom conclusionXmlDom) {
+
+		final List<XmlDom> errors = conclusionXmlDom.getElements(XP_ERROR);
+		addErrors(errors);
+	}
+
 	public String toString() {
 
 		return toXmlNode().toString();
+	}
+
+	/**
+	 * This class expresses an information.
+	 */
+	static public class Info extends BasicInfo {
+
+		public Info() {
+			super(INFO);
+		}
+
+		public Info(final String value) {
+			super(INFO, value);
+		}
+
+		public Info(final String nameId, final String value) {
+			super(nameId, INFO, value);
+		}
+
+		public Info(final MessageTag messageTag) {
+			super(INFO, messageTag);
+		}
+
+		public Info(final MessageTag messageTag, final String... dynamicParameters) {
+			super(INFO, messageTag, dynamicParameters);
+		}
+
+		public Info(final MessageTag messageTag, final Map<String, String> attributes) {
+			super(INFO, messageTag, attributes);
+		}
+	}
+
+	/**
+	 * This class expresses a warning.
+	 */
+	static public class Warning extends BasicInfo {
+
+		public Warning() {
+			super(WARNING);
+		}
+
+		public Warning(final String value) {
+			super(WARNING, value);
+		}
+
+		public Warning(final String nameId, final String value) {
+			super(nameId, WARNING, value);
+		}
+
+		public Warning(final MessageTag messageTag) {
+			super(WARNING, messageTag);
+		}
+
+		public Warning(final MessageTag messageTag, final Map<String, String> attributes) {
+			super(WARNING, messageTag, attributes);
+		}
+	}
+
+	/**
+	 * This class expresses a warning.
+	 */
+	static public class Error extends BasicInfo {
+
+		public Error() {
+			super(ERROR);
+		}
+
+		public Error(String value) {
+			super(ERROR, value);
+		}
+
+		public Error(final String nameId, final String value) {
+			super(nameId, ERROR, value);
+		}
+
+		public Error(final MessageTag messageTag) {
+			super(ERROR, messageTag);
+		}
+
+		public Error(final MessageTag messageTag, final Map<String, String> attributes) {
+			super(ERROR, messageTag, attributes);
+		}
+	}
+
+	/**
+	 * This class contains information provided by the validation process and to be included in the conclusion.
+	 */
+	static public class BasicInfo {
+
+		/**
+		 * The tag to use to express the basic information: Info or Warning
+		 */
+		protected final String tag;
+
+		/**
+		 * The content of the basic information
+		 */
+		protected String value;
+
+		/**
+		 * The {@code HashMap} containing the node's attributes and their values.
+		 */
+		protected HashMap<String, String> attributes = new HashMap<String, String>();
+
+		/**
+		 * @param tag indicates the info type: Info or Warning
+		 */
+		protected BasicInfo(final String tag) {
+
+			this.tag = tag;
+		}
+
+		public BasicInfo(final String tag, final String value) {
+
+			this.tag = tag;
+			this.value = value;
+		}
+
+		/**
+		 * @param nameId indicates the unique message identifier
+		 * @param tag    indicates the info type: Info or Warning
+		 * @param value  the value of the information
+		 */
+		protected BasicInfo(final String nameId, final String tag, final String value) {
+
+			setAttribute(NAME_ID, nameId);
+			this.tag = tag;
+			this.value = value;
+		}
+
+		/**
+		 * @param tag        indicates the info type: Info or Warning
+		 * @param messageTag indicates the unique message identifier
+		 */
+		protected BasicInfo(final String tag, final MessageTag messageTag) {
+
+			setAttribute(NAME_ID, messageTag.name());
+			this.tag = tag;
+			this.value = messageTag.getMessage();
+		}
+
+		/**
+		 * @param tag        indicates the info type: Info or Warning
+		 * @param messageTag indicates the unique message identifier
+		 */
+		protected BasicInfo(final String tag, final MessageTag messageTag, final String... dynamicParameters) {
+
+			setAttribute(NAME_ID, messageTag.name());
+			this.tag = tag;
+			final String message = String.format(messageTag.getMessage(), dynamicParameters);
+			this.value = message;
+		}
+
+		/**
+		 * @param tag        indicates the info type: Info or Warning
+		 * @param messageTag indicates the unique message identifier
+		 * @param attributes the value of the information
+		 */
+		protected BasicInfo(final String tag, final MessageTag messageTag, final Map<String, String> attributes) {
+
+			setAttribute(NAME_ID, messageTag.name());
+			this.tag = tag;
+			this.value = messageTag.getMessage();
+			if (attributes != null) {
+				this.attributes.putAll(attributes);
+			}
+		}
+
+		/**
+		 * This method adds the given pair: attribute name, attribute value, to the {@code BasicInfo}. If the attribute exists already then its value is updated.
+		 *
+		 * @param name  attribute name
+		 * @param value attribute value
+		 * @return the instance of the current object
+		 */
+		public BasicInfo setAttribute(final String name, final String value) {
+
+			attributes.put(name, value);
+			return this;
+		}
+
+		public boolean hasAttribute(final String name) {
+
+			return attributes.containsKey(name);
+		}
+
+		public boolean hasAttribute(final String name, final String value) {
+
+			if (attributes.isEmpty()) {
+				return false;
+			}
+			final String attributeValue = attributes.get(name);
+			return attributeValue != null && attributeValue.equals(value);
+		}
+
+		public String getAttributeValue(final String name) {
+
+			if (attributes.isEmpty()) {
+				return null;
+			}
+			final String attributeValue = attributes.get(name);
+			return attributeValue;
+		}
+
+		public String getValue() {
+			return value;
+		}
+
+		public void setValue(final String value) {
+			this.value = value;
+		}
+
+		/**
+		 * This method adds the Info {@code XmlNode} to the given {@code XmlNode}
+		 *
+		 * @param xmlNode The node to which the Info node is added
+		 */
+		public void addTo(final XmlNode xmlNode) {
+
+			final XmlNode info = xmlNode.addChild(INFO, value);
+
+			for (final Entry<String, String> entry : attributes.entrySet()) {
+
+				info.setAttribute(entry.getKey(), entry.getValue());
+			}
+		}
+
+		public HashMap<String, String> getAttributes() {
+			return attributes;
+		}
+
+
+		@Override
+		public String toString() {
+
+			String attributeString = "";
+			for (Entry<String, String> entry : attributes.entrySet()) {
+
+				if (NAME_ID.equals(entry.getKey())) {
+					continue;
+				}
+				attributeString += (attributeString.isEmpty() ? "" : ", ") + entry.getKey() + "=" + entry.getValue();
+			}
+
+			if (!value.isEmpty() && !attributeString.isEmpty()) {
+				attributeString = " [" + attributeString + "]";
+
+			}
+			return value + (attributeString.isEmpty() ? "" : attributeString);
+		}
 	}
 }

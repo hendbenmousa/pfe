@@ -28,6 +28,17 @@ import javax.xml.bind.annotation.XmlType;
  *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
  *       &lt;sequence>
  *         &lt;element name="DocumentName" type="{http://www.w3.org/2001/XMLSchema}string"/>
+ *         &lt;element name="DetachedContents" minOccurs="0">
+ *           &lt;complexType>
+ *             &lt;complexContent>
+ *               &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
+ *                 &lt;sequence>
+ *                   &lt;element name="DocumentName" type="{http://www.w3.org/2001/XMLSchema}string" maxOccurs="unbounded" minOccurs="0"/>
+ *                 &lt;/sequence>
+ *               &lt;/restriction>
+ *             &lt;/complexContent>
+ *           &lt;/complexType>
+ *         &lt;/element>
  *         &lt;element name="Signature" maxOccurs="unbounded" minOccurs="0">
  *           &lt;complexType>
  *             &lt;complexContent>
@@ -205,6 +216,7 @@ import javax.xml.bind.annotation.XmlType;
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "", propOrder = {
     "documentName",
+    "detachedContents",
     "signature",
     "usedCertificates"
 })
@@ -213,6 +225,8 @@ public class DiagnosticData {
 
     @XmlElement(name = "DocumentName", required = true)
     protected String documentName;
+    @XmlElement(name = "DetachedContents")
+    protected XmlDetachedContents detachedContents;
     @XmlElement(name = "Signature")
     protected List<XmlSignature> signature;
     @XmlElement(name = "UsedCertificates", required = true)
@@ -240,6 +254,30 @@ public class DiagnosticData {
      */
     public void setDocumentName(String value) {
         this.documentName = value;
+    }
+
+    /**
+     * Gets the value of the detachedContents property.
+     *
+     * @return
+     *     possible object is
+     *     {@link XmlDetachedContents }
+     *
+     */
+    public XmlDetachedContents getDetachedContents() {
+        return detachedContents;
+    }
+
+    /**
+     * Sets the value of the detachedContents property.
+     *
+     * @param value
+     *     allowed object is
+     *     {@link XmlDetachedContents }
+     *
+     */
+    public void setDetachedContents(XmlDetachedContents value) {
+        this.detachedContents = value;
     }
 
     /**

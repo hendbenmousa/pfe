@@ -28,6 +28,7 @@
 			<ProspectiveCertificateChain Level="FAIL"/>
 			<KeyUsage Level="WARN">
 				<Identifier>nonRepudiation</Identifier>
+				<Identifier>digitalSignature</Identifier>
 			</KeyUsage>
 			<Revoked Level="FAIL"/>
 			<OnHold Level="FAIL"/>

@@ -1,25 +1,26 @@
 /**
  * DSS - Digital Signature Services
  * Copyright (C) 2015 European Commission, provided under the CEF programme
- *
+ * <p/>
  * This file is part of the "DSS - Digital Signature Services" project.
- *
+ * <p/>
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 2.1 of the License, or (at your option) any later version.
- *
+ * <p/>
  * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
- *
+ * <p/>
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  */
 package eu.europa.esig.dss.validation.policy;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -32,15 +33,15 @@ import eu.europa.esig.dss.DSSException;
 import eu.europa.esig.dss.DSSUtils;
 import eu.europa.esig.dss.XmlDom;
 import eu.europa.esig.dss.validation.policy.rules.AttributeName;
+import eu.europa.esig.dss.validation.policy.rules.AttributeValue;
 
 /**
  * This class encapsulates the constraint file that controls the policy to be used during the validation process. It
  * adds the functions to direct access to the file data. It is the implementation of the ETSI 102853 standard.
  */
-public class EtsiValidationPolicy extends ValidationPolicy {
+public class EtsiValidationPolicy extends ValidationPolicy implements AttributeName, AttributeValue {
 
-	protected static final String TRUE = "true";
-	protected static final String FALSE = "false";
+	protected static final String XP_ROOT = "/ConstraintsParameters";
 
 	private long maxRevocationFreshnessString;
 
@@ -59,7 +60,7 @@ public class EtsiValidationPolicy extends ValidationPolicy {
 	@Override
 	public boolean isRevocationFreshnessToBeChecked() {
 
-		return null != getElement("/ConstraintsParameters/Revocation/RevocationFreshness/");
+		return null != getElement(XP_ROOT + "/Revocation/RevocationFreshness/");
 	}
 
 	@Override
@@ -79,11 +80,11 @@ public class EtsiValidationPolicy extends ValidationPolicy {
 
 			maxRevocationFreshness = Long.MAX_VALUE;
 
-			final XmlDom revocationFreshness = getElement("/ConstraintsParameters/Revocation/RevocationFreshness");
+			final XmlDom revocationFreshness = getElement(XP_ROOT + "/Revocation/RevocationFreshness");
 			if (revocationFreshness != null) {
 
-				maxRevocationFreshnessString = getLongValue("/ConstraintsParameters/Revocation/RevocationFreshness/text()");
-				maxRevocationFreshnessUnit = getValue("/ConstraintsParameters/Revocation/RevocationFreshness/@Unit");
+				maxRevocationFreshnessString = getLongValue(XP_ROOT + "/Revocation/RevocationFreshness/text()");
+				maxRevocationFreshnessUnit = getValue(XP_ROOT + "/Revocation/RevocationFreshness/@Unit");
 				maxRevocationFreshness = RuleUtils.convertDuration(maxRevocationFreshnessUnit, "MILLISECONDS", maxRevocationFreshnessString);
 				if (maxRevocationFreshness == 0) {
 
@@ -100,7 +101,7 @@ public class EtsiValidationPolicy extends ValidationPolicy {
 		Date date = algorithmExpirationDate.get(algorithm);
 		if (date == null) {
 
-			final XmlDom algoExpirationDateDom = getElement("/ConstraintsParameters/Timestamp/Cryptographic/AlgoExpirationDate");
+			final XmlDom algoExpirationDateDom = getElement(XP_ROOT + "/Timestamp/Cryptographic/AlgoExpirationDate");
 			if (algoExpirationDateDom == null) {
 
 				return null;
@@ -125,12 +126,12 @@ public class EtsiValidationPolicy extends ValidationPolicy {
 	@Override
 	public SignaturePolicyConstraint getSignaturePolicyConstraint() {
 
-		final String level = getValue("/ConstraintsParameters/MainSignature/AcceptablePolicies/@Level");
+		final String level = getValue(XP_ROOT + "/MainSignature/AcceptablePolicies/@Level");
 		if (StringUtils.isNotBlank(level)) {
 
 			final SignaturePolicyConstraint constraint = new SignaturePolicyConstraint(level);
 
-			final List<XmlDom> policyList = getElements("/ConstraintsParameters/MainSignature/AcceptablePolicies/Id");
+			final List<XmlDom> policyList = getElements(XP_ROOT + "/MainSignature/AcceptablePolicies/Id");
 			final List<String> identifierList = XmlDom.convertToStringList(policyList);
 			constraint.setIdentifiers(identifierList);
 			constraint.setExpectedValue(identifierList.toString());
@@ -140,49 +141,74 @@ public class EtsiValidationPolicy extends ValidationPolicy {
 	}
 
 	@Override
+	public Constraint getSignatureFormatConstraint() {
+
+		final String xpRoot = XP_ROOT + "/MainSignature/AcceptableSignatureFormats";
+		final String level = getValue(xpRoot + "/@Level");
+		if (StringUtils.isNotBlank(level)) {
+
+			final Constraint constraint = new Constraint(level);
+			final List<XmlDom> signatureFormats = getElements(xpRoot + "/Format");
+			final List<String> signatureFormatList = XmlDom.convertToStringList(signatureFormats);
+			constraint.setExpectedValue(signatureFormatList.toString());
+			constraint.setIdentifiers(signatureFormatList);
+			return constraint;
+		}
+		return null;
+	}
+
+	@Override
 	public Constraint getStructuralValidationConstraint() {
 
-		final String XP_ROOT = "/ConstraintsParameters/MainSignature/StructuralValidation";
-		return getBasicConstraint(XP_ROOT, true);
+		final String xpRoot = "/MainSignature/StructuralValidation";
+		return getBasicConstraint(xpRoot, true);
+	}
+
+	@Override
+	public Constraint getDataObjectFormatConstraint() {
+
+		final String xpRoot = "/MainSignature/MandatedSignedQProperties/DataObjectFormat";
+		return getBasicConstraint(xpRoot, true);
 	}
 
 	@Override
 	public Constraint getSigningTimeConstraint() {
 
-		final String XP_ROOT = "/ConstraintsParameters/MainSignature/MandatedSignedQProperties/SigningTime";
-		return getBasicConstraint(XP_ROOT, true);
+		final String xpRoot = "/MainSignature/MandatedSignedQProperties/SigningTime";
+		return getBasicConstraint(xpRoot, true);
 	}
 
 	@Override
 	public Constraint getContentTypeConstraint() {
 
-		final String XP_ROOT = "/ConstraintsParameters/MainSignature/MandatedSignedQProperties/ContentType";
-		return getBasicConstraint(XP_ROOT, true);
+		final String xpRoot = "/MainSignature/MandatedSignedQProperties/ContentType";
+		return getBasicConstraint(xpRoot, true);
 	}
 
 
 	@Override
 	public Constraint getContentHintsConstraint() {
 
-		final String XP_ROOT = "/ConstraintsParameters/MainSignature/MandatedSignedQProperties/ContentHints";
-		return getBasicConstraint(XP_ROOT, true);
+		final String xpRoot = "/MainSignature/MandatedSignedQProperties/ContentHints";
+		return getBasicConstraint(xpRoot, true);
 	}
 
 	@Override
 	public Constraint getContentIdentifierConstraint() {
 
-		final String XP_ROOT = "/ConstraintsParameters/MainSignature/MandatedSignedQProperties/ContentIdentifier";
-		return getBasicConstraint(XP_ROOT, true);
+		final String xpRoot = "/MainSignature/MandatedSignedQProperties/ContentIdentifier";
+		return getBasicConstraint(xpRoot, true);
 	}
 
 	@Override
 	public Constraint getCommitmentTypeIndicationConstraint() {
 
-		final String level = getValue("/ConstraintsParameters/MainSignature/MandatedSignedQProperties/CommitmentTypeIndication/@Level");
+		final String xpRoot = XP_ROOT + "/MainSignature/MandatedSignedQProperties/CommitmentTypeIndication";
+		final String level = getValue(xpRoot + "/@Level");
 		if (StringUtils.isNotBlank(level)) {
 
 			final Constraint constraint = new Constraint(level);
-			final List<XmlDom> commitmentTypeIndications = getElements("/ConstraintsParameters/MainSignature/MandatedSignedQProperties/CommitmentTypeIndication/Identifier");
+			final List<XmlDom> commitmentTypeIndications = getElements(xpRoot + "/Identifier");
 			final List<String> identifierList = XmlDom.convertToStringList(commitmentTypeIndications);
 			constraint.setExpectedValue(identifierList.toString());
 			constraint.setIdentifiers(identifierList);
@@ -194,35 +220,42 @@ public class EtsiValidationPolicy extends ValidationPolicy {
 	@Override
 	public Constraint getSignerLocationConstraint() {
 
-		final String level = getValue("/ConstraintsParameters/MainSignature/MandatedSignedQProperties/SignerLocation/@Level");
-		if (StringUtils.isNotBlank(level)) {
+		final String xpRoot = "/MainSignature/MandatedSignedQProperties/SignerLocation";
+		return getBasicConstraint(xpRoot, true);
+	}
 
-			final Constraint constraint = new Constraint(level);
-			return constraint;
+	@Override
+	public ElementNumberConstraint getContentTimestampNumberConstraint() {
+
+		final String xpRoot = XP_ROOT + "/MainSignature/MandatedSignedQProperties/ContentTimestamp";
+		final ElementNumberConstraint elementNumberConstraint = getElementNumberConstraint(xpRoot);
+		if (elementNumberConstraint != null) {
+			return elementNumberConstraint;
 		}
 		return null;
 	}
 
 	@Override
-	public Constraint getContentTimestampPresenceConstraint() {
+	public List<String> getContentTimestampTypeList() {
 
-		final String level = getValue("/ConstraintsParameters/MainSignature/MandatedSignedQProperties/ContentTimestamp/@Level");
-		if (StringUtils.isNotBlank(level)) {
-
-			final Constraint constraint = new Constraint(level);
-			return constraint;
+		final String xpRoot = XP_ROOT + "/MainSignature/MandatedSignedQProperties/ContentTimestamp/Type";
+		final List<XmlDom> elementXmlList = getElements(xpRoot);
+		List<String> foundTypeList = new ArrayList<String>();
+		for (final XmlDom elementXmlDom : elementXmlList) {
+			foundTypeList.add(elementXmlDom.getText());
 		}
-		return null;
+		return foundTypeList;
 	}
 
 	@Override
 	public Constraint getClaimedRoleConstraint() {
 
-		final String level = getValue("/ConstraintsParameters/MainSignature/MandatedSignedQProperties/ClaimedRoles/@Level");
+		final String xpRoot = XP_ROOT + "/MainSignature/MandatedSignedQProperties/ClaimedRoles";
+		final String level = getValue(xpRoot + "/@Level");
 		if (StringUtils.isNotBlank(level)) {
 
 			final Constraint constraint = new Constraint(level);
-			final List<XmlDom> claimedRoles = getElements("/ConstraintsParameters/MainSignature/MandatedSignedQProperties/ClaimedRoles/Role");
+			final List<XmlDom> claimedRoles = getElements(xpRoot + "/Role");
 			final List<String> claimedRoleList = XmlDom.convertToStringList(claimedRoles);
 			constraint.setExpectedValue(claimedRoleList.toString());
 			constraint.setIdentifiers(claimedRoleList);
@@ -234,37 +267,41 @@ public class EtsiValidationPolicy extends ValidationPolicy {
 	@Override
 	public List<String> getClaimedRoles() {
 
-		final List<XmlDom> list = getElements("/ConstraintsParameters/MainSignature/MandatedSignedQProperties/ClaimedRoles/Role");
+		final List<XmlDom> list = getElements(XP_ROOT + "/MainSignature/MandatedSignedQProperties/ClaimedRoles/Role");
 		final List<String> claimedRoles = XmlDom.convertToStringList(list);
 		return claimedRoles;
 	}
 
 	@Override
-	public boolean shouldCheckIfCertifiedRoleIsPresent() {
+	public Constraint getCertifiedRoleConstraint() {
 
-		final long count = getCountValue("count(/ConstraintsParameters/MainSignature/MandatedSignedQProperties/CertifiedRoles/Role)");
-		return count > 0;
+		final String xpRoot = XP_ROOT + "/MainSignature/MandatedSignedQProperties/CertifiedRoles";
+		final String level = getValue(xpRoot + "/@Level");
+		if (StringUtils.isNotBlank(level)) {
+
+			final Constraint constraint = new Constraint(level);
+			final List<XmlDom> certifiedRoleXmlDomList = getElements(xpRoot + "/Role");
+			final List<String> certifiedRoleList = XmlDom.convertToStringList(certifiedRoleXmlDomList);
+
+			constraint.setExpectedValue(certifiedRoleList.toString());
+			constraint.setIdentifiers(certifiedRoleList);
+			return constraint;
+	}
+		return null;
 	}
 
-	@Override
-	public List<String> getCertifiedRoles() {
-
-		final List<XmlDom> list = getElements("/ConstraintsParameters/MainSignature/MandatedSignedQProperties/CertifiedRoles/Role");
-		final List<String> claimedRoles = XmlDom.convertToStringList(list);
-		return claimedRoles;
-	}
 
 	@Override
 	public String getPolicyName() {
 
-		final String policy = getValue("/ConstraintsParameters/@Name");
+		final String policy = getValue(XP_ROOT + "/@Name");
 		return policy;
 	}
 
 	@Override
 	public String getPolicyDescription() {
 
-		final String description = getValue("/ConstraintsParameters/Description/text()");
+		final String description = getValue(XP_ROOT + "/Description/text()");
 		return description;
 	}
 
@@ -273,20 +310,20 @@ public class EtsiValidationPolicy extends ValidationPolicy {
 
 		if (timestampDelayTime == null) {
 
-			final XmlDom timestampDelayPresent = getElement("/ConstraintsParameters/Timestamp/TimestampDelay");
+			final XmlDom timestampDelayPresent = getElement(XP_ROOT + "/Timestamp/TimestampDelay");
 			if (timestampDelayPresent == null) {
 
 				return null;
 			}
-			final long timestampDelay = getLongValue("/ConstraintsParameters/Timestamp/TimestampDelay/text()");
-			final String timestampUnit = getValue("/ConstraintsParameters/Timestamp/TimestampDelay/@Unit");
+			final long timestampDelay = getLongValue(XP_ROOT + "/Timestamp/TimestampDelay/text()");
+			final String timestampUnit = getValue(XP_ROOT + "/Timestamp/TimestampDelay/@Unit");
 			timestampDelayTime = RuleUtils.convertDuration(timestampUnit, "MILLISECONDS", timestampDelay);
 		}
 		return timestampDelayTime;
 	}
 
 	@Override
-	public String getCertifiedRolesAttendance() {
+	public String getClaimedRolesAttendance() {
 
 		String attendance = getValue("ConstraintsParameters/MainSignature/MandatedSignedQProperties/ClaimedRoles/@Attendance");
 		return attendance;
@@ -295,14 +332,14 @@ public class EtsiValidationPolicy extends ValidationPolicy {
 	@Override
 	public SignatureCryptographicConstraint getSignatureCryptographicConstraint(final String context) {
 
-		final String rootXPathQuery = String.format("/ConstraintsParameters/%s/Cryptographic", context);
+		final String rootXPathQuery = String.format(XP_ROOT + "/%s/Cryptographic", context);
 		return getSignatureCryptographicConstraint_(rootXPathQuery, context, null);
 	}
 
 	@Override
 	public SignatureCryptographicConstraint getSignatureCryptographicConstraint(final String context, final String subContext) {
 
-		final String rootXPathQuery = String.format("/ConstraintsParameters/%s/%s/Cryptographic", context, subContext);
+		final String rootXPathQuery = String.format(XP_ROOT + "/%s/%s/Cryptographic", context, subContext);
 		return getSignatureCryptographicConstraint_(rootXPathQuery, context, subContext);
 	}
 
@@ -323,11 +360,33 @@ public class EtsiValidationPolicy extends ValidationPolicy {
 			constraint.setDigestAlgorithms(digestAlgoStringList);
 
 			final List<XmlDom> miniPublicKeySizeList = getElements(rootXPathQuery + "/MiniPublicKeySize/Algo");
-			final Map<String, String> miniPublicKeySizeStringMap = XmlDom.convertToStringMap(miniPublicKeySizeList, AttributeName.SIZE);
+			final Map<String, String> miniPublicKeySizeStringMap = XmlDom.convertToStringMap(miniPublicKeySizeList, SIZE);
 			constraint.setMinimumPublicKeySizes(miniPublicKeySizeStringMap);
 
-			final List<XmlDom> algoExpirationDateList = getElements("/ConstraintsParameters/Cryptographic/AlgoExpirationDate/Algo");
-			final Map<String, Date> algoExpirationDateStringMap = XmlDom.convertToStringDateMap(algoExpirationDateList, AttributeName.DATE);
+			final List<XmlDom> algoExpirationDateList = getElements(XP_ROOT + "/Cryptographic/AlgoExpirationDate/Algo");
+			final Map<String, Date> algoExpirationDateStringMap = XmlDom.convertToStringDateMap(algoExpirationDateList, DATE);
+			constraint.setAlgorithmExpirationDates(algoExpirationDateStringMap);
+
+			return constraint;
+		}
+		return null;
+	}
+
+	@Override
+	public ManifestCryptographicConstraint getManifestCryptographicConstraint() {
+
+		final String rootXPathQuery = XP_ROOT + "/MainSignature/Manifest/Cryptographic";
+		final String level = getValue(rootXPathQuery + "/@Level");
+		if (StringUtils.isNotBlank(level)) {
+
+			final ManifestCryptographicConstraint constraint = new ManifestCryptographicConstraint(level);
+
+			final List<XmlDom> digestAlgoList = getElements(rootXPathQuery + "/AcceptableDigestAlgo/Algo");
+			final List<String> digestAlgoStringList = XmlDom.convertToStringList(digestAlgoList);
+			constraint.setDigestAlgorithms(digestAlgoStringList);
+
+			final List<XmlDom> algoExpirationDateList = getElements(XP_ROOT + "/Cryptographic/AlgoExpirationDate/Algo");
+			final Map<String, Date> algoExpirationDateStringMap = XmlDom.convertToStringDateMap(algoExpirationDateList, DATE);
 			constraint.setAlgorithmExpirationDates(algoExpirationDateStringMap);
 
 			return constraint;
@@ -338,11 +397,11 @@ public class EtsiValidationPolicy extends ValidationPolicy {
 	@Override
 	public Constraint getSigningCertificateKeyUsageConstraint(final String context) {
 
-		final String level = getValue("/ConstraintsParameters/%s/SigningCertificate/KeyUsage/@Level", context);
+		final String level = getValue(XP_ROOT + "/%s/SigningCertificate/KeyUsage/@Level", context);
 		if (StringUtils.isNotBlank(level)) {
 
 			final Constraint constraint = new Constraint(level);
-			final List<XmlDom> keyUsages = getElements("/ConstraintsParameters/%s/SigningCertificate/KeyUsage/Identifier", context);
+			final List<XmlDom> keyUsages = getElements(XP_ROOT + "/%s/SigningCertificate/KeyUsage/Identifier", context);
 			final List<String> identifierList = XmlDom.convertToStringList(keyUsages);
 			constraint.setExpectedValue(identifierList.toString());
 			constraint.setIdentifiers(identifierList);
@@ -354,7 +413,7 @@ public class EtsiValidationPolicy extends ValidationPolicy {
 	@Override
 	public CertificateExpirationConstraint getSigningCertificateExpirationConstraint(final String context, final String subContext) {
 
-		final String level = getValue(String.format("/ConstraintsParameters/%s/%s/Expiration/@Level", context, subContext));
+		final String level = getValue(String.format(XP_ROOT + "/%s/%s/Expiration/@Level", context, subContext));
 		if (StringUtils.isNotBlank(level)) {
 
 			final CertificateExpirationConstraint constraint = new CertificateExpirationConstraint(level);
@@ -366,189 +425,210 @@ public class EtsiValidationPolicy extends ValidationPolicy {
 	@Override
 	public Constraint getProspectiveCertificateChainConstraint(final String context) {
 
-		final String XP_ROOT = String.format("/ConstraintsParameters/%s/SigningCertificate/ProspectiveCertificateChain", context);
-		return getBasicConstraint(XP_ROOT, true);
+		final String xpRoot = String.format("/%s/SigningCertificate/ProspectiveCertificateChain", context);
+		return getBasicConstraint(xpRoot, true);
 	}
 
 	@Override
 	public Constraint getCertificateSignatureConstraint(final String context, final String subContext) {
 
-		final String XP_ROOT = String.format("/ConstraintsParameters/%s/%s/Signature", context, subContext);
-		return getBasicConstraint(XP_ROOT, true);
+		final String xpRoot = String.format("/%s/%s/Signature", context, subContext);
+		return getBasicConstraint(xpRoot, true);
 	}
 
 	@Override
 	public Constraint getRevocationDataAvailableConstraint(final String context, final String subContext) {
 
-		final String XP_ROOT = String.format("/ConstraintsParameters/%s/%s/RevocationDataAvailable", context, subContext);
-		return getBasicConstraint(XP_ROOT, true);
+		final String xpRoot = String.format("/%s/%s/RevocationDataAvailable", context, subContext);
+		return getBasicConstraint(xpRoot, true);
 	}
 
 	@Override
 	public Constraint getRevocationDataIsTrustedConstraint(final String context, final String subContext) {
 
-		final String XP_ROOT = String.format("/ConstraintsParameters/%s/%s/RevocationDataIsTrusted", context, subContext);
-		return getBasicConstraint(XP_ROOT, true);
+		final String xpRoot = String.format("/%s/%s/RevocationDataIsTrusted", context, subContext);
+		return getBasicConstraint(xpRoot, true);
 	}
 
 	@Override
 	public Constraint getRevocationDataFreshnessConstraint(final String context, final String subContext) {
 
-		final String XP_ROOT = String.format("/ConstraintsParameters/%s/%s/RevocationDataFreshness", context, subContext);
-		return getBasicConstraint(XP_ROOT, true);
+		final String xpRoot = String.format("/%s/%s/RevocationDataFreshness", context, subContext);
+		return getBasicConstraint(xpRoot, true);
 	}
 
 	@Override
 	public Constraint getSigningCertificateRevokedConstraint(final String context, final String subContext) {
 
-		final String XP_ROOT = String.format("/ConstraintsParameters/%s/%s/Revoked", context, subContext);
-		return getBasicConstraint(XP_ROOT, false);
+		final String xpRoot = String.format("/%s/%s/Revoked", context, subContext);
+		return getBasicConstraint(xpRoot, false);
 	}
 
 	@Override
 	public Constraint getSigningCertificateOnHoldConstraint(final String context, final String subContext) {
 
-		final String XP_ROOT = String.format("/ConstraintsParameters/%s/%s/OnHold", context, subContext);
-		return getBasicConstraint(XP_ROOT, false);
+		final String xpRoot = String.format("/%s/%s/OnHold", context, subContext);
+		return getBasicConstraint(xpRoot, false);
 	}
 
 	@Override
 	public Constraint getSigningCertificateTSLValidityConstraint(final String context) {
 
-		final String XP_ROOT = String.format("/ConstraintsParameters/%s/SigningCertificate/TSLValidity", context);
-		return getBasicConstraint(XP_ROOT, true);
+		final String xpRoot = String.format("/%s/SigningCertificate/TSLValidity", context);
+		return getBasicConstraint(xpRoot, true);
 	}
 
 	@Override
 	public Constraint getSigningCertificateTSLStatusConstraint(final String context) {
 
-		final String XP_ROOT = String.format("/ConstraintsParameters/%s/SigningCertificate/TSLStatus", context);
-		return getBasicConstraint(XP_ROOT, true);
+		final String xpRoot = String.format("/%s/SigningCertificate/TSLStatus", context);
+		return getBasicConstraint(xpRoot, true);
 	}
 
 	@Override
 	public Constraint getSigningCertificateTSLStatusAndValidityConstraint(final String context) {
 
-		final String XP_ROOT = String.format("/ConstraintsParameters/%s/SigningCertificate/TSLStatusAndValidity", context);
-		return getBasicConstraint(XP_ROOT, true);
+		final String xpRoot = String.format("/%s/SigningCertificate/TSLStatusAndValidity", context);
+		return getBasicConstraint(xpRoot, true);
 	}
 
 	@Override
 	public Constraint getIntermediateCertificateRevokedConstraint(final String context) {
 
-		final String XP_ROOT = String.format("/ConstraintsParameters/%s/CACertificate/Revoked", context);
-		return getBasicConstraint(XP_ROOT, false);
+		final String xpRoot = String.format("/%s/CACertificate/Revoked", context);
+		return getBasicConstraint(xpRoot, false);
 	}
 
 	@Override
 	public Constraint getChainConstraint() {
 
-		final String level = getValue("/ConstraintsParameters/MainSignature/CertificateChain/@Level");
-		if (StringUtils.isNotBlank(level)) {
-
-			final Constraint constraint = new Constraint(level);
-			return constraint;
-		}
-		return null;
+		final String xpRoot = "/MainSignature/CertificateChain";
+		return getBasicConstraint(xpRoot, true);
 	}
 
 	@Override
 	public Constraint getSigningCertificateQualificationConstraint() {
 
-		final String XP_ROOT = "/ConstraintsParameters/MainSignature/SigningCertificate/Qualification";
-		return getBasicConstraint(XP_ROOT, true);
+		final String xpRoot = "/MainSignature/SigningCertificate/Qualification";
+		return getBasicConstraint(xpRoot, true);
 	}
 
 	@Override
 	public Constraint getSigningCertificateSupportedBySSCDConstraint() {
 
-		final String XP_ROOT = "/ConstraintsParameters/MainSignature/SigningCertificate/SupportedBySSCD";
-		return getBasicConstraint(XP_ROOT, true);
+		final String xpRoot = "/MainSignature/SigningCertificate/SupportedBySSCD";
+		return getBasicConstraint(xpRoot, true);
 	}
 
 	@Override
 	public Constraint getSigningCertificateIssuedToLegalPersonConstraint() {
 
-		final String XP_ROOT = "/ConstraintsParameters/MainSignature/SigningCertificate/IssuedToLegalPerson";
-		return getBasicConstraint(XP_ROOT, true);
+		final String xpRoot = "/MainSignature/SigningCertificate/IssuedToLegalPerson";
+		return getBasicConstraint(xpRoot, true);
 	}
 
 	@Override
 	public Constraint getSigningCertificateRecognitionConstraint(final String context) {
 
-		final String XP_ROOT = String.format("/ConstraintsParameters/%s/SigningCertificate/Recognition", context);
-		return getBasicConstraint(XP_ROOT, true);
+		final String xpRoot = String.format("/%s/SigningCertificate/Recognition", context);
+		return getBasicConstraint(xpRoot, true);
 	}
 
 	@Override
 	public Constraint getSigningCertificateSignedConstraint(final String context) {
 
-		final String XP_ROOT = String.format("/ConstraintsParameters/%s/SigningCertificate/Signed", context);
-		return getBasicConstraint(XP_ROOT, true);
+		final String xpRoot = String.format("/%s/SigningCertificate/Signed", context);
+		return getBasicConstraint(xpRoot, true);
 	}
 
 	@Override
 	public Constraint getSigningCertificateAttributePresentConstraint(final String context) {
 
-		final String XP_ROOT = String.format("/ConstraintsParameters/%s/SigningCertificate/AttributePresent", context);
-		return getBasicConstraint(XP_ROOT, true);
+		final String xpRoot = String.format("/%s/SigningCertificate/AttributePresent", context);
+		return getBasicConstraint(xpRoot, true);
 	}
 
 	@Override
 	public Constraint getSigningCertificateDigestValuePresentConstraint(final String context) {
 
-		final String XP_ROOT = String.format("/ConstraintsParameters/%s/SigningCertificate/DigestValuePresent", context);
-		return getBasicConstraint(XP_ROOT, true);
+		final String xpRoot = String.format("/%s/SigningCertificate/DigestValuePresent", context);
+		return getBasicConstraint(xpRoot, true);
 	}
 
 	@Override
 	public Constraint getSigningCertificateDigestValueMatchConstraint(final String context) {
 
-		final String XP_ROOT = String.format("/ConstraintsParameters/%s/SigningCertificate/DigestValueMatch", context);
-		return getBasicConstraint(XP_ROOT, true);
+		final String xpRoot = String.format("/%s/SigningCertificate/DigestValueMatch", context);
+		return getBasicConstraint(xpRoot, true);
 	}
 
 	@Override
 	public Constraint getSigningCertificateIssuerSerialMatchConstraint(final String context) {
 
-		final String XP_ROOT = String.format("/ConstraintsParameters/%s/SigningCertificate/IssuerSerialMatch", context);
-		return getBasicConstraint(XP_ROOT, true);
+		final String xpRoot = String.format("/%s/SigningCertificate/IssuerSerialMatch", context);
+		return getBasicConstraint(xpRoot, true);
 	}
 
 	@Override
 	public Constraint getReferenceDataExistenceConstraint() {
 
-		final String XP_ROOT = "/ConstraintsParameters/MainSignature/ReferenceDataExistence";
-		return getBasicConstraint(XP_ROOT, true);
+		final String xpRoot = "/MainSignature/ReferenceDataExistence";
+		return getBasicConstraint(xpRoot, true);
 	}
 
 	@Override
 	public Constraint getReferenceDataIntactConstraint() {
 
-		final String XP_ROOT = "/ConstraintsParameters/MainSignature/ReferenceDataIntact";
-		return getBasicConstraint(XP_ROOT, true);
+		final String xpRoot = "/MainSignature/ReferenceDataIntact";
+		return getBasicConstraint(xpRoot, true);
 	}
 
 	@Override
 	public Constraint getSignatureIntactConstraint() {
 
-		final String XP_ROOT = "/ConstraintsParameters/MainSignature/SignatureIntact";
-		return getBasicConstraint(XP_ROOT, true);
+		final String xpRoot = "/MainSignature/SignatureIntact";
+		return getBasicConstraint(xpRoot, true);
 	}
 
 	@Override
-	protected Constraint getBasicConstraint(final String XP_ROOT, final boolean defaultExpectedValue) {
+	protected Constraint getBasicConstraint(final String xpRoot, final boolean defaultExpectedValue) {
 
-		final String level = getValue(XP_ROOT + "/@Level");
+		final String level = getValue(XP_ROOT + xpRoot + "/@Level");
 		if (StringUtils.isNotBlank(level)) {
 
 			final Constraint constraint = new Constraint(level);
-			String expectedValue = getValue(XP_ROOT + "/text()");
+			String expectedValue = getValue(XP_ROOT + xpRoot + "/text()");
 			if (StringUtils.isBlank(expectedValue)) {
 				expectedValue = defaultExpectedValue ? TRUE : FALSE;
 			}
 			constraint.setExpectedValue(expectedValue);
 			return constraint;
+		}
+		return null;
+	}
+
+	/**
+	 * This method returns the constraint object checking a given number against a defined interval
+	 *
+	 * @param xpRoot
+	 * @return
+	 */
+	private ElementNumberConstraint getElementNumberConstraint(final String xpRoot) {
+
+		final XmlDom elementXmlDom = getElement(xpRoot);
+		if (elementXmlDom != null) {
+
+			final String level = elementXmlDom.getAttribute(LEVEL);
+			if (StringUtils.isNotBlank(level)) {
+
+				final String minStr = elementXmlDom.getAttribute(MIN);
+				final int min = DSSUtils.parseIntSilently(minStr, 0);
+				final String maxStr = elementXmlDom.getAttribute(MAX);
+				final int max = DSSUtils.parseIntSilently(maxStr, 999);
+
+				final ElementNumberConstraint constraint = new ElementNumberConstraint(level, min, max);
+				return constraint;
+			}
 		}
 		return null;
 	}
@@ -564,66 +644,58 @@ public class EtsiValidationPolicy extends ValidationPolicy {
 	@Override
 	public Constraint getMessageImprintDataFoundConstraint() {
 
-		final String XP_ROOT = "/ConstraintsParameters/Timestamp/MessageImprintDataFound";
-		return getBasicConstraint(XP_ROOT, true);
+		final String xpRoot = "/Timestamp/MessageImprintDataFound";
+		return getBasicConstraint(xpRoot, true);
 	}
 
 	@Override
 	public Constraint getMessageImprintDataIntactConstraint() {
 
-		final String XP_ROOT = "/ConstraintsParameters/Timestamp/MessageImprintDataIntact";
-		return getBasicConstraint(XP_ROOT, true);
-	}
-
-	@Override
-	public TimestampValidationProcessValidConstraint getTimestampValidationProcessConstraint() {
-
-		final TimestampValidationProcessValidConstraint constraint = new TimestampValidationProcessValidConstraint("FAIL");
-		constraint.setExpectedValue(TRUE);
-		return constraint;
+		final String xpRoot = "/Timestamp/MessageImprintDataIntact";
+		return getBasicConstraint(xpRoot, true);
 	}
 
 	@Override
 	public Constraint getRevocationTimeConstraint() {
 
-		final String XP_ROOT = "/ConstraintsParameters/Timestamp/RevocationTimeAgainstBestSignatureTime";
-		return getBasicConstraint(XP_ROOT, true);
+		final String xpRoot = "/Timestamp/RevocationTimeAgainstBestSignatureTime";
+		return getBasicConstraint(xpRoot, true);
 	}
 
 	@Override
 	public Constraint getBestSignatureTimeBeforeIssuanceDateOfSigningCertificateConstraint() {
 
-		final String XP_ROOT = "/ConstraintsParameters/Timestamp/BestSignatureTimeBeforeIssuanceDateOfSigningCertificate";
-		return getBasicConstraint(XP_ROOT, true);
+		final String xpRoot = "/Timestamp/BestSignatureTimeBeforeIssuanceDateOfSigningCertificate";
+		return getBasicConstraint(xpRoot, true);
 	}
 
 	@Override
 	public Constraint getSigningCertificateValidityAtBestSignatureTimeConstraint() {
 
-		final String XP_ROOT = "/ConstraintsParameters/Timestamp/SigningCertificateValidityAtBestSignatureTime";
-		return getBasicConstraint(XP_ROOT, true);
+		final String xpRoot = "/Timestamp/SigningCertificateValidityAtBestSignatureTime";
+		return getBasicConstraint(xpRoot, true);
 	}
 
 	@Override
 	public Constraint getAlgorithmReliableAtBestSignatureTimeConstraint() {
 
-		final String XP_ROOT = "/ConstraintsParameters/Timestamp/AlgorithmReliableAtBestSignatureTime";
-		return getBasicConstraint(XP_ROOT, true);
+		final String xpRoot = "/Timestamp/AlgorithmReliableAtBestSignatureTime";
+		return getBasicConstraint(xpRoot, true);
 	}
 
 
 	@Override
 	public Constraint getTimestampCoherenceConstraint() {
 
-		final String XP_ROOT = "/ConstraintsParameters/Timestamp/Coherence";
-		return getBasicConstraint(XP_ROOT, true);
+		final String xpRoot = "/Timestamp/Coherence";
+		return getBasicConstraint(xpRoot, true);
 	}
 
 	@Override
 	public Constraint getTimestampDelaySigningTimePropertyConstraint() {
 
 		final Long timestampDelay = getTimestampDelayTime();
-		if ((timestampDelay != null) && (timestampDelay > 0)) {
+		if (timestampDelay != null && timestampDelay > 0) {
 
 			final Constraint constraint = new Constraint("FAIL");
 			constraint.setExpectedValue(TRUE);
@@ -633,37 +705,125 @@ public class EtsiValidationPolicy extends ValidationPolicy {
 	}
 
 	@Override
-	public Constraint getContentTimestampImprintIntactConstraint() {
+	public ElementNumberConstraint getCounterSignatureNumberConstraint() {
 
-		final String XP_ROOT = "/ConstraintsParameters/MainSignature/MandatedSignedQProperties/ContentTimestamp/MessageImprintDataIntact";
-		return getBasicConstraint(XP_ROOT, true);
+		final String xpRoot = XP_ROOT + "/MainSignature/MandatedUnsignedQProperties/CounterSignature";
+		return getElementNumberConstraint(xpRoot);
 	}
 
 	@Override
-	public Constraint getContentTimestampImprintFoundConstraint() {
-		final String XP_ROOT = "/ConstraintsParameters/MainSignature/MandatedSignedQProperties/ContentTimestamp/MessageImprintDataFound";
-		return getBasicConstraint(XP_ROOT, true);
+	public ElementNumberConstraint getSignatureNumberConstraint() {
+
+		final String xpRoot = XP_ROOT + "/GlobalStructure/SignatureNumber";
+		return getElementNumberConstraint(xpRoot);
 	}
 
 	@Override
-	public Constraint getCounterSignatureReferenceDataExistenceConstraint() {
+	public ElementNumberConstraint getValidSignatureNumberConstraint() {
 
-		final String XP_ROOT = "/ConstraintsParameters/MainSignature/MandatedUnsignedQProperties/CounterSignature/ReferenceDataExistence";
-		return getBasicConstraint(XP_ROOT, true);
+		final String xpRoot = XP_ROOT + "/GlobalStructure/Valid";
+		return getElementNumberConstraint(xpRoot);
 	}
 
 	@Override
-	public Constraint getCounterSignatureReferenceDataIntactConstraint() {
+	public ElementNumberConstraint getSignatureTimestampNumberConstraint() {
 
-		final String XP_ROOT = "/ConstraintsParameters/MainSignature/MandatedUnsignedQProperties/CounterSignature/ReferenceDataIntact";
-		return getBasicConstraint(XP_ROOT, true);
+		final String xpRoot = XP_ROOT + "/MainSignature/MandatedUnsignedQProperties/SignatureTimestamp";
+		return getElementNumberConstraint(xpRoot);
 	}
 
 	@Override
-	public Constraint getCounterSignatureIntactConstraint() {
+	public ElementNumberConstraint getManifestReferenceNumberConstraint() {
 
-		final String XP_ROOT = "/ConstraintsParameters/MainSignature/MandatedUnsignedQProperties/CounterSignature/SignatureIntact";
-		return getBasicConstraint(XP_ROOT, true);
+		final String xpRoot = XP_ROOT + "/MainSignature/Manifest/Reference";
+		return getElementNumberConstraint(xpRoot);
+	}
+
+	@Override
+	public Constraint getManifestReferenceDataExistenceConstraint() {
+
+		final String xpRoot = "/MainSignature/Manifest/DataExistence";
+		return getBasicConstraint(xpRoot, true);
+	}
+
+	@Override
+	public Constraint getManifestReferenceIntactConstraint() {
+
+		final String xpRoot = "/MainSignature/Manifest/ValidReference";
+		return getBasicConstraint(xpRoot, true);
+	}
+
+	@Override
+	public List<Constraint> getISCCustomizedConstraints() {
+
+		final List<Constraint> customizedConstraintList = new ArrayList<Constraint>();
+		final List<XmlDom> customizedConstraintXmlDomList = getElements(XP_ROOT + "/MainSignature/SigningCertificate/Customized/Constraint");
+		for (final XmlDom constraintXmlDom : customizedConstraintXmlDomList) {
+
+			final String name = constraintXmlDom.getAttribute("Name");
+			final String levelString = constraintXmlDom.getAttribute("Level");
+			final Constraint.Level level = Constraint.Level.valueOf(levelString);
+			if (customConstraintMap == null) {
+				throw new DSSException("The customized constraints are not defined!");
+			}
+			final Constraint constraint = customConstraintMap.get(name);
+			if (constraint == null) {
+				throw new DSSException("The customized constraint with name '" + name + "' not found!");
+			}
+			constraint.setLevel(level);
+			customizedConstraintList.add(constraint);
+		}
+		return customizedConstraintList;
+	}
+
+	@Override
+	public Constraint getCompleteCertificateRefsConstraint() {
+
+		final String xpRoot = "/MainSignature/MandatedUnsignedQProperties/CompleteCertificateRefs";
+		return getBasicConstraint(xpRoot, false);
+	}
+
+	@Override
+	public Constraint getCompleteRevocationRefsConstraint() {
+
+		final String xpRoot = "/MainSignature/MandatedUnsignedQProperties/CompleteRevocationRefs";
+		return getBasicConstraint(xpRoot, false);
+	}
+
+	@Override
+	public ElementNumberConstraint getValidationDataTimestampNumberConstraint() {
+
+		final String xpRoot = XP_ROOT + "/MainSignature/MandatedUnsignedQProperties/ValidationDataTimestamp";
+		final ElementNumberConstraint elementNumberConstraint = getElementNumberConstraint(xpRoot);
+		if (elementNumberConstraint != null) {
+			return elementNumberConstraint;
+		}
+		return null;
+	}
+
+	@Override
+	public ElementNumberConstraint getArchiveTimestampNumberConstraint() {
+
+		final String xpRoot = XP_ROOT + "/MainSignature/MandatedUnsignedQProperties/ArchiveTimestamp";
+		final ElementNumberConstraint elementNumberConstraint = getElementNumberConstraint(xpRoot);
+		if (elementNumberConstraint != null) {
+			return elementNumberConstraint;
+		}
+		return null;
+	}
+
+	@Override
+	public Constraint getCertificateValuesConstraint() {
+
+		final String xpRoot = "/MainSignature/MandatedUnsignedQProperties/CertificateValues";
+		return getBasicConstraint(xpRoot, false);
+	}
+
+	@Override
+	public Constraint getRevocationValuesConstraint() {
+
+		final String xpRoot = "/MainSignature/MandatedUnsignedQProperties/RevocationValues";
+		return getBasicConstraint(xpRoot, false);
 	}
 }
 

@@ -56,4 +56,6 @@ public interface SubIndication {
 	 */
 	String UNEXPECTED_ERROR = "UNEXPECTED_ERROR";
 
+	// CUSTOM
+	String SOME_NOT_VALID_SIGNATURES = "SOME_NOT_VALID_SIGNATURES";
 }

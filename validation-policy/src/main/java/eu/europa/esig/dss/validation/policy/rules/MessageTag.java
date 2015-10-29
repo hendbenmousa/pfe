@@ -25,6 +25,10 @@ package eu.europa.esig.dss.validation.policy.rules;
  */
 public enum MessageTag {
 
+	// General Structure
+	BBB_GS_DNSCVP("Does the number of 'signatures' comply with the validation policy?"),
+	BBB_GS_DNSCVP_ANS("The number of 'signatures' doesn't comply with the validation policy!"),
+
 	ADEST_IMIDF("Is message imprint data found?"),
 	ADEST_IMIDF_ANS("The timestamp message imprint data is not found!"),
 	ADEST_IMIVC("Is message imprint verification conclusive?"),
@@ -37,12 +41,21 @@ public enum MessageTag {
 	ADEST_ROTVPIIC("Is the result of the timestamps validation process conclusive?"),
 	ADEST_ROTVPIIC_ANS("The result of the timestamps validation process is not conclusive!"),
 
+	LTV_ITAPOE("Is there any POE?"),
+	LTV_ITAPOE_ANS("There is no PEO!"),
+
 	BBB_CV_IRDOF("Is the reference data object(s) found?"),
 	BBB_CV_IRDOF_ANS("The reference data object(s) not found!"),
 	BBB_CV_IRDOI("Is the reference data object(s) intact?"),
 	BBB_CV_IRDOI_ANS("The reference data object(s) is not intact!"),
 	BBB_CV_ISI("Is the signature intact?"),
 	BBB_CV_ISI_ANS("The signature is not intact!"),
+	BBB_CV_IMRDF("Is there a manifest reference to the provided data?"),
+	BBB_CV_IMRDF_ANS("The manifest reference to the provided data cannot be found!"),
+	BBB_CV_IMRI("Is the manifest reference intact?"),
+	BBB_CV_IMRI_ANS("The manifest reference is not intact!"),
+	BBB_CV_DNMRCVP("Does the number of 'manifest references' comply with the validation policy?"),
+	BBB_CV_DNMRCVP_ANS("The number of 'manifest references' doesn't comply with the validation policy!"),
 
 	BBB_ICS_ISCI("Is there an identified candidate for the signing certificate?"),
 	BBB_ICS_ISCI_ANS("There is no candidate for the signing certificate!"),
@@ -63,12 +76,17 @@ public enum MessageTag {
 	ASCCM_ANS_3("The public key size is to small!"),
 	ASCCM_ANS_4("The algorithm expiration date not found!"),
 	ASCCM_ANS_5("The algorithm is expired!"),
+	AMCCM("Are manifest cryptographic constraints met?"),
 
+	BBB_SAV_DSFCVP("Does the signature format comply with the validation valid?"),
+	BBB_SAV_DSFCVP_ANS("The signature format doesn't comply with the validation policy!"),
 	BBB_SAV_ISSV("Is the structure of the signature valid?"),
 	BBB_SAV_ISSV_ANS("The structure of the signature is not valid!"),
+	BBB_SAV_IACV("Is the attribute certificate valid?"),
+	BBB_SAV_IACV_ANS("The attribute certificate is not valid!"),
 	BBB_SAV_ICERRM("Is the certified role mandated?"),
 	BBB_SAV_ICERRM_ANS("The requested certified role is not present!"),
-	BBB_SAV_ICRM("The requested claimed role is not present!"),
+	BBB_SAV_ICRM("Is the claimed role mandated?"),
 	BBB_SAV_ICRM_ANS("The requested claimed role is not present!"),
 	BBB_SAV_ISQPCTP("Is signed qualifying property: 'content-type' present?"),
 	BBB_SAV_ISQPCTP_ANS("The signed qualifying property: 'content-type' is not present!"),
@@ -76,14 +94,40 @@ public enum MessageTag {
 	BBB_SAV_ISQPCHP_ANS("The signed qualifying property: 'content-hints' is not present!"),
 	BBB_SAV_ISQPCIP("Is signed qualifying properties: 'content-identifier' present?"),
 	BBB_SAV_ISQPCIP_ANS("The signed qualifying property: 'content-identifier' is not present!"),
-	BBB_SAV_ISQPCTSIP("Is signed qualifying property: 'content-timestamp' present?"),
-	BBB_SAV_ISQPCTSIP_ANS("The signed qualifying property: 'content-timestamp' is not present!"),
+	BBB_SAV_DNCTCVP("Does the number of 'content-timestamps' comply with the validation policy?"),
+	BBB_SAV_DNCTCVP_ANS("The number of 'content-timestamps' doesn't comply with the validation policy!"),
 	BBB_SAV_ISQPSLP("Is signed qualifying property: 'signer-location' present?"),
 	BBB_SAV_ISQPSLP_ANS("The signed qualifying property: 'signer-location' is not present!"),
 	BBB_SAV_ISQPSTP("Is signed qualifying property: 'signing-time' present?"),
 	BBB_SAV_ISQPSTP_ANS("The signed qualifying property: 'signing-time' is not present!"),
+	BBB_SAV_ISQPDOFP("Is signed qualifying property: 'data-object-format' present?"),
+	BBB_SAV_ISQPDOFP_ANS("The signed qualifying property: 'data-object-format' is not present!"),
 	BBB_SAV_ISQPXTIP("Is signed qualifying property: 'commitment-type-indication' present?"),
 	BBB_SAV_ISQPXTIP_ANS("The signed qualifying property: 'commitment-type-indication' is not present!"),
+	BBB_SAV_DCTIPER("Does 'commitment-type-indication' point to an existing reference?"),
+	BBB_SAV_DCTIPER_ANS("The 'commitment-type-indication' does not point to an existing reference!"),
+	BBB_SAV_DNSTCVP("Does the number of 'signature-timestamps' comply with the validation policy?"),
+	BBB_SAV_DNSTCVP_ANS("The number of 'signature-timestamps' doesn't comply with the validation policy!"),
+	BBB_SAV_DNCSCVP("Does the number of 'counter-signatures' comply with the validation policy?"),
+	BBB_SAV_DNCSCVP_ANS("The number of 'counter-signatures' doesn't comply with the validation policy!"),
+	BBB_SAV_1("Does the number of 'validation-data-timestamp' comply with the validation policy?"),
+	BBB_SAV_1_ANS("The number of 'validation-data-timestamp' does not comply with the validation policy!"),
+
+	BBB_SAV_3("Does the number of 'complete-certificate-refs' comply with the validation policy?"),
+	BBB_SAV_3_ANS("The number of 'complete-certificate-refs' does not comply with the validation policy!"),
+
+	BBB_SAV_4("Does the number of 'complete-revocation-refs' comply with the validation policy?"),
+	BBB_SAV_4_ANS("The number of 'complete-revocation-refs' does not comply with the validation policy!"),
+
+	BBB_SAV_5("Does the number of 'certificate-values' comply with the validation policy?"),
+	BBB_SAV_5_ANS("The number of 'certificate-values' does not comply with the validation policy!"),
+	BBB_SAV_6("Does the number of 'revocation-values' comply with the validation policy?"),
+	BBB_SAV_6_ANS("The number of 'revocation-values' does not comply with the validation policy!"),
+
+	BBB_SAV_2("Does the number of 'archive-timestamps' comply with the validation policy?"),
+	BBB_SAV_2_ANS("The number of 'archive-timestamps' doesn't comply with the validation policy!"),
+
+
 
 	BBB_VCI_ISPK("Is the signature policy known?"),
 	BBB_VCI_ISPK_ANS_1("The signature policy is mandatory!"),
@@ -147,16 +191,16 @@ public enum MessageTag {
 
 	TSV_ASTPTCT("Is the order of the timestamps correct?"),
 	TSV_ASTPTCT_ANS("The order of the timestamps is not correct!"),
-	TSV_IBSTAIDOSC("Is the best-signature-time after the issuance date of the signing certificate?"),
+	TSV_IBSTAIDOSC("Is the best-signature-time before the issuance date of the signing certificate?"),
 	TSV_IBSTAIDOSC_ANS("The best-signature-time is before the issuance date of the signing certificate!"),
-	TSV_ISCNVABST("Is the signing certificate not valid at the best-signature-time?"),
-	TSV_ISCNVABST_ANS("The past signing certificate validation must be performed!"),
+	TSV_ISCNVABST("Is the best-signature-time after the issuance date of the signer's certificate?"),
+	TSV_ISCNVABST_ANS("The best-signature-time is after the issuance date of the signer's certificate, the past certificate validation must be performed!"),
 	TSV_ATITRO("Are timestamps in the right order?"),
 	TSV_ATITRO_ANS("The timestamps were not generated in the right order!"),
 
 	// TSV___("The signature-time-stamp protects the signature against the revocation of the signer's certificate but not against its expiration!"),
-	ADEST_IRTPTBST("Is revocation time posterior to best-signature-time?"),
-	ADEST_IRTPTBST_ANS("The revocation time is not posterior to best-signature-time!"),
+	ADEST_IRTPTBST("Is the revocation time after the best-signature-time?"),
+	ADEST_IRTPTBST_ANS("The revocation time is before the best-signature-time!"),
 	ADEST_VFDTAOCST_ANS("The validation failed due to the absence of claimed signing time!"),
 	ADEST_ISTPTDABST("Is the signing-time plus the timestamp delay after the best-signature-time?"),
 	ADEST_ISTPTDABST_ANS("The validation failed due to the timestamp delay constraint!"),
@@ -165,6 +209,10 @@ public enum MessageTag {
 
 	LABEL_TINTWS("Additional assurance on the signing time may be needed to prove the validity of the signature."),
 	LABEL_TINVTWS("There is no valid timestamp within the signature."),
+
+	// Custom
+	BBB_ICS_1("Is the signing certificate in the authorized signers list?"),
+	BBB_ICS_1_ANS("The signing certificate isn't in the authorized signers list!"),
 
 	EMPTY("");
 

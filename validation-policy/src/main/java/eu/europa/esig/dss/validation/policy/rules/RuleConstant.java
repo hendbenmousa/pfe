@@ -28,4 +28,8 @@ public interface RuleConstant  {
 	 */
 	String ANY_POLICY = "ANY_POLICY";
 
+	/**
+	 * This is the value returned by BouncyCastle when the certificate is revoked and on hold.
+	 */
+	String CRL_REASON_CERTIFICATE_HOLD = "CRLReason: certificateHold";
 }

@@ -88,48 +88,6 @@ public class XmlNode {
 		}
 	}
 
-	public void addChild(final XmlNode child) {
-
-      /* if (!children.contains(child)) */
-		children.add(child);
-	}
-
-	public void addChildrenOf(final XmlNode parent) {
-
-		for (final XmlNode child : parent.children) {
-
-			children.add(child);
-		}
-	}
-
-	public void addChildren(final List<XmlDom> xmlDomList) {
-
-		for (final XmlDom xmlDom : xmlDomList) {
-
-			addChild(xmlDom);
-		}
-	}
-
-	public void addChild(final XmlDom child) {
-
-		final Element element = child.rootElement;
-		recursiveCopy(this, element);
-	}
-
-	public void addChildrenOf(final XmlDom parent) {
-
-		final Element element = parent.rootElement;
-		final NodeList nodes = element.getChildNodes();
-		for (int ii = 0; ii < nodes.getLength(); ii++) {
-
-			final Node node = nodes.item(ii);
-			if (node.getNodeType() == Node.ELEMENT_NODE) {
-
-				recursiveCopy(this, node);
-			}
-		}
-	}
-
 	/**
 	 * @param xmlNode the {@code XmlNode} to which the element is added
 	 * @param element the {@code Node} to be copied
@@ -166,6 +124,26 @@ public class XmlNode {
 			_xmlNode.setValue(value);
 		}
 		_xmlNode.setParent(xmlNode);
+	}
+
+	public void addChild(final XmlNode child) {
+
+      /* if (!children.contains(child)) */
+		children.add(child);
+	}
+
+	public void addChildren(final List<XmlDom> xmlDomList) {
+
+		for (final XmlDom xmlDom : xmlDomList) {
+
+			addChild(xmlDom);
+		}
+	}
+
+	public void addChild(final XmlDom child) {
+
+		final Element element = child.rootElement;
+		recursiveCopy(this, element);
 	}
 
 	/**
@@ -224,13 +202,6 @@ public class XmlNode {
 
 		final XmlNode child = new XmlNode(childName, messageTag, attributes);
 		children.add(child);
-		return child;
-	}
-
-	public XmlNode addFirstChild(final String childName, final String value) {
-
-		final XmlNode child = new XmlNode(childName, value);
-		children.add(0, child);
 		return child;
 	}
 
@@ -336,11 +307,12 @@ public class XmlNode {
 	/**
 	 * This method returns {@link org.w3c.dom.Document} based on the current {@link XmlNode}.
 	 *
+	 * @param namespace
 	 * @return
 	 */
-	public Document toDocument() {
+	public Document toDocument(final String namespace) {
 
-		final InputStream inputStream = getInputStream();
+		final InputStream inputStream = getInputStream(namespace);
 		final Document document = DSSXMLUtils.buildDOM(inputStream);
 		return document;
 	}
@@ -352,7 +324,19 @@ public class XmlNode {
 	 */
 	public XmlDom toXmlDom() {
 
-		final Document document = toDocument();
+		final Document document = toDocument(null);
+		final XmlDom xmlDom = new XmlDom(document);
+		return xmlDom;
+	}
+
+	/**
+	 * This method returns {@code XmlDom} representation of the current {@code XmlNode}.
+	 *
+	 * @return the {@code XmlDom} representation of the current {@code XmlNode}.
+	 */
+	public XmlDom toXmlDom(final String namespace) {
+
+		final Document document = toDocument(namespace);
 		final XmlDom xmlDom = new XmlDom(document);
 		return xmlDom;
 	}
@@ -396,17 +380,19 @@ public class XmlNode {
 	}
 
 	/**
+	 * @param namespace
 	 * @return the {@code InputStream} representing the content of the node.
 	 */
-	public InputStream getInputStream() {
+	protected InputStream getInputStream(final String namespace) {
 
 		try {
 			final StringBuilder indent = new StringBuilder();
 			final StringBuilder xml = new StringBuilder();
 			final XmlNode masterNode = new XmlNode("__Master__");
 			final XmlNode savedParentNode = getParent();
-			if (savedParentNode != null) {
-
+			if (namespace != null) {
+				setNameSpace(namespace);
+			} else if (savedParentNode != null) {
 				setNameSpace(savedParentNode.getNameSpace());
 			}
 			setParent(masterNode);
@@ -418,6 +404,21 @@ public class XmlNode {
 		} catch (UnsupportedEncodingException e) {
 			throw new DSSException("Error during the conversion of the XmlNode to the InputStream :", e);
 		}
+	}
+
+	/**
+	 * @return {@code String} parent tree in this {@code XmlNode}
+	 */
+	public String getLocation() {
+
+		String tree = getName();
+		XmlNode parentXmlNode = parentNode;
+		while (parentXmlNode != null) {
+
+			tree = parentXmlNode.getName() + "/" + tree;
+			parentXmlNode = parentXmlNode.parentNode;
+		}
+		return tree;
 	}
 
 	@Override

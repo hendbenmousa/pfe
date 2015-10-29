@@ -45,6 +45,7 @@ public abstract class AppletCore extends JApplet {
 	 */
 	@SuppressWarnings("unchecked")
 	public <C extends AppletController> C getController(final Class<C> controllerClass) {
+
 		if (!controllers.containsKey(controllerClass)) {
 			throw new RuntimeException("The class controller " + controllerClass.getName() + " cannot be find , please register it");
 		}
@@ -60,6 +61,7 @@ public abstract class AppletCore extends JApplet {
 
 	@Override
 	public void init() {
+
 		super.init();
 		try {
 			for (final UIManager.LookAndFeelInfo info : UIManager.getInstalledLookAndFeels()) {

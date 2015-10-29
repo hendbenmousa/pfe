@@ -23,13 +23,15 @@ package eu.europa.esig.dss;
 public class DSSException extends RuntimeException {
 
     private static final long serialVersionUID = 5375189169063686846L;
+	private String message = null;
 
-    public DSSException() {
+	public DSSException() {
         super();
     }
 
     public DSSException(String message) {
-        super(message);
+	    super(message);
+	    this.message = message;
     }
 
     public DSSException(Throwable cause) {
@@ -39,4 +41,9 @@ public class DSSException extends RuntimeException {
     public DSSException(String message, Throwable cause) {
         super(message, cause);
     }
+
+	@Override
+	public String getMessage() {
+		return message;
+	}
 }

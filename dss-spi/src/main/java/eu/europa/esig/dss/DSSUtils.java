@@ -2080,4 +2080,18 @@ public final class DSSUtils {
 		}
 		return joinedArray;
 	}
+
+	/**
+	 * @param minStr
+	 * @return
+	 */
+	public static int parseIntSilently(final String minStr, final int defaultValue) {
+
+		try {
+			return Integer.parseInt(minStr);
+		} catch (NumberFormatException e) {
+		}
+		return defaultValue;
+	}
+
 }

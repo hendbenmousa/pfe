@@ -8,7 +8,7 @@
 	            doctype-system="http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"
 	            doctype-public="-//W3C//DTD XHTML 1.0 Transitional//EN" indent="yes"/>
 
-	<!--<xsl:param name="output_template_name"/>-->
+	<xsl:param name="output_template_name"/>
 
 	<xsl:template match="/dss:SimpleReport">
 		<html>
@@ -89,13 +89,13 @@
 					<tr class="signature-start">
 						<th colspan="2">
 							>>>
-							<!--<a href="{$output_template_name}-diagnostic-data.xml">diagnostic-data</a>-->
+							<a href="{$output_template_name}-diagnostic-data.xml">diagnostic-data</a>
 							|
 							>>>
-							<!--<a href="{$output_template_name}-detailed-report.xml">detailed-report</a>-->
+							<a href="{$output_template_name}-detailed-report.xml">detailed-report</a>
 							|
 							>>>
-							<!--<a href="{$output_template_name}-simple-report.xml">simple-report</a>-->
+							<a href="{$output_template_name}-simple-report.xml">simple-report</a>
 						</th>
 					</tr>
 				</table>

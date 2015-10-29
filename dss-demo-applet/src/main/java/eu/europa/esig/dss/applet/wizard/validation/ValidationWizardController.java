@@ -134,7 +134,6 @@ public class ValidationWizardController extends DSSWizardController<ValidationMo
 		//		}
 
 
-
 		final SignedDocumentValidator validator = SignedDocumentValidator.fromDocument(signedDocument);
 		final CertificateVerifier certificateVerifier = new CommonCertificateVerifier();
 		certificateVerifier.setCrlSource(new OnlineCRLSource());
@@ -149,9 +148,12 @@ public class ValidationWizardController extends DSSWizardController<ValidationMo
 
 		validator.setCertificateVerifier(certificateVerifier);
 
-		final List<DSSDocument> detachedContents = new ArrayList<DSSDocument>();
-		detachedContents.add(detachedDocument);
-		validator.setDetachedContents(detachedContents);
+		if (detachedDocument != null) {
+
+			final List<DSSDocument> detachedContents = new ArrayList<DSSDocument>();
+			detachedContents.add(detachedDocument);
+			validator.setDetachedContents(detachedContents);
+		}
 
 		final Reports reports = validator.validateDocument();
 

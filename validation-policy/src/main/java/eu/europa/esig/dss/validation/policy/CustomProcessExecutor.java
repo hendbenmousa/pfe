@@ -1,19 +1,19 @@
 /**
  * DSS - Digital Signature Services
  * Copyright (C) 2015 European Commission, provided under the CEF programme
- *
+ * <p/>
  * This file is part of the "DSS - Digital Signature Services" project.
- *
+ * <p/>
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 2.1 of the License, or (at your option) any later version.
- *
+ * <p/>
  * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
- *
+ * <p/>
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
@@ -59,7 +59,7 @@ public class CustomProcessExecutor implements ProcessExecutor {
 	 */
 	protected ValidationPolicy countersignatureValidationPolicy;
 
-	protected ProcessParameters processParams;
+	protected ProcessParameters context;
 
 	/**
 	 * The simple validation report, contains only the most important information like validation date, signer from DN,
@@ -73,9 +73,14 @@ public class CustomProcessExecutor implements ProcessExecutor {
 	protected DetailedReport detailedReport;
 
 	/**
-	 * See {@link eu.europa.esig.dss.validation.policy.ProcessParameters#getCurrentTime()}
+	 * See {@link ProcessParameters#getCurrentTime()}
 	 */
 	protected Date currentTime = new Date();
+
+	/**
+	 * This variable indicates the number of concurrent threads to use during the validation. {@code 0} means that there is no limit.
+	 */
+	protected int concurrentThreadNumber = 0;
 
 	/**
 	 * This is the default constructor. The process parameters must be initialised wih setters: {@code setDiagnosticDataDom} and {@code setValidationPolicyDom}
@@ -85,8 +90,24 @@ public class CustomProcessExecutor implements ProcessExecutor {
 	}
 
 	@Override
+	public int getConcurrentThreadNumber() {
+		return concurrentThreadNumber;
+	}
+
+	@Override
+	public void setConcurrentThreadNumber(int concurrentThreadNumber) {
+		this.concurrentThreadNumber = concurrentThreadNumber;
+	}
+
+	@Override
 	public void setDiagnosticDataDom(final Document diagnosticDataDom) {
 		this.diagnosticDataDom = diagnosticDataDom;
+	}
+
+	@Override
+	public void setValidationPolicyDom(final Document validationPolicyDom) {
+
+		validationPolicy = new EtsiValidationPolicy(validationPolicyDom);
 	}
 
 	@Override
@@ -110,26 +131,24 @@ public class CustomProcessExecutor implements ProcessExecutor {
 	@Override
 	public Reports execute() {
 
-		processParams = new ProcessParameters();
+		context = new ProcessParameters();
 		diagnosticData = new DiagnosticData(diagnosticDataDom);
-		processParams.setDiagnosticData(diagnosticData);
-		processParams.setValidationPolicy(validationPolicy);
-		processParams.setCountersignatureValidationPolicy(countersignatureValidationPolicy);
-		processParams.setCurrentTime(currentTime);
-		final XmlDom usedCertificates = diagnosticData.getElement("/DiagnosticData/UsedCertificates");
-		processParams.setCertPool(usedCertificates);
+		context.setDiagnosticData(diagnosticData);
+		context.setValidationPolicy(validationPolicy);
+		context.setCountersignatureValidationPolicy(countersignatureValidationPolicy);
+		context.setCurrentTime(currentTime);
 
 		final XmlNode mainNode = new XmlNode(NodeName.VALIDATION_DATA);
 		mainNode.setNameSpace(XmlDom.NAMESPACE);
 
 		final LongTermValidation ltv = new LongTermValidation();
-		ltv.run(mainNode, processParams);
+		ltv.run(mainNode, context);
 
-		final Document validationReportDocument = mainNode.toDocument();
+		final Document validationReportDocument = mainNode.toDocument(null);
 		detailedReport = new DetailedReport(validationReportDocument);
 
 		final SimpleReportBuilder simpleReportBuilder = new SimpleReportBuilder(validationPolicy, diagnosticData);
-		simpleReport = simpleReportBuilder.build(processParams);
+		simpleReport = simpleReportBuilder.build(context);
 
 		final Reports reports = new Reports(diagnosticData, detailedReport, simpleReport);
 		return reports;

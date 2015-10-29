@@ -69,6 +69,7 @@ import eu.europa.esig.dss.jaxb.diagnostic.XmlCertifiedRolesType;
 import eu.europa.esig.dss.jaxb.diagnostic.XmlChainCertificate;
 import eu.europa.esig.dss.jaxb.diagnostic.XmlClaimedRoles;
 import eu.europa.esig.dss.jaxb.diagnostic.XmlCommitmentTypeIndication;
+import eu.europa.esig.dss.jaxb.diagnostic.XmlDetachedContents;
 import eu.europa.esig.dss.jaxb.diagnostic.XmlDigestAlgAndValueType;
 import eu.europa.esig.dss.jaxb.diagnostic.XmlDistinguishedName;
 import eu.europa.esig.dss.jaxb.diagnostic.XmlInfoType;
@@ -230,7 +231,7 @@ public abstract class SignedDocumentValidator implements DocumentValidator {
 					return constructor.newInstance(dssDocument);
 				}
 			} catch (Exception e) {
-				LOG.error("Cannot instanciate class '" + clazz.getName() + "' : " + e.getMessage(), e);
+				LOG.error("Cannot instantiate class '" + clazz.getName() + "' : " + e.getMessage(), e);
 			}
 		}
 		throw new DSSException("Document format not recognized/handled");
@@ -497,6 +498,16 @@ public abstract class SignedDocumentValidator implements DocumentValidator {
 			jaxbDiagnosticData.setDocumentName(absolutePath);
 		} else {
 			jaxbDiagnosticData.setDocumentName(document.getName());
+		}
+		if (detachedContents.size() > 0) {
+
+			final XmlDetachedContents xmlDetachedContents = DIAGNOSTIC_DATA_OBJECT_FACTORY.createXmlDetachedContents();
+			final List<String> documentNameList = xmlDetachedContents.getDocumentName();
+			for (final DSSDocument detachedContent : this.detachedContents) {
+
+				documentNameList.add(detachedContent.getAbsolutePath());
+			}
+			jaxbDiagnosticData.setDetachedContents(xmlDetachedContents);
 		}
 	}
 

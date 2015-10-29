@@ -1,19 +1,19 @@
 /**
  * DSS - Digital Signature Services
  * Copyright (C) 2015 European Commission, provided under the CEF programme
- *
+ * <p/>
  * This file is part of the "DSS - Digital Signature Services" project.
- *
+ * <p/>
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 2.1 of the License, or (at your option) any later version.
- *
+ * <p/>
  * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
- *
+ * <p/>
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
@@ -21,17 +21,20 @@
 package eu.europa.esig.dss.validation.policy;
 
 import java.util.Date;
+import java.util.List;
 
 import eu.europa.esig.dss.DSSException;
 import eu.europa.esig.dss.XmlDom;
+import eu.europa.esig.dss.validation.policy.rules.AttributeName;
 import eu.europa.esig.dss.validation.policy.rules.ExceptionMessage;
 import eu.europa.esig.dss.validation.process.POEExtraction;
+import eu.europa.esig.dss.validation.report.Conclusion;
 import eu.europa.esig.dss.validation.report.DiagnosticData;
 
 /**
  * This class stores the references to data exchanged and manipulated by different sub validation processes.
  */
-public class ProcessParameters {
+public class ProcessParameters implements AttributeName, ExceptionMessage {
 
 	/**
 	 * This variable contains the diagnostic data which is used to carry out all validation processes. It is extracted
@@ -45,42 +48,24 @@ public class ProcessParameters {
 	 * ValidationContextInitialisation sub process will fail.
 	 */
 	protected ValidationPolicy validationPolicy;
-
-	/**
-	 * This is the countersignature policy data to be used by the validation process. This data are not mandatory but in this case the
-	 * ValidationContextInitialisation sub process will fail.
-	 */
-	private ValidationPolicy countersignatureValidationPolicy;
-
 	/**
 	 * This is the current validation policy (either signature or countersignature).
 	 */
 	protected ValidationPolicy currentValidationPolicy;
-
 	/**
 	 * This is the current time against which the validation process is carried out.
 	 */
 	protected Date currentTime;
-
-	/**
-	 * This variable contains the Signing Certificate Id. It is initialised by
-	 * IdentificationOfTheSignersCertificate sub process.
-	 * This variable is different for each context.
-	 */
-	private String signingCertificateId;
-
-	/**
-	 * This variable contains the Signing Certificate Node from diagnostic data. It is initialised by
-	 * IdentificationOfTheSignersCertificate sub process.
-	 * This variable is different for each context.
-	 */
-	private XmlDom signingCertificate;
-
 	/**
 	 * Represents the current main signature DOM element being validated. This element provides general information used
 	 * in validation process like the list of used certificates.
 	 */
-	protected XmlDom signatureContext;
+	protected XmlDom signatureXmlDom;
+
+	/**
+	 * Related id
+	 */
+	protected String signatureId;
 
 	/**
 	 * Represents the current signature DOM element being validated:<br>
@@ -88,45 +73,63 @@ public class ProcessParameters {
 	 * in case of Timestamp signature validation {@code contextElement} is the timestamp element being validated.
 	 */
 	protected XmlDom contextElement;
-
 	/**
 	 * Indicates the current validation element like: MainSignature, SigningCertificate...
 	 */
 	protected String contextName;
-
+	/**
+	 * This is the countersignature policy data to be used by the validation process. This data are not mandatory but in this case the
+	 * ValidationContextInitialisation sub process will fail.
+	 */
+	private ValidationPolicy countersignatureValidationPolicy;
+	/**
+	 * This variable contains the Signing Certificate Id. It is initialised by
+	 * IdentificationOfTheSignersCertificate sub process.
+	 * This variable is different for each context.
+	 */
+	private String signingCertificateId;
+	/**
+	 * This variable contains the Signing Certificate Node from diagnostic data. It is initialised by
+	 * IdentificationOfTheSignersCertificate sub process.
+	 * This variable is different for each context.
+	 */
+	private XmlDom signingCertificateXmlDom;
 	/**
 	 * This {@code XmlDom} is returned by the Basic Building Blocks process (see BasicBuildingBlocks) and
 	 * it depicts the validation detailed report.
 	 */
-	private XmlDom basicBuildingBlocksReport;
+	private XmlDom basicBuildingBlocksXmlDom;
 
 	/**
 	 * This {@code XmlDom} is returned by the Basic Validation process (see BasicValidation) and
 	 * it depicts the validation detailed report.
 	 */
-	private XmlDom bvData;
+	private XmlDom bvXmlDom;
 
 	/**
 	 * This {@code XmlDom} is returned by the Basic Timestamp Validation process (see TimestampValidation)
 	 * and it depicts the validation detailed report.
 	 */
-	private XmlDom tsData;
+	private XmlDom tsXmlDom;
 
 	/**
 	 * This {@code XmlDom} is returned by the AdEST Validation process (see AdESTValidation) and
 	 * it depicts the validation detailed report.
 	 */
-	private XmlDom adestData;
+	private XmlDom adestXmlDom;
 
 	/**
 	 * This {@code XmlDom} is returned by the Long Term Validation process (see LongTermValidation) and
 	 * it depicts the validation detailed report.
 	 */
-	private XmlDom ltvData;
+	private XmlDom ltvXmlDom;
 
 	private XmlDom certPool;
 
 	private POEExtraction poe;
+	private Conclusion generalStructureConclusion;
+
+	private List<String> contentTimestampIdList;
 
 	/**
 	 * See {@link #diagnosticData}
@@ -139,11 +142,14 @@ public class ProcessParameters {
 
 	/**
 	 * See {@link #diagnosticData}
+	 * This method sets the used certificate pool.
 	 *
 	 * @return
 	 */
 	public void setDiagnosticData(final DiagnosticData diagnosticData) {
 		this.diagnosticData = diagnosticData;
+		final XmlDom usedCertificates = diagnosticData.getElement("/DiagnosticData/UsedCertificates");
+		setCertPool(usedCertificates);
 	}
 
 	/**
@@ -164,12 +170,12 @@ public class ProcessParameters {
 		this.validationPolicy = validationPolicy;
 	}
 
-	public void setCountersignatureValidationPolicy(final ValidationPolicy countersignatureValidationPolicy) {
-		this.countersignatureValidationPolicy = countersignatureValidationPolicy;
-	}
-
 	public ValidationPolicy getCountersignatureValidationPolicy() {
 		return countersignatureValidationPolicy;
+	}
+
+	public void setCountersignatureValidationPolicy(final ValidationPolicy countersignatureValidationPolicy) {
+		this.countersignatureValidationPolicy = countersignatureValidationPolicy;
 	}
 
 	/**
@@ -209,113 +215,113 @@ public class ProcessParameters {
 	}
 
 	/**
-	 * See {@link #signingCertificate}
+	 * See {@link #signingCertificateXmlDom}
 	 *
 	 * @return
 	 */
 	public XmlDom getSigningCertificate() {
-		return signingCertificate;
+		return signingCertificateXmlDom;
 	}
 
 	/**
-	 * See {@link #signingCertificate}
+	 * See {@link #signingCertificateXmlDom}
 	 *
 	 * @return
 	 */
 	public void setSigningCertificate(final XmlDom signingCertificate) {
-		this.signingCertificate = signingCertificate;
+		this.signingCertificateXmlDom = signingCertificate;
 	}
 
 	/**
-	 * See {@link #basicBuildingBlocksReport}
+	 * See {@link #basicBuildingBlocksXmlDom}
 	 *
 	 * @return
 	 */
 	public XmlDom getBasicBuildingBlocksReport() {
-		return basicBuildingBlocksReport;
+		return basicBuildingBlocksXmlDom;
 	}
 
 	/**
-	 * See {@link #basicBuildingBlocksReport}
+	 * See {@link #basicBuildingBlocksXmlDom}
 	 *
 	 * @return
 	 */
-	public void setBBBData(final XmlDom bbbData) {
-		this.basicBuildingBlocksReport = bbbData;
+	public void setBasicBuildingBlocksReport(final XmlDom basicBuildingBlocksReport) {
+		this.basicBuildingBlocksXmlDom = basicBuildingBlocksReport;
 	}
 
 	/**
-	 * See {@link #bvData}
+	 * See {@link #bvXmlDom}
 	 *
 	 * @return
 	 */
-	public XmlDom getBvData() {
-		return bvData;
+	public XmlDom getBvXmlDom() {
+		return bvXmlDom;
 	}
 
 	/**
-	 * See {@link #bvData}
+	 * See {@link #bvXmlDom}
 	 *
 	 * @return
 	 */
-	public void setBvData(XmlDom bvData) {
-		this.bvData = bvData;
+	public void setBvXmlDom(XmlDom bvXmlDom) {
+		this.bvXmlDom = bvXmlDom;
 	}
 
 	/**
-	 * See {@link #tsData}
+	 * See {@link #tsXmlDom}
 	 *
 	 * @return
 	 */
-	public XmlDom getTsData() {
-		return tsData;
+	public XmlDom getTsXmlDom() {
+		return tsXmlDom;
 	}
 
 	/**
-	 * See {@link #tsData}
+	 * See {@link #tsXmlDom}
 	 *
 	 * @return
 	 */
-	public void setTsData(XmlDom tsData) {
-		this.tsData = tsData;
+	public void setTsXmlDom(XmlDom tsXmlDom) {
+		this.tsXmlDom = tsXmlDom;
 	}
 
 	/**
-	 * See {@link #adestData}
-	 *
-	 * @return
-	 */
-
-	public XmlDom getAdestData() {
-		return adestData;
-	}
-
-	/**
-	 * See {@link #adestData}
-	 *
-	 * @return
-	 */
-	public void setAdestData(XmlDom adestData) {
-		this.adestData = adestData;
-	}
-
-	/**
-	 * See {@link #ltvData}
+	 * See {@link #adestXmlDom}
 	 *
 	 * @return
 	 */
 
-	public XmlDom getLtvData() {
-		return ltvData;
+	public XmlDom getAdestXmlDom() {
+		return adestXmlDom;
 	}
 
 	/**
-	 * See {@link #ltvData}
+	 * See {@link #adestXmlDom}
 	 *
 	 * @return
 	 */
-	public void setLtvData(XmlDom ltvData) {
-		this.ltvData = ltvData;
+	public void setAdestXmlDom(XmlDom adestXmlDom) {
+		this.adestXmlDom = adestXmlDom;
+	}
+
+	/**
+	 * See {@link #ltvXmlDom}
+	 *
+	 * @return
+	 */
+
+	public XmlDom getLtvXmlDom() {
+		return ltvXmlDom;
+	}
+
+	/**
+	 * See {@link #ltvXmlDom}
+	 *
+	 * @return
+	 */
+	public void setLtvXmlDom(XmlDom ltvXmlDom) {
+		this.ltvXmlDom = ltvXmlDom;
 	}
 
 	/**
@@ -335,27 +341,36 @@ public class ProcessParameters {
 	public void setCurrentTime(final Date currentTime) {
 		if (this.currentTime != null) {
 
-			throw new DSSException(ExceptionMessage.EXCEPTION_CTVSBIOO);
+			throw new DSSException(EXCEPTION_CTVSBIOO);
 		}
 		this.currentTime = currentTime;
 	}
 
 	/**
-	 * See {@link #signatureContext}
+	 * See {@link #signatureXmlDom}
 	 *
 	 * @return
 	 */
 	public XmlDom getSignatureContext() {
-		return signatureContext;
+		return signatureXmlDom;
 	}
 
 	/**
-	 * See {@link #signatureContext}
+	 * See {@link #signatureXmlDom}
+	 * This method sets local variable {@code signatureId}
 	 *
 	 * @param signature
 	 */
 	public void setSignatureContext(final XmlDom signature) {
-		this.signatureContext = signature;
+		this.signatureXmlDom = signature;
+		signatureId = signatureXmlDom.getAttribute(ID);
+	}
+
+	/**
+	 * @return
+	 */
+	public String getSignatureId() {
+		return signatureId;
 	}
 
 	/**
@@ -433,6 +448,14 @@ public class ProcessParameters {
 		this.poe = poe;
 	}
 
+	public Conclusion getGeneralStructureConclusion() {
+		return generalStructureConclusion;
+	}
+
+	public void setGeneralStructureConclusion(final Conclusion generalStructureConclusion) {
+		this.generalStructureConclusion = generalStructureConclusion;
+	}
+
 	@Override
 	public String toString() {
 
@@ -448,5 +471,20 @@ public class ProcessParameters {
 
 			return super.toString();
 		}
+	}
+
+	/**
+	 * @return the {@code List} of content-timestamp-id obtained in SAV building block
+	 */
+	public List<String> getContentTimestampIdList() {
+		return contentTimestampIdList;
+	}
+
+	/**
+	 * @param contentTimestampIdList sets the {@code List} of content-timestamp-id obtained in SAV building block
+	 */
+	public void setContentTimestampIdList(final List<String> contentTimestampIdList) {
+
+		this.contentTimestampIdList = contentTimestampIdList;
 	}
 }

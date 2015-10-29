@@ -40,9 +40,11 @@ public interface NodeName {
 	String LONG_TERM_VALIDATION_DATA = "LongTermValidationData";
 	String CONTROL_TIME_SLIDING_DATA = "ControlTimeSlidingData";
 	String TIMESTAMP_VALIDATION_DATA = "TimestampValidationData";
+	String POE_EXTRACTION = "POEExtraction";
 
 	String SIGNATURE = "Signature";
 	String CONCLUSION = "Conclusion";
+	String GENERAL_STRUCTURE_DATA = "GeneralStructureData";
 	String BASIC_BUILDING_BLOCKS = "BasicBuildingBlocks";
 	String NAME = "Name";
 	String ISC = "ISC";
@@ -61,6 +63,10 @@ public interface NodeName {
 	String CONSTRAINT = "Constraint";
 	String SIGNING_TIME = "SigningTime";
 	String TIMESTAMP = "Timestamp"; // node, constraint
+	String ARCHIVE_TIMESTAMPS = "ArchiveTimestamps";
+	String REFS_ONLY_TIMESTAMPS= "RefsOnlyTimestamps";
+	String SIG_AND_REFS_TIMESTAMPS = "SigAndRefsTimestamps";
+	String SIGNATURE_TIMESTAMPS = "SignatureTimestamps";
 	String SIGNED_SIGNATURE = "SignedSignature";
 	String CONTENT_HINTS = "ContentHints";
 
@@ -71,6 +77,15 @@ public interface NodeName {
 	String VALID_SIGNATURES_COUNT = "ValidSignaturesCount";
 	String SIGNATURE_FORMAT = "SignatureFormat";
 	String SIGNATURE_LEVEL = "SignatureLevel";
-	String SIGNED_BY = "SignedBy";
+	String DETACHED_CONTENTS = "DetachedContents";
 
+	String SIGNED_BY = "SignedBy";
+	String SUBJECT_DISTINGUISHED_NAME = "SubjectDistinguishedName";
+	String GLOBAL = "Global";
+	String NOT_BEFORE = "NotBefore";
+	String NOT_AFTER = "NotAfter";
+	String TIMESTAMPS = "Timestamps";
+	String PRODUCTION_TIME = "ProductionTime";
+
+	String CURRENT_TIME = "CurrentTime";
 }

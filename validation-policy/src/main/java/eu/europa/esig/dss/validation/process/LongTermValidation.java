@@ -32,8 +32,6 @@ import eu.europa.esig.dss.XmlDom;
 import eu.europa.esig.dss.validation.policy.ProcessParameters;
 import eu.europa.esig.dss.validation.policy.RuleUtils;
 import eu.europa.esig.dss.validation.policy.XmlNode;
-import eu.europa.esig.dss.validation.policy.rules.AttributeName;
-import eu.europa.esig.dss.validation.policy.rules.AttributeValue;
 import eu.europa.esig.dss.validation.policy.rules.ExceptionMessage;
 import eu.europa.esig.dss.validation.policy.rules.Indication;
 import eu.europa.esig.dss.validation.policy.rules.MessageTag;
@@ -43,7 +41,10 @@ import eu.europa.esig.dss.validation.policy.rules.SubIndication;
 import eu.europa.esig.dss.validation.process.ltv.PastSignatureValidation;
 import eu.europa.esig.dss.validation.process.ltv.PastSignatureValidationConclusion;
 import eu.europa.esig.dss.validation.process.subprocess.EtsiPOEExtraction;
+import eu.europa.esig.dss.validation.report.Conclusion;
 import eu.europa.esig.dss.x509.TimestampType;
+
+import static eu.europa.esig.dss.validation.policy.rules.MessageTag.*;
 
 /**
  * 9.3 Long Term Validation Process<br>
@@ -78,66 +79,49 @@ import eu.europa.esig.dss.x509.TimestampType;
  *
  *
  */
-public class LongTermValidation {
+public class LongTermValidation extends BasicValidationProcess implements Indication, SubIndication, NodeName, NodeValue, ExceptionMessage {
 
 	private static final Logger LOG = LoggerFactory.getLogger(LongTermValidation.class);
 
-	ProcessParameters params;
+	ProcessParameters context;
 
 	// Primary inputs
-	/**
-	 * See {@link eu.europa.esig.dss.validation.policy.ProcessParameters#getDiagnosticData()}
-	 *
-	 * @return
-	 */
-	private XmlDom diagnosticData;
-
 	private XmlDom timestampValidationData; // Basic Building Blocks for timestamps
 
 	private XmlDom adestValidationData;
 
 	// returned data
-	private XmlNode signatureNode;
-	private XmlNode conclusionNode;
+	private XmlNode signatureXmlNode;
+
+	// LTV conclusion
+	private Conclusion conclusion;
 
 	// This object represents the set of POEs.
 	private EtsiPOEExtraction poe;
 
-	private void prepareParameters(final XmlNode mainNode) {
-
-		this.diagnosticData = params.getDiagnosticData();
-		isInitialised(mainNode);
-	}
-
 	private void isInitialised(final XmlNode mainNode) {
 
-		if (diagnosticData == null) {
-			throw new DSSException(String.format(ExceptionMessage.EXCEPTION_TCOPPNTBI, getClass().getSimpleName(), "diagnosticData"));
-		}
-		if (params.getValidationPolicy() == null) {
-			throw new DSSException(String.format(ExceptionMessage.EXCEPTION_TCOPPNTBI, getClass().getSimpleName(), "validationPolicy"));
-		}
 		if (adestValidationData == null) {
 
 			/**
 			 * The execution of the Basic Validation process which creates the basic validation data.<br>
 			 */
 			final AdESTValidation adestValidation = new AdESTValidation();
-			adestValidationData = adestValidation.run(mainNode, params);
+			adestValidationData = adestValidation.run(mainNode, context);
 
 			// Basic Building Blocks for timestamps
-			timestampValidationData = params.getTsData();
+			timestampValidationData = context.getTsXmlDom();
 		}
 		if (poe == null) {
 
 			poe = new EtsiPOEExtraction();
-			params.setPOE(poe);
+			context.setPOE(poe);
 		}
 	}
 
 	/**
 	 * This method lunches the long term validation process.
-	 *
+	 * <p/>
 	 * 9.3.2 Input<br>
 	 * Signature ..................... Mandatory<br>
 	 * Signed data object (s) ........ Optional<br>
@@ -146,66 +130,71 @@ public class LongTermValidation {
 	 * Local configuration ........... Optional<br>
 	 * A set of POEs ................. Optional<br>
 	 * Signer's Certificate .......... Optional<br>
-	 *
+	 * <p/>
 	 * 9.3.3 Output<br>
 	 * The main output of this signature validation process is a status indicating the validity of the signature. This
 	 * status may be accompanied by additional information (see clause 4).<br>
-	 *
+	 * <p/>
 	 * 9.3.4 Processing<br>
 	 * The following steps shall be performed:
 	 *
-	 * @param params
-	 * @return
+	 * @param mainNode {@code XmlNode} container for the detailed report
+	 * @param context   {@code ProcessParameters}
+	 * @return {@code XmlDom} containing the part of the detailed report related to the current validation process
 	 */
-	public XmlDom run(final XmlNode mainNode, final ProcessParameters params) {
+	public XmlDom run(final XmlNode mainNode, final ProcessParameters context) {
 
-		this.params = params;
-		prepareParameters(mainNode);
-		LOG.debug(this.getClass().getSimpleName() + ": start.");
+		this.context = context;
+		assertDiagnosticData(context.getDiagnosticData(), getClass());
+		assertValidationPolicy(context.getValidationPolicy(), getClass());
 
-		XmlNode longTermValidationData = mainNode.addChild(NodeName.LONG_TERM_VALIDATION_DATA);
+		final GeneralStructure generalStructure = new GeneralStructure();
+		final Conclusion generalStructureConclusion = generalStructure.run(context);
+		mainNode.addChild(generalStructureConclusion.getValidationData());
 
-		final List<XmlDom> signatures = diagnosticData.getElements("/DiagnosticData/Signature");
+		isInitialised(mainNode);
+		if (LOG.isDebugEnabled()) {
+			LOG.debug(this.getClass().getSimpleName() + ": start.");
+		}
 
-		for (final XmlDom signature : signatures) {
+		XmlNode longTermValidationData = mainNode.addChild(LONG_TERM_VALIDATION_DATA);
 
-			final String signatureId = signature.getValue("./@Id");
-			final String type = signature.getValue("./@Type");
-			if (AttributeValue.COUNTERSIGNATURE.equals(type)) {
+		final List<XmlDom> signatureXmlDomList = context.getDiagnosticData().getElements(XP_DIAGNOSTIC_DATA_SIGNATURE);
 
-				params.setCurrentValidationPolicy(params.getCountersignatureValidationPolicy());
-			} else {
+		for (final XmlDom signatureXmlDom : signatureXmlDomList) {
 
-				params.setCurrentValidationPolicy(params.getValidationPolicy());
-			}
-			final XmlDom signatureTimestampValidationData = timestampValidationData.getElement("./Signature[@Id='%s']", signatureId);
-			final XmlDom adestSignatureValidationData = adestValidationData.getElement("/AdESTValidationData/Signature[@Id='%s']", signatureId);
+			final String signatureId = signatureXmlDom.getAttribute(ID);
+			final String signatureType = signatureXmlDom.getAttribute(TYPE);
+			setSuitableValidationPolicy(context, signatureType);
+			final XmlDom signatureTimestampValidationData = timestampValidationData.getElement(XP_SIGNATURE, signatureId);
+			final XmlDom adestSignatureValidationData = adestValidationData.getElement(XP_ADEST_SIGNATURE, signatureId);
 
-			signatureNode = longTermValidationData.addChild(NodeName.SIGNATURE);
-			signatureNode.setAttribute(AttributeName.ID, signatureId);
+			signatureXmlNode = longTermValidationData.addChild(SIGNATURE);
+			signatureXmlNode.setAttribute(ID, signatureId);
 
-			conclusionNode = new XmlNode(NodeName.CONCLUSION);
+			conclusion = new Conclusion();
 			try {
 
-				final boolean valid = process(params, signature, signatureTimestampValidationData, adestSignatureValidationData);
+				final boolean valid = process(context, signatureXmlDom, signatureTimestampValidationData, adestSignatureValidationData);
 				if (valid) {
 
-					conclusionNode.addFirstChild(NodeName.INDICATION, Indication.VALID);
+					conclusion.setIndication(VALID);
 				}
 			} catch (Exception e) {
-
-				LOG.warn("Unexpected exception: " + e.getMessage(), e);
+				// TODO-Bob (12/10/2015):  should not happen
+				LOG.warn("Unexpected exception: " + e.toString(), e);
 			}
-			conclusionNode.setParent(signatureNode);
+			XmlNode conclusionXmlNode = conclusion.toXmlNode();
+			conclusionXmlNode.setParent(signatureXmlNode);
 		}
 		final XmlDom ltvDom = longTermValidationData.toXmlDom();
-		params.setLtvData(ltvDom);
+		context.setLtvXmlDom(ltvDom);
 		return ltvDom;
 	}
 
 	/**
 	 * 9.3.4 Processing<br>
-	 *
+	 * <p/>
 	 * The following steps shall be performed:<br>
 	 *
 	 * @param params
@@ -214,7 +203,7 @@ public class LongTermValidation {
 	 * @param adestSignatureValidationData
 	 * @return
 	 */
-	private boolean process(ProcessParameters params, XmlDom signature, XmlDom signatureTimestampValidationData, XmlDom adestSignatureValidationData) {
+	private boolean process(final ProcessParameters params, final XmlDom signature, final XmlDom signatureTimestampValidationData, final XmlDom adestSignatureValidationData) {
 
 		/**
 		 * 1) POE initialisation: Add a POE for each object in the signature at the current time to the set of POEs.<br>
@@ -222,41 +211,32 @@ public class LongTermValidation {
 		 * NOTE 1: The set of POE in the input may have been initialised from external sources (e.g. provided from an
 		 * external archiving system). These POEs will be used without additional processing.<br>
 		 */
-		// This means that the framework needs to extend the signature (add a LTV timestamp).
-		// --> This is not done in the 102853 implementation. The DSS user can extend the signature by adding his own
-		// code.
-
-		final List<XmlDom> certificates = params.getCertPool().getElements("./Certificate");
-		//!! poe.initialisePOE(signature, certificates, params.getCurrentTime());
+		// --> The POEs at the current time are not added
 
 		/**
 		 * 2) Basic signature validation: Perform the validation process for AdES-T signatures (see clause 8) with all the
 		 * inputs, including the processing of any signed attributes/properties as specified.<br>
 		 */
 
-		// --> This is done in the prepareParameters(ProcessParameters params) method.
+		// --> This is done in the prepareParameters(ProcessParameters context) method.
 
-		final XmlDom adestSignatureConclusion = adestSignatureValidationData.getElement("./Conclusion");
-		final String adestSignatureIndication = adestSignatureConclusion.getValue("./Indication/text()");
-		final String adestSignatureSubIndication = adestSignatureConclusion.getValue("./SubIndication/text()");
+		final XmlDom adestSignatureConclusion = adestSignatureValidationData.getElement(XP_CONCLUSION);
+		final String adestSignatureIndication = adestSignatureConclusion.getValue(XP_INDICATION);
 
 		/**
 		 * - If the validation outputs VALID<br>
 		 * - - If there is no validation constraint mandating the validation of the LTV attributes/properties, go to step
 		 * 9.<br>
 		 * - - Otherwise, go to step 3.<br>
-		 * TODO: 20130702 by bielecro: To notify ETSI --> There is no step 9.
-		 *
 		 */
 
-		XmlNode constraintNode = addConstraint(signatureNode, MessageTag.PSV_IATVC);
+		final XmlNode constraintXmlNode = addConstraint(signatureXmlNode, PSV_IATVC);
 
-		if (Indication.VALID.equals(adestSignatureIndication)) {
+		if (VALID.equals(adestSignatureIndication)) {
 
-			constraintNode.addChild(NodeName.STATUS, NodeValue.OK);
-			final List<XmlDom> adestInfo = adestSignatureConclusion.getElements("./Info");
-			constraintNode.addChildren(adestInfo);
-			conclusionNode.addChildren(adestInfo);
+			// TODO-Bob (12/10/2015):  Validation of -A form should be added if constraint mandates it
+			constraintXmlNode.addChild(STATUS, OK);
+			conclusion.addBasicInfo(adestSignatureConclusion);
 			return true;
 		}
 
@@ -280,19 +260,16 @@ public class LongTermValidation {
 		 * LTV attribute/property present in the signature is actually valid before making a decision about the archival
 		 * of the signature.<br>
 		 */
-		final boolean finalStatus = Indication.INDETERMINATE.equals(adestSignatureIndication) && (RuleUtils
-				.in(adestSignatureSubIndication, SubIndication.REVOKED_NO_POE, SubIndication.REVOKED_CA_NO_POE, SubIndication.OUT_OF_BOUNDS_NO_POE, SubIndication.CRYPTO_CONSTRAINTS_FAILURE_NO_POE));
+		final String adestSignatureSubIndication = adestSignatureConclusion.getValue(XP_SUB_INDICATION);
+
+		final boolean finalStatus = INDETERMINATE.equals(adestSignatureIndication) && (RuleUtils
+			  .in(adestSignatureSubIndication, REVOKED_NO_POE, REVOKED_CA_NO_POE, OUT_OF_BOUNDS_NO_POE, CRYPTO_CONSTRAINTS_FAILURE_NO_POE));
 		if (!finalStatus) {
 
-			conclusionNode.addChildrenOf(adestSignatureConclusion);
-			constraintNode.addChild(NodeName.STATUS, NodeValue.KO);
-			constraintNode.addChild(NodeName.INFO, adestSignatureIndication).setAttribute(AttributeName.FIELD, NodeName.INDICATION);
-			constraintNode.addChild(NodeName.INFO, adestSignatureSubIndication).setAttribute(AttributeName.FIELD, NodeName.SUB_INDICATION);
+			conclusion.copyConclusionAndAddBasicInfo(adestSignatureConclusion);
+			constraintXmlNode.addChild(STATUS, KO);
 			return false;
 		}
-		constraintNode.addChild(NodeName.STATUS, NodeValue.OK);
-		constraintNode.addChild(NodeName.INFO, adestSignatureIndication).setAttribute(AttributeName.FIELD, NodeName.INDICATION);
-		constraintNode.addChild(NodeName.INFO, adestSignatureSubIndication).setAttribute(AttributeName.FIELD, NodeName.SUB_INDICATION);
 
 		/**
 		 * 3) If there is at least one long-term-validation attribute with a poeValue, process them, starting from the
@@ -321,8 +298,8 @@ public class LongTermValidation {
 		 * 4) If there is at least one archive-time-stamp attribute, process them, starting from the last (the newest)
 		 * one, as follows: perform the time-stamp validation process (see clause 7):
 		 */
-		final XmlNode archiveTimestampsNode = signatureNode.addChild("ArchiveTimestamps");
-		final List<XmlDom> archiveTimestamps = signature.getElements("./Timestamps/Timestamp[@Type='%s']", TimestampType.ARCHIVE_TIMESTAMP);
+		final XmlNode archiveTimestampsNode = signatureXmlNode.addChild(ARCHIVE_TIMESTAMPS);
+		final List<XmlDom> archiveTimestamps = signature.getElements(XP_TIMESTAMPS, TimestampType.ARCHIVE_TIMESTAMP);
 		if (archiveTimestamps.size() > 0) {
 
 			dealWithTimestamp(archiveTimestampsNode, signatureTimestampValidationData, archiveTimestamps);
@@ -333,8 +310,8 @@ public class LongTermValidation {
 		 * (the newest), as follows: perform the time-stamp validation process (see clause 7):<br>
 		 */
 
-		final XmlNode refsOnlyTimestampsNode = signatureNode.addChild("RefsOnlyTimestamps");
-		final List<XmlDom> refsOnlyTimestamps = signature.getElements("./Timestamps/Timestamp[@Type='%s']", TimestampType.VALIDATION_DATA_REFSONLY_TIMESTAMP);
+		final XmlNode refsOnlyTimestampsNode = signatureXmlNode.addChild(REFS_ONLY_TIMESTAMPS);
+		final List<XmlDom> refsOnlyTimestamps = signature.getElements(XP_TIMESTAMPS, TimestampType.VALIDATION_DATA_REFSONLY_TIMESTAMP);
 		if (refsOnlyTimestamps.size() > 0) {
 
 			dealWithTimestamp(refsOnlyTimestampsNode, signatureTimestampValidationData, refsOnlyTimestamps);
@@ -345,8 +322,8 @@ public class LongTermValidation {
 		 * starting from the last one, as follows: perform the time-stamp validation process (see clause 7):<br>
 		 */
 
-		final XmlNode sigAndRefsTimestampsNode = signatureNode.addChild("SigAndRefsTimestamps");
-		final List<XmlDom> sigAndRefsTimestamps = signature.getElements("./Timestamps/Timestamp[@Type='%s']", TimestampType.VALIDATION_DATA_TIMESTAMP);
+		final XmlNode sigAndRefsTimestampsNode = signatureXmlNode.addChild(SIG_AND_REFS_TIMESTAMPS);
+		final List<XmlDom> sigAndRefsTimestamps = signature.getElements(XP_TIMESTAMPS, TimestampType.VALIDATION_DATA_TIMESTAMP);
 		if (sigAndRefsTimestamps.size() > 0) {
 
 			dealWithTimestamp(sigAndRefsTimestampsNode, signatureTimestampValidationData, sigAndRefsTimestamps);
@@ -356,12 +333,20 @@ public class LongTermValidation {
 		 * starting from the last one, as follows: Perform the time-stamp validation process (see clause 7)<br>
 		 */
 
-		final XmlNode timestampsNode = signatureNode.addChild("Timestamps");
-		final List<XmlDom> timestamps = signature.getElements("./Timestamps/Timestamp[@Type='%s']", TimestampType.SIGNATURE_TIMESTAMP);
+		final XmlNode timestampsNode = signatureXmlNode.addChild(SIGNATURE_TIMESTAMPS);
+		final List<XmlDom> timestamps = signature.getElements(XP_TIMESTAMPS, TimestampType.SIGNATURE_TIMESTAMP);
 		if (timestamps.size() > 0) {
 
 			dealWithTimestamp(timestampsNode, signatureTimestampValidationData, timestamps);
 		}
+		if (!poe.isThereAnyPOE()) {
+
+			conclusion.copyConclusionAndAddBasicInfo(adestSignatureConclusion);
+			constraintXmlNode.addChild(STATUS, KO);
+			return false;
+		}
+		constraintXmlNode.addChild(STATUS, OK);
+
 		/**
 		 * 8) Past signature validation: perform the past signature validation process with the following inputs: the
 		 * signature, the status indication/sub-indication returned in step 2, the signer's certificate, the x.509
@@ -370,29 +355,24 @@ public class LongTermValidation {
 
 		final PastSignatureValidation pastSignatureValidation = new PastSignatureValidation();
 
-		final PastSignatureValidationConclusion psvConclusion = pastSignatureValidation.run(params, signature, adestSignatureConclusion, NodeName.MAIN_SIGNATURE);
+		final PastSignatureValidationConclusion psvConclusion = pastSignatureValidation.run(params, signature, adestSignatureConclusion, MAIN_SIGNATURE);
 
-		signatureNode.addChild(psvConclusion.getValidationData());
+		signatureXmlNode.addChild(psvConclusion.getValidationData());
 		/**
 		 * If it returns VALID go to the next step. Otherwise, abort with the returned indication/sub-indication and
 		 * associated explanations.<br>
 		 */
 
-		constraintNode = addConstraint(signatureNode, MessageTag.PSV_IPSVC);
+		final XmlNode psvConstraintXmlNode = addConstraint(signatureXmlNode, PSV_IPSVC);
 
-		if (!Indication.VALID.equals(psvConclusion.getIndication())) {
+		if (!VALID.equals(psvConclusion.getIndication())) {
 
-			constraintNode.addChild(NodeName.STATUS, NodeValue.KO);
-			constraintNode.addChild(NodeName.INFO, psvConclusion.getIndication()).setAttribute(AttributeName.FIELD, NodeName.INDICATION);
-			constraintNode.addChild(NodeName.INFO, psvConclusion.getSubIndication()).setAttribute(AttributeName.FIELD, NodeName.SUB_INDICATION);
-			psvConclusion.infoToXmlNode(constraintNode);
-
-			conclusionNode.addChild(NodeName.INDICATION, psvConclusion.getIndication());
-			conclusionNode.addChild(NodeName.SUB_INDICATION, psvConclusion.getSubIndication());
-			psvConclusion.infoToXmlNode(conclusionNode);
+			psvConstraintXmlNode.addChild(STATUS, KO);
+			conclusion.copyConclusion(psvConclusion);
+			conclusion.addBasicInfo(adestSignatureConclusion);
 			return false;
 		}
-		constraintNode.addChild(NodeName.STATUS, NodeValue.OK);
+		psvConstraintXmlNode.addChild(STATUS, OK);
 
 		/**
 		 * Data extraction: the SVA shall return the success indication VALID. In addition, the SVA should return
@@ -404,17 +384,19 @@ public class LongTermValidation {
 	}
 
 	/**
-	 * @param processNode
+	 * @param parentXmlNode
 	 * @param signatureTimestampValidationData
-	 * @param timestamps
-	 * @throws eu.europa.esig.dss.DSSException
+	 * @param timestampXmlDomList
+	 * @throws eu.europa.ec.markt.dss.exception.DSSException
 	 */
-	private void dealWithTimestamp(final XmlNode processNode, final XmlDom signatureTimestampValidationData, final List<XmlDom> timestamps) throws DSSException {
+	private void dealWithTimestamp(final XmlNode parentXmlNode, final XmlDom signatureTimestampValidationData, final List<XmlDom> timestampXmlDomList) throws DSSException {
 
-		Collections.sort(timestamps, new TimestampComparator());
-		for (final XmlDom timestamp : timestamps) {
+		Collections.sort(timestampXmlDomList, new TimestampComparator());
+		for (final XmlDom timestampXmlDom : timestampXmlDomList) {
 
-			final String timestampId = timestamp.getValue("./@Id");
+			final String timestampId = timestampXmlDom.getAttribute(ID);
+			final XmlNode timestampXmlNode = parentXmlNode.addChild(TIMESTAMP);
+			timestampXmlNode.setAttribute(ID, timestampId);
 			try {
 
 				/**
@@ -426,21 +408,19 @@ public class LongTermValidation {
 				 * If the verification fails, remove the token from the set.
 				 */
 
-				XmlNode constraintNode = addConstraint(processNode, MessageTag.ADEST_IMIVC);
-				// constraintNode.setAttribute("Id", timestampId);
+				XmlNode constraintXmlNode = addConstraint(timestampXmlNode, ADEST_IMIVC);
 
-				final boolean messageImprintDataIntact = timestamp.getBoolValue(ValidationXPathQueryHolder.XP_MESSAGE_IMPRINT_DATA_INTACT);
+				final boolean messageImprintDataIntact = timestampXmlDom.getBoolValue(XP_MESSAGE_IMPRINT_DATA_INTACT);
 				if (!messageImprintDataIntact) {
 
-					constraintNode.addChild(NodeName.STATUS, NodeValue.KO);
-					XmlNode xmlNode = conclusionNode.addChild(NodeName.INFO, MessageTag.ADEST_IMIVC_ANS.getMessage());
-					xmlNode.setAttribute("Id", timestampId);
+					constraintXmlNode.addChild(STATUS, KO);
+					conclusion.addInfo(ADEST_IMIVC_ANS).setAttribute(TIMESTAMP_ID, timestampId);
 					continue;
 				}
-				constraintNode.addChild(NodeName.STATUS, NodeValue.OK);
+				constraintXmlNode.addChild(STATUS, OK);
 
-				final XmlDom timestampConclusion = signatureTimestampValidationData.getElement("./Timestamp[@Id='%s']/BasicBuildingBlocks/Conclusion", timestampId);
-				final String timestampIndication = timestampConclusion.getValue("./Indication/text()");
+				final XmlDom timestampConclusionXmlDom = signatureTimestampValidationData.getElement(XP_TIMESTAMP_BBB_CONCLUSION, timestampId);
+				final String timestampIndication = timestampConclusionXmlDom.getValue(XP_INDICATION);
 
 				/**
 				 * a) If VALID is returned and the cryptographic hash function used in the time-stamp
@@ -452,11 +432,20 @@ public class LongTermValidation {
 				 * - the cryptographic constraints as inputs.<br>
 				 * Add the returned POEs to the set of POEs.
 				 */
-				if (Indication.VALID.equals(timestampIndication)) {
+				if (VALID.equals(timestampIndication)) {
 
-					processNode.addChild("POEExtraction", NodeValue.OK);
-					extractPOEs(timestamp);
+					timestampXmlNode.addChild(POE_EXTRACTION, OK);
+					extractPOEs(timestampXmlDom);
 				} else {
+
+					constraintXmlNode = addConstraint(timestampXmlNode, LTV_ITAPOE);
+					if (!poe.isThereAnyPOE()) {
+
+						constraintXmlNode.addChild(STATUS, KO);
+						conclusion.addError(LTV_ITAPOE_ANS).setAttribute(TIMESTAMP_ID, timestampId);
+						continue; // if there is no PEO then process next timestamp
+					}
+					constraintXmlNode.addChild(STATUS, OK);
 
 					/**
 					 * b) Otherwise, perform past signature validation process with the following inputs:<br>
@@ -471,20 +460,19 @@ public class LongTermValidation {
 					 */
 
 					final PastSignatureValidation psvp = new PastSignatureValidation();
-					final PastSignatureValidationConclusion psvConclusion = psvp.run(params, timestamp, timestampConclusion, NodeName.TIMESTAMP);
+					final PastSignatureValidationConclusion psvConclusion = psvp.run(context, timestampXmlDom, timestampConclusionXmlDom, TIMESTAMP);
 
-					processNode.addChild(psvConclusion.getValidationData());
+					timestampXmlNode.addChild(psvConclusion.getValidationData());
 
 					/**
 					 * If it returns VALID and the cryptographic hash function used in the time-stamp is considered reliable
 					 * at the generation time of the time-stamp, perform the POE extraction process and add the returned POEs
 					 * to the set of POEs.
 					 */
-					if (Indication.VALID.equals(psvConclusion.getIndication())) {
+					if (VALID.equals(psvConclusion.getIndication())) {
 
-						final boolean couldExtract = extractPOEs(timestamp);
+						final boolean couldExtract = extractPOEs(timestampXmlDom);
 						if (couldExtract) {
-
 							continue;
 						}
 					}
@@ -505,7 +493,6 @@ public class LongTermValidation {
 					 */
 				}
 			} catch (Exception e) {
-
 				throw new DSSException("Error for timestamp: id: " + timestampId, e);
 			}
 		}
@@ -514,16 +501,16 @@ public class LongTermValidation {
 	/**
 	 * @param timestamp
 	 * @return
-	 * @throws eu.europa.esig.dss.DSSException
+	 * @throws eu.europa.ec.markt.dss.exception.DSSException
 	 */
 	private boolean extractPOEs(final XmlDom timestamp) throws DSSException {
 
-		final String digestAlgorithm = RuleUtils.canonicalizeDigestAlgo(timestamp.getValue("./SignedDataDigestAlgo/text()"));
-		final Date algorithmExpirationDate = params.getCurrentValidationPolicy().getAlgorithmExpirationDate(digestAlgorithm);
-		final Date timestampProductionTime = timestamp.getTimeValue("./ProductionTime/text()");
-		if ((algorithmExpirationDate == null) || timestampProductionTime.before(algorithmExpirationDate)) {
+		final String digestAlgorithm = RuleUtils.canonicalizeDigestAlgo(timestamp.getValue(XP_SIGNED_DATA_DIGEST_ALGO));
+		final Date algorithmExpirationDate = context.getCurrentValidationPolicy().getAlgorithmExpirationDate(digestAlgorithm);
+		final Date timestampProductionTime = timestamp.getTimeValue(XP_PRODUCTION_TIME);
+		if (algorithmExpirationDate == null || timestampProductionTime.before(algorithmExpirationDate)) {
 
-			poe.addPOE(timestamp, params.getCertPool());
+			poe.addPOE(timestamp, context.getCertPool());
 			return true;
 		}
 		return false;
@@ -538,8 +525,8 @@ public class LongTermValidation {
 	 */
 	private XmlNode addConstraint(final XmlNode parentNode, final MessageTag messageTag) {
 
-		final XmlNode constraintNode = parentNode.addChild(NodeName.CONSTRAINT);
-		constraintNode.addChild(NodeName.NAME, messageTag.getMessage()).setAttribute(AttributeName.NAME_ID, messageTag.name());
+		final XmlNode constraintNode = parentNode.addChild(CONSTRAINT);
+		constraintNode.addChild(NAME, messageTag.getMessage()).setAttribute(NAME_ID, messageTag.name());
 		return constraintNode;
 	}
 }

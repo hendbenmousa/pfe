@@ -1,19 +1,19 @@
 /**
  * DSS - Digital Signature Services
  * Copyright (C) 2015 European Commission, provided under the CEF programme
- *
+ * <p/>
  * This file is part of the "DSS - Digital Signature Services" project.
- *
+ * <p/>
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 2.1 of the License, or (at your option) any later version.
- *
+ * <p/>
  * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
- *
+ * <p/>
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
@@ -22,26 +22,42 @@ package eu.europa.esig.dss.validation.policy;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
 import org.w3c.dom.Document;
 
 import eu.europa.esig.dss.XmlDom;
+import eu.europa.esig.dss.validation.policy.rules.AttributeName;
+import eu.europa.esig.dss.validation.policy.rules.RuleConstant;
 
 /**
  * This class encapsulates the constraint file that controls the policy to be used during the validation process. This is the base class used to implement a specific validation
  * policy
  */
-public abstract class ValidationPolicy extends XmlDom {
+public abstract class ValidationPolicy extends XmlDom implements RuleConstant, AttributeName {
+
+	protected Map<String, Constraint> customConstraintMap;
 
 	public ValidationPolicy(final Document document) {
 
 		super(document);
 	}
+
+	/**
+	 * @param customConstraintMap
+	 */
+	public void setCustomConstraintMap(final Map<String, Constraint> customConstraintMap) {
+		this.customConstraintMap = customConstraintMap;
+	}
+
 	/**
 	 * @return
 	 */
 	public abstract boolean isRevocationFreshnessToBeChecked();
 
+	/**
+	 * @return
+	 */
 	public abstract String getFormatedMaxRevocationFreshness();
 
 	/**
@@ -61,12 +77,23 @@ public abstract class ValidationPolicy extends XmlDom {
 	public abstract Date getAlgorithmExpirationDate(String algorithm);
 
 	/**
-	 * Indicates if the signature policy should be checked. If AcceptablePolicies element is absent within the constraint file then null is returned,
-	 * otherwise the list of identifiers is initialised.
+	 * Indicates if the signature policy should be checked.
 	 *
-	 * @return {@code Constraint} if SigningTime element is present in the constraint file, null otherwise.
+	 * @return {@code SignaturePolicyConstraint} If AcceptablePolicies element is absent within the constraint file then null is returned, otherwise the list of identifiers is
+	 * initialised.
 	 */
 	public abstract SignaturePolicyConstraint getSignaturePolicyConstraint();
+
+	/**
+	 * Indicates if the signature format (XAdES_BASELINE_B, XAdES_BASELINE_LT...) should be checked.
+	 * // TODO-Bob (08/10/2015):  This constraint can be converted in two distinct:
+	 * // TODO-Bob (08/10/2015):  - format: CMS/XMLDsig, PDF, CAdES, XAdES, PAdES & ASiC
+	 * // TODO-Bob (08/10/2015):  - level: -B, -T, -LT...
+	 *
+	 * @return {@code Constraint} If AcceptableSignatureFormats element is absent within the constraint file then null is returned, otherwise the list of acceptable signature
+	 * format is initialised.
+	 */
+	public abstract Constraint getSignatureFormatConstraint();
 
 	/**
 	 * Indicates if the structural validation should be checked. If StructuralValidation element is absent within the constraint file then null is returned.
@@ -74,6 +101,13 @@ public abstract class ValidationPolicy extends XmlDom {
 	 * @return {@code Constraint} if StructuralValidation element is present in the constraint file, null otherwise.
 	 */
 	public abstract Constraint getStructuralValidationConstraint();
+
+	/**
+	 * Indicates if the signed property: data-object-format should be checked.
+	 *
+	 * @return {@code Constraint} if DataObjectFormat element is present in the constraint file, null otherwise.
+	 */
+	public abstract Constraint getDataObjectFormatConstraint();
 
 	/**
 	 * Indicates if the signed property: signing-time should be checked. If SigningTime element is absent within the constraint file then null is returned.
@@ -123,7 +157,12 @@ public abstract class ValidationPolicy extends XmlDom {
 	 *
 	 * @return {@code Constraint} if ContentTimeStamp element is present in the constraint file, null otherwise.
 	 */
-	public abstract Constraint getContentTimestampPresenceConstraint();
+	public abstract ElementNumberConstraint getContentTimestampNumberConstraint();
+
+	/**
+	 * @return the {@code List} of content timestamp types to be taken into account, or an empty {@code List} if each content-timestamp should be considered
+	 */
+	public abstract List<String> getContentTimestampTypeList();
 
 	/**
 	 * Indicates if the signed property: content-time-stamp should be checked. If ClaimedRoles element is absent within the constraint file then null is returned.
@@ -140,18 +179,11 @@ public abstract class ValidationPolicy extends XmlDom {
 	public abstract List<String> getClaimedRoles();
 
 	/**
-	 * Indicates if the presence of the Signer Role is mandatory.
+	 * The {@code Constraint} is initialised with the values extracted from the constraint file.
 	 *
-	 * @return
+	 * @return {@code Constraint} if CertifiedRoles element is present in the constraint file, null otherwise
 	 */
-	public abstract boolean shouldCheckIfCertifiedRoleIsPresent();
-
-	/**
-	 * Return the mandated signer role.
-	 *
-	 * @return
-	 */
-	public abstract List<String> getCertifiedRoles();
+	public abstract Constraint getCertifiedRoleConstraint();
 
 	/**
 	 * Returns the name of the policy.
@@ -174,7 +206,7 @@ public abstract class ValidationPolicy extends XmlDom {
 	 */
 	public abstract Long getTimestampDelayTime();
 
-	public abstract String getCertifiedRolesAttendance();
+	public abstract String getClaimedRolesAttendance();
 
 	/**
 	 * This method creates the {@code SignatureCryptographicConstraint} corresponding to the context parameter. If AcceptableEncryptionAlgo is not present in the constraint file
@@ -205,6 +237,11 @@ public abstract class ValidationPolicy extends XmlDom {
 	 * @return {@code SignatureCryptographicConstraint} if AcceptableEncryptionAlgo for a given context element is present in the constraint file, null otherwise.
 	 */
 	protected abstract SignatureCryptographicConstraint getSignatureCryptographicConstraint_(String rootXPathQuery, String context, String subContext);
+
+	/**
+	 * @return
+	 */
+	public abstract ManifestCryptographicConstraint getManifestCryptographicConstraint();
 
 	/**
 	 * @param context
@@ -342,12 +379,12 @@ public abstract class ValidationPolicy extends XmlDom {
 	public abstract Constraint getReferenceDataExistenceConstraint();
 
 	/**
-	 * @return {@code ReferenceDataIntact} if ReferenceDataIntact for a given context element is present in the constraint file, null otherwise.
+	 * @return {@code Constraint} if ReferenceDataIntact for a given context element is present in the constraint file, null otherwise.
 	 */
 	public abstract Constraint getReferenceDataIntactConstraint();
 
 	/**
-	 * @return {@code ReferenceDataIntact} if SignatureIntact for a given context element is present in the constraint file, null otherwise.
+	 * @return {@code Constraint} if SignatureIntact for a given context element is present in the constraint file, null otherwise.
 	 */
 	public abstract Constraint getSignatureIntactConstraint();
 
@@ -366,13 +403,6 @@ public abstract class ValidationPolicy extends XmlDom {
 
 	public abstract Constraint getMessageImprintDataIntactConstraint();
 
-	/**
-	 * This constraint is always executed!
-	 *
-	 * @return
-	 */
-	public abstract TimestampValidationProcessValidConstraint getTimestampValidationProcessConstraint();
-
 	public abstract Constraint getRevocationTimeConstraint();
 
 	public abstract Constraint getBestSignatureTimeBeforeIssuanceDateOfSigningCertificateConstraint();
@@ -390,14 +420,43 @@ public abstract class ValidationPolicy extends XmlDom {
 	 */
 	public abstract Constraint getTimestampDelaySigningTimePropertyConstraint();
 
-	public abstract Constraint getContentTimestampImprintIntactConstraint();
+	public abstract ElementNumberConstraint getCounterSignatureNumberConstraint();
 
-	public abstract Constraint getContentTimestampImprintFoundConstraint();
+	/**
+	 * This constraint is related to the global structure.
+	 * It defines the number of required signatures.
+	 *
+	 * @return {@code ElementNumberConstraint}
+	 */
+	public abstract ElementNumberConstraint getSignatureNumberConstraint();
 
-	public abstract Constraint getCounterSignatureReferenceDataExistenceConstraint();
+	/**
+	 * This constraint is related to the global structure.
+	 * It defines the number of VALID signatures.
+	 *
+	 * @return {@code ElementNumberConstraint}
+	 */
+	public abstract ElementNumberConstraint getValidSignatureNumberConstraint();
 
-	public abstract Constraint getCounterSignatureReferenceDataIntactConstraint();
+	public abstract ElementNumberConstraint getSignatureTimestampNumberConstraint();
 
-	public abstract Constraint getCounterSignatureIntactConstraint();
+	public abstract ElementNumberConstraint getManifestReferenceNumberConstraint();
+
+	public abstract Constraint getManifestReferenceDataExistenceConstraint();
+
+	public abstract Constraint getManifestReferenceIntactConstraint();
+
+	public abstract List<Constraint> getISCCustomizedConstraints();
+
+	public abstract Constraint getCompleteCertificateRefsConstraint();
+
+	public abstract Constraint getCompleteRevocationRefsConstraint();
+
+	public abstract ElementNumberConstraint getValidationDataTimestampNumberConstraint();
+
+	public abstract ElementNumberConstraint getArchiveTimestampNumberConstraint();
+
+	public abstract Constraint getCertificateValuesConstraint();
+
+	public abstract Constraint getRevocationValuesConstraint();
 }
-

@@ -119,11 +119,12 @@ public abstract class WizardController<M extends Model> extends DSSAppletControl
 
 					return null;
 				} catch (final Exception e) {
+
 					LOG.error("Execute fail", e);
 					if (e.getMessage() == null) {
 						JOptionPane.showMessageDialog(getCore(), e);
 					} else {
-						JOptionPane.showMessageDialog(getCore(), e.getMessage());
+						JOptionPane.showMessageDialog(getCore(), e.getMessage(), "Exception", JOptionPane.ERROR_MESSAGE);
 					}
 					doBack();
 					return null;

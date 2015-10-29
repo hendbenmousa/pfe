@@ -1,19 +1,19 @@
 /**
  * DSS - Digital Signature Services
  * Copyright (C) 2015 European Commission, provided under the CEF programme
- *
+ * <p/>
  * This file is part of the "DSS - Digital Signature Services" project.
- *
+ * <p/>
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 2.1 of the License, or (at your option) any later version.
- *
+ * <p/>
  * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
- *
+ * <p/>
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
@@ -26,19 +26,26 @@ import java.util.Map;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import eu.europa.esig.dss.DSSException;
 import eu.europa.esig.dss.XmlDom;
 import eu.europa.esig.dss.validation.policy.rules.AttributeName;
+import eu.europa.esig.dss.validation.policy.rules.AttributeValue;
+import eu.europa.esig.dss.validation.policy.rules.Indication;
 import eu.europa.esig.dss.validation.policy.rules.MessageTag;
 import eu.europa.esig.dss.validation.policy.rules.NodeName;
 import eu.europa.esig.dss.validation.policy.rules.NodeValue;
+import eu.europa.esig.dss.validation.policy.rules.SubIndication;
 import eu.europa.esig.dss.validation.report.Conclusion;
 
 /**
  * This class represents a constraint and indicates its level: IGNORE, INFORM, WARN, FAIL.
  */
-public class Constraint {
+public class Constraint implements NodeName, NodeValue, AttributeName, AttributeValue, Indication, SubIndication {
+
+	private static final Logger LOG = LoggerFactory.getLogger(Constraint.class);
 
 	/**
 	 * Diagnostic data containing all static information
@@ -54,32 +61,30 @@ public class Constraint {
 	 * This field represents the simple {@code String} value of the constraint
 	 */
 	protected String value;
-
-	/**
-	 * This field represent the {@code List} of {@code String} values of the constraint
-	 */
-	private List<String> valueList;
-
 	/**
 	 * This field represents the simple {@code String} expected value of the constraint
 	 */
 	protected String expectedValue;
-
 	/**
 	 * This field represents the list of acceptable identifiers
 	 */
 	protected List<String> identifiers;
 	protected String indication;
-
 	protected String subIndication;
-
 	protected MessageTag failureMessageTag;
 	protected Map<String, String> messageAttributes = new HashMap<String, String>();
 	protected Conclusion conclusion;
 
-	public static enum Level {IGNORE, INFORM, WARN, FAIL}
+	/**
+	 * This {@code Map} contains the list of Info attributes to be added to the constraint node.
+	 */
+	protected Map<String, String> infoAttributes = null;
 
-	private Level level;
+	/**
+	 * This field represent the {@code List} of {@code String} values of the constraint
+	 */
+	protected List<String> valueList;
+	protected Level level;
 
 	/**
 	 * This is the default constructor. It takes a level of the constraint as parameter. The string representing the level is trimmed and capitalized. If there is no corresponding
@@ -106,8 +111,8 @@ public class Constraint {
 	 */
 	public XmlNode create(final XmlNode parentNode, final MessageTag messageTag) {
 
-		this.node = parentNode.addChild(NodeName.CONSTRAINT);
-		this.node.addChild(NodeName.NAME, messageTag.getMessage()).setAttribute(AttributeName.NAME_ID, messageTag.name());
+		this.node = parentNode.addChild(CONSTRAINT);
+		this.node.addChild(NAME, messageTag.getMessage()).setAttribute(NAME_ID, messageTag.name());
 		return this.node;
 	}
 
@@ -121,9 +126,9 @@ public class Constraint {
 	 */
 	public XmlNode create(final XmlNode parentNode, final MessageTag messageTag, final String parameters) {
 
-		this.node = parentNode.addChild(NodeName.CONSTRAINT);
+		this.node = parentNode.addChild(CONSTRAINT);
 		final String message = String.format(messageTag.getMessage(), parameters);
-		this.node.addChild(NodeName.NAME, message).setAttribute(AttributeName.NAME_ID, messageTag.name());
+		this.node.addChild(NAME, message).setAttribute(NAME_ID, messageTag.name());
 		return this.node;
 	}
 
@@ -158,6 +163,13 @@ public class Constraint {
 	}
 
 	/**
+	 * @return the simple value of the constraint.
+	 */
+	public String getValue() {
+		return value;
+	}
+
+	/**
 	 * Sets the list of real values.
 	 *
 	 * @param stringList {@code List} of {@code String}s
@@ -165,13 +177,6 @@ public class Constraint {
 	public void setValue(final List<String> stringList) {
 
 		this.valueList = stringList;
-	}
-
-	/**
-	 * @return the simple value of the constraint.
-	 */
-	public String getValue() {
-		return value;
 	}
 
 	public String getExpectedValue() {
@@ -186,6 +191,14 @@ public class Constraint {
 	}
 
 	/**
+	 * @param validationDataXmlNode this {@code XmlNode} is used to add the constraint nodes
+	 * @param conclusion            the {@code Conclusion} which indicates the result of the process
+	 */
+	public boolean checkCustomized(final XmlNode validationDataXmlNode, final Conclusion conclusion) {
+		return true;
+	}
+
+	/**
 	 * This method carry out the validation of the constraint.
 	 *
 	 * @return true if the constraint is met, false otherwise.
@@ -194,13 +207,13 @@ public class Constraint {
 
 		if (ignore()) {
 
-			node.addChild(NodeName.STATUS, NodeValue.IGNORED);
+			node.addChild(STATUS, IGNORED);
 			return true;
 		}
 		if (inform()) {
 
-			node.addChild(NodeName.STATUS, NodeValue.INFORMATION);
-			node.addChild(NodeName.INFO, null, messageAttributes).setAttribute(AttributeName.EXPECTED_VALUE, expectedValue).setAttribute(AttributeName.CONSTRAINT_VALUE, value);
+			node.addChild(STATUS, INFORMATION);
+			node.addChild(INFO, null, messageAttributes).setAttribute(EXPECTED_VALUE, expectedValue).setAttribute(CONSTRAINT_VALUE, value);
 			return true;
 		}
 		boolean error = value.isEmpty();
@@ -215,17 +228,17 @@ public class Constraint {
 
 			if (warn()) {
 
-				node.addChild(NodeName.STATUS, NodeValue.WARN);
-				final XmlNode xmlNode = node.addChild(NodeName.WARNING, failureMessageTag, messageAttributes);
+				node.addChild(STATUS, WARN);
+				final XmlNode xmlNode = node.addChild(WARNING, failureMessageTag, messageAttributes);
 				if (StringUtils.isNotBlank(expectedValue) && !expectedValue.equals("true") && !expectedValue.equals("false")) {
-					xmlNode.setAttribute(AttributeName.EXPECTED_VALUE, expectedValue).setAttribute(AttributeName.CONSTRAINT_VALUE, value);
+					xmlNode.setAttribute(EXPECTED_VALUE, expectedValue).setAttribute(CONSTRAINT_VALUE, value);
 				}
 				conclusion.addWarning(failureMessageTag, messageAttributes);
 				return true;
 			}
-			node.addChild(NodeName.STATUS, NodeValue.KO);
+			node.addChild(STATUS, KO);
 			if (StringUtils.isNotBlank(expectedValue) && !expectedValue.equals("true") && !expectedValue.equals("false")) {
-				node.addChild(NodeName.INFO).setAttribute(AttributeName.EXPECTED_VALUE, expectedValue).setAttribute(AttributeName.CONSTRAINT_VALUE, value);
+				node.addChild(INFO).setAttribute(EXPECTED_VALUE, expectedValue).setAttribute(CONSTRAINT_VALUE, value);
 			}
 			if (StringUtils.isNotBlank(indication)) {
 
@@ -234,10 +247,7 @@ public class Constraint {
 			conclusion.addError(failureMessageTag, messageAttributes);
 			return false;
 		}
-		node.addChild(NodeName.STATUS, NodeValue.OK);
-		if (!messageAttributes.isEmpty()) {
-			node.addChild(NodeName.INFO, null, messageAttributes);
-		}
+		addOkNode();
 		return true;
 	}
 
@@ -250,13 +260,13 @@ public class Constraint {
 
 		if (ignore()) {
 
-			node.addChild(NodeName.STATUS, NodeValue.IGNORED);
+			node.addChild(STATUS, IGNORED);
 			return true;
 		}
 		if (inform()) {
 
-			node.addChild(NodeName.STATUS, NodeValue.INFORMATION);
-			node.addChild(NodeName.INFO, null, messageAttributes).setAttribute("ExpectedValue", expectedValue).setAttribute("ConstraintValue", value);
+			node.addChild(STATUS, INFORMATION);
+			node.addChild(INFO, null, messageAttributes).setAttribute("ExpectedValue", expectedValue).setAttribute("ConstraintValue", value);
 			return true;
 		}
 		final boolean contains;
@@ -272,20 +282,28 @@ public class Constraint {
 
 			if (warn()) {
 
-				node.addChild(NodeName.STATUS, NodeValue.WARN);
-				node.addChild(NodeName.WARNING, failureMessageTag, messageAttributes).setAttribute(AttributeName.EXPECTED_VALUE, expectedValue).setAttribute(AttributeName.CONSTRAINT_VALUE, value);
+				node.addChild(STATUS, WARN);
+				node.addChild(WARNING, failureMessageTag, messageAttributes).setAttribute(EXPECTED_VALUE, expectedValue).setAttribute(CONSTRAINT_VALUE, value);
 				conclusion.addWarning(failureMessageTag, messageAttributes);
 				return true;
 			}
-			node.addChild(NodeName.STATUS, NodeValue.KO);
-			node.addChild(NodeName.INFO).setAttribute(AttributeName.EXPECTED_VALUE, expectedValue).setAttribute(AttributeName.CONSTRAINT_VALUE, value);
+			node.addChild(STATUS, KO);
+			node.addChild(INFO).setAttribute(EXPECTED_VALUE, expectedValue).setAttribute(CONSTRAINT_VALUE, value);
 			conclusion.setIndication(indication, subIndication);
 			conclusion.addError(failureMessageTag, messageAttributes);
 			return false;
 		}
-		node.addChild(NodeName.STATUS, NodeValue.OK);
-		node.addChild(NodeName.INFO, null, messageAttributes);
+		node.addChild(STATUS, OK);
+		node.addChild(INFO, null, messageAttributes);
 		return true;
+	}
+
+	protected void addOkNode() {
+
+		node.addChild(STATUS, OK);
+		if (infoAttributes != null) {
+			node.addChild(INFO, null, infoAttributes);
+		}
 	}
 
 	/**
@@ -314,15 +332,15 @@ public class Constraint {
 		this.conclusion = conclusion;
 	}
 
+	public List<String> getIdentifiers() {
+		return identifiers;
+	}
+
 	/**
 	 * @param identifiers the {@code List} of identifiers to set.
 	 */
 	public void setIdentifiers(final List<String> identifiers) {
 		this.identifiers = identifiers;
-	}
-
-	public List<String> getIdentifiers() {
-		return identifiers;
 	}
 
 	/**
@@ -344,6 +362,14 @@ public class Constraint {
 	 */
 	public Level getLevel() {
 		return level;
+	}
+
+	public void setLevel(final Level level) {
+
+		if (level == null) {
+			throw new DSSException(Level.class.getSimpleName() + " cannot be null!");
+		}
+		this.level = level;
 	}
 
 	/**
@@ -381,4 +407,31 @@ public class Constraint {
 	public boolean fail() {
 		return level.equals(Level.FAIL);
 	}
+
+	/**
+	 * This method allows to clear all attributes.
+	 */
+	public void clearAttributes() {
+
+		messageAttributes.clear();
+	}
+
+	/**
+	 * This method allows to add an INFO note to the constraint. The attribute must be set beforehand: {@link #setAttribute(String, String)}
+	 *
+	 * @param attributeName {@code String}
+	 */
+	public void addInfo(final String attributeName) {
+
+		final String attributeValue = messageAttributes.get(attributeName);
+		if (attributeValue == null) {
+			throw new DSSException("The attribute '" + attributeName + "' is not defined!");
+		}
+		if (infoAttributes == null) {
+			infoAttributes = new HashMap<String, String>();
+		}
+		infoAttributes.put(attributeName, attributeValue);
+	}
+
+	public enum Level {IGNORE, INFORM, WARN, FAIL}
 }

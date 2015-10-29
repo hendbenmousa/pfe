@@ -66,7 +66,7 @@ public class ReportStep extends WizardStep<ValidationModel, ValidationWizardCont
 		try {
 			getController().validateDocument();
 		} catch (final DSSException e) {
-			throw new ControllerException(e);
+			throw e;
 		}
 	}
 
