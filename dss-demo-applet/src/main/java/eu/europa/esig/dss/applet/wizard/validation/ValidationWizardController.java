@@ -125,16 +125,6 @@ public class ValidationWizardController extends DSSWizardController<ValidationMo
 		final File detachedFile = model.getOriginalFile();
 		final DSSDocument detachedDocument = detachedFile != null ? new FileDocument(detachedFile) : null;
 
-		//		WsDocument wsPolicyDocument = null;
-		//		if (!model.isDefaultPolicy() && model.getSelectedPolicyFile() != null) {
-		//
-		//			final File policyFile = new File(model.getSelectedPolicyFile().getAbsolutePath());
-		//			final InputStream inputStream = DSSUtils.toInputStream(policyFile);
-		//			wsPolicyDocument = new WsDocument();
-		//			wsPolicyDocument.setBytes(DSSUtils.toByteArray(inputStream));
-		//		}
-
-
 		final SignedDocumentValidator validator = SignedDocumentValidator.fromDocument(signedDocument);
 		final CertificateVerifier certificateVerifier = new CommonCertificateVerifier();
 		certificateVerifier.setCrlSource(new OnlineCRLSource());
