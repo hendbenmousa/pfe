@@ -99,15 +99,13 @@ public abstract class AppletCore extends JApplet {
 
 		private final Applet applet;
 
-		public AppletParameterProvider(Applet applet) {
+		public AppletParameterProvider(final Applet applet) {
 			this.applet = applet;
 		}
 
 		public String getParameter(String parameterName) {
 
-			System.out.println("-->" + parameterName);
 			final String parameter = applet.getParameter(parameterName);
-			System.out.println("==>" + parameter);
 			return parameter;
 		}
 	}

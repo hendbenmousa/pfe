@@ -40,6 +40,7 @@ import eu.europa.esig.dss.client.tsp.OnlineTSPSource;
 @SuppressWarnings("serial")
 public class DSSAppletCore extends AppletCore {
 
+	public static final String SETUP_PATH = "setup-path";
 	private Parameters parameters;
 
 	/**
@@ -67,10 +68,9 @@ public class DSSAppletCore extends AppletCore {
 	protected void registerParameters(final ParameterProvider parameterProvider) {
 
 		LOG.info("Register applet parameters ");
-		final String setupPath = null;//parameterProvider.getParameter("setup-path");
+		final String setupPath = parameterProvider.getParameter(SETUP_PATH);
 
-		final Parameters parameters = new Parameters(setupPath);
-		this.parameters = parameters;
+		parameters = new Parameters(setupPath);
 
 		final OnlineTSPSource onlineTSPSource = new OnlineTSPSource(parameters.getTimestampServerUrl());
 		final AnceDataLoader dataLoader = new AnceDataLoader();
