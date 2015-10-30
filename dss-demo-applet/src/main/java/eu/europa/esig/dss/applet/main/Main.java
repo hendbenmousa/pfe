@@ -32,7 +32,7 @@ public class Main {
 	 */
 	public static void main(String args[]) {
 
-		System.out.println("parameters:");
+		System.out.println("-->parameters:");
 		for (final String arg : args) {
 
 			final int i = arg.indexOf('=');

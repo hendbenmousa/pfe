@@ -60,6 +60,7 @@ import eu.europa.esig.dss.token.DSSPrivateKeyEntry;
 import eu.europa.esig.dss.token.SignatureTokenConnection;
 import eu.europa.esig.dss.x509.SignatureForm;
 import eu.europa.esig.dss.xades.XAdESSignatureParameters;
+
 import static eu.europa.esig.dss.SignatureLevel.CAdES_BASELINE_B;
 import static eu.europa.esig.dss.SignatureLevel.CAdES_BASELINE_LT;
 import static eu.europa.esig.dss.SignatureLevel.CAdES_BASELINE_LTA;
@@ -203,7 +204,7 @@ public class SignatureWizardController extends DSSWizardController<SignatureMode
 
 		if (!validSigningCertificate) {
 			setSuccessful(false);
-//			showDialogBox("Signing certificate validation error!");
+			//			showDialogBox("Signing certificate validation error!");
 			return;
 		}
 
@@ -211,7 +212,7 @@ public class SignatureWizardController extends DSSWizardController<SignatureMode
 		final SignatureTokenConnection tokenConnection = model.getTokenConnection();
 		final DSSPrivateKeyEntry privateKey = model.getSelectedPrivateKey();
 
-		AbstractSignatureParameters signatureParameters =null;
+		AbstractSignatureParameters signatureParameters = null;
 		switch (model.getForm()) {
 			case XAdES:
 				signatureParameters = new XAdESSignatureParameters();
@@ -220,7 +221,9 @@ public class SignatureWizardController extends DSSWizardController<SignatureMode
 				signatureParameters = new CAdESSignatureParameters();
 				break;
 			case PAdES:
-				signatureParameters = new PAdESSignatureParameters();
+				final PAdESSignatureParameters pAdESSignatureParameters = new PAdESSignatureParameters();
+				pAdESSignatureParameters.setSignatureSize(9472 * 3);
+				signatureParameters = pAdESSignatureParameters;
 				break;
 		}
 		signatureParameters.setSigningCertificate(privateKey.getCertificate());
@@ -301,10 +304,10 @@ public class SignatureWizardController extends DSSWizardController<SignatureMode
 	}
 
 	//	protected void showDialogBox(final String message) {
-//
-//		JDialog.setDefaultLookAndFeelDecorated(true);
-//		JOptionPane.showMessageDialog(null, message);
-//	}
+	//
+	//		JDialog.setDefaultLookAndFeelDecorated(true);
+	//		JOptionPane.showMessageDialog(null, message);
+	//	}
 
 
 	private boolean isValidSigningCertificate(final SignatureModel model) {
