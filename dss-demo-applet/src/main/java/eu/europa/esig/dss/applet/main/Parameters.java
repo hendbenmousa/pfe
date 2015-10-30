@@ -173,16 +173,27 @@ public class Parameters {
 	public Parameters(final String setupPath) {
 
 		try {
+
+			File setupFile;
 			if (StringUtils.isBlank(setupPath)) {
-				LOG.warn("Default applet configuration used.");
-				return;
+
+				setupFile = new File("setup.properties");
+				if (!(setupFile.exists() && setupFile.isFile())) {
+
+					LOG.warn("Default applet configuration used.");
+					return;
+				}
+			} else {
+
+				setupFile = new File(setupPath);
+				if (!(setupFile.exists() && setupFile.isFile())) {
+
+					LOG.warn("Applet configuration does not exist: " + setupPath);
+					LOG.warn("Default applet configuration used.");
+					return;
+				}
 			}
-			File file = new File(setupPath);
-			if (!(file.exists() && file.isFile())) {
-				LOG.warn("Applet configuration does not exist: " + setupPath);
-				return;
-			}
-			LOG.warn("Applet configuration used: " + setupPath);
+			LOG.warn("Applet configuration used: " + setupFile.getAbsolutePath());
 			final InputStream inputStream = DSSUtils.toInputStream(setupPath);
 			final Properties properties = new Properties();
 			properties.load(inputStream);
