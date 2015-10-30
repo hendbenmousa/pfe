@@ -67,7 +67,7 @@ public class DSSAppletCore extends AppletCore {
 	protected void registerParameters(final ParameterProvider parameterProvider) {
 
 		LOG.info("Register applet parameters ");
-		final String setupPath = parameterProvider.getParameter("setup-path");
+		final String setupPath = null;//parameterProvider.getParameter("setup-path");
 
 		final Parameters parameters = new Parameters(setupPath);
 		this.parameters = parameters;
@@ -81,17 +81,4 @@ public class DSSAppletCore extends AppletCore {
 
 		LOG.info("Parameters - {}", parameters);
 	}
-
-//	public static void main(String args[]) {
-//
-//		DSSAppletCore applet = new DSSAppletCore();
-//
-//		JFrame frame = new JFrame("Your Test Applet");
-//		frame.getContentPane().add(applet);
-//		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-//		frame.setSize(640,480);
-//		frame.setLocationRelativeTo(null);
-//		frame.setVisible(true);
-//		applet.init();
-//	}
 }

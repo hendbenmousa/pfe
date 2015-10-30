@@ -27,6 +27,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.util.Date;
 
 import javax.swing.*;
 
@@ -36,6 +37,7 @@ import org.w3c.dom.Document;
 import com.jgoodies.binding.value.ValueHolder;
 import com.jgoodies.forms.builder.PanelBuilder;
 import com.jgoodies.forms.layout.CellConstraints;
+import eu.europa.esig.dss.DSSUtils;
 import eu.europa.esig.dss.DSSXMLUtils;
 import eu.europa.esig.dss.applet.main.Parameters;
 import eu.europa.esig.dss.applet.model.ValidationModel;
@@ -76,56 +78,31 @@ public class ReportView extends WizardView<ValidationModel, ValidationWizardCont
 		final ValidationModel model = getModel();
 
 		final SimpleReport simpleReport = model.getSimpleReport();
-		final String simpleReportString = simpleReport.toString();
-		simpleReportValueHolder.setValue(simpleReportString);
-
-		//		final XmlDom detailedReport = model.getDetailedReport();
-		//		final String reportText = detailedReport.toString();
-		//		detailedReportValueHolder.setValue(reportText);
-		//
-		//		final XMLTreeModel xmlTreeModelReport = new XMLTreeModel();
-		//		Element doc = detailedReport.getRootElement();
-		//		xmlTreeModelReport.setDocument(doc);
-		//
-		//		final XmlDom diagnosticData = model.getDiagnosticData();
-		//		final Document document = diagnosticData.getRootElement().getOwnerDocument();
-		//		final XMLTreeModel xmlTreeModelDiagnostic = new XMLTreeModel();
-		//		xmlTreeModelDiagnostic.setDocument(document.getDocumentElement());
-		//		diagnostic = ComponentFactory.tree("Diagnostic", xmlTreeModelDiagnostic);
-		//		expandTree(diagnostic);
-		//
-		//		diagnosticValueHolder.setValue(diagnosticData.toString());
-		//
-		//		final Document simpleReportHtml = getController().renderSimpleReportAsHtml();
-		//		simpleReportHtmlPanel.setDocument(simpleReportHtml);
-		//
-		//		final Document detailedReportHtml = getController().renderValidationReportAsHtml();
-		//		detailedReportHtmlPanel.setDocument(detailedReportHtml);
+		final java.util.List<String> signatureIdList = simpleReport.getSignatureIdList();
+		final String signatureId = signatureIdList.isEmpty() ? "" : signatureIdList.get(0);
+		final String indication = simpleReport.getIndication(signatureId);
+		final String subIndication = simpleReport.getSubIndication(signatureId);
+		final String signatureFormat = simpleReport.getSignatureFormat(signatureId);
+		final Date validationTime = simpleReport.getValidationTime();
+		final String validationPolicyName = simpleReport.getValidationPolicyName();
+		StringBuilder sb = new StringBuilder();
+		sb.append("The signatureValidation was executed on " + DSSUtils.formatDate(validationTime)).append('\n');
+		sb.append(String.format("The form of the signature is '%s'.", signatureFormat)).append('\n');
+		sb.append(String.format("The validation process returned '%s' indication.", indication)).append('\n');
+		if (!subIndication.isEmpty()) {
+			sb.append(String.format("The additional information on the problem: '%s'", subIndication)).append('\n');
+		}
+		sb.append('\n').append(String.format("The validation used '%s' validation policy.", validationPolicyName));
+		simpleReportValueHolder.setValue(sb.toString());
 	}
 
 	@Override
 	protected Container doLayout() {
 
-		//		JTabbedPane tabbedPane = new JTabbedPane(SwingConstants.TOP);
 		final JPanel simpleReportText = getSimpleReportText();
-		//		tabbedPane.addTab("Simple Report XML", simpleReportText);
 		return simpleReportText;
 	}
 
-	//	private JPanel getHtmlPanel(final String textWithMnemonic) {
-	//
-	//		final String[] columnSpecs = new String[]{"5dlu", "pref", "5dlu", "fill:default:grow", "5dlu"};
-	//		final String[] rowSpecs = new String[]{"5dlu", "pref", "5dlu", "fill:default:grow", "5dlu", "pref", "5dlu"};
-	//		final PanelBuilder builder = ComponentFactory.createBuilder(columnSpecs, rowSpecs);
-	//		final CellConstraints cc = new CellConstraints();
-	//
-	//		builder.addSeparator(textWithMnemonic, cc.xyw(2, 2, 3));
-	//		scrollPane = ComponentFactory.createScrollPane(simpleReportText);
-	//		builder.add(scrollPane, cc.xyw(2, 4, 3));
-	//
-	//		return ComponentFactory.createPanel(builder);
-	//	}
-	//
 	private JPanel getSimpleReportText() {
 
 		final String[] columnSpecs = new String[]{"5dlu", "fill:default:grow", "5dlu"};

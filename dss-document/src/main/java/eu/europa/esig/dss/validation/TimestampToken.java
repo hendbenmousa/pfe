@@ -192,7 +192,7 @@ public class TimestampToken extends Token {
 			timestampValidity = TimestampValidity.NO_SIGNING_CERTIFICATE;
 		} catch (TSPValidationException e) {
 			if(logger.isDebugEnabled()) {
-				logger.info("No valid signature for timestamp token: ", e);
+				logger.debug("No valid signature for timestamp token: ", e);
 			} else {
 				logger.info("No valid signature for timestamp token: " + e.getMessage());
 			}
