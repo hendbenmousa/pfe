@@ -46,6 +46,8 @@ import eu.europa.esig.dss.applet.swing.mvc.wizard.WizardView;
 import eu.europa.esig.dss.applet.util.ComponentFactory;
 import eu.europa.esig.dss.applet.util.XsltConverter;
 import eu.europa.esig.dss.applet.wizard.validation.ValidationWizardController;
+import eu.europa.esig.dss.validation.report.DetailedReport;
+import eu.europa.esig.dss.validation.report.DiagnosticData;
 import eu.europa.esig.dss.validation.report.SimpleReport;
 
 /**
@@ -121,14 +123,30 @@ public class ReportView extends WizardView<ValidationModel, ValidationWizardCont
 				try {
 					final Parameters parameter = getController().getParameter();
 					final String outPath = parameter.getValidationOutPath();
-					final FileOutputStream htmlOutputStream = new FileOutputStream(outPath);
+					final String htmlValidationReportPath = outPath + "/ance-rapport.html";
+					final FileOutputStream htmlOutputStream = new FileOutputStream(htmlValidationReportPath);
+
 					final SimpleReport simpleReportXmlDom = getModel().getSimpleReport();
+					final File simpleReportFile = new File(outPath + "/simple-report.xml");
+					final byte[] simpleReportBytes = simpleReportXmlDom.toByteArray();
+					DSSUtils.saveToFile(simpleReportBytes, simpleReportFile);
+
+					final DiagnosticData diagnosticDataXmlDom = getModel().getDiagnosticData();
+					final File diagnosticDataFile = new File(outPath + "/diagnostic-data.xml");
+					final byte[] diagnosticDataBytes = diagnosticDataXmlDom.toByteArray();
+					DSSUtils.saveToFile(diagnosticDataBytes, diagnosticDataFile);
+
+					final DetailedReport detailedReportXmlDom = getModel().getDetailedReport();
+					final File detailedReportFile = new File(outPath + "/detailed-report.xml");
+					final byte[] detailedReportBytes = detailedReportXmlDom.toByteArray();
+					DSSUtils.saveToFile(detailedReportBytes, detailedReportFile);
+
 					final String xsltPath = "/simpleReport.xslt";
 					final Document document = XsltConverter.renderAsHtml(simpleReportXmlDom, xsltPath, null);
 					DSSXMLUtils.transform(document, htmlOutputStream);
 					IOUtils.closeQuietly(htmlOutputStream);
-					System.out.println("Transformation done: " + outPath);
-					final File htmlFile = new File(outPath);
+					System.out.println("Transformation done: " + htmlValidationReportPath);
+					final File htmlFile = new File(htmlValidationReportPath);
 					Desktop.getDesktop().browse(htmlFile.toURI());
 				} catch (FileNotFoundException e) {
 					e.printStackTrace();

@@ -50,7 +50,7 @@ public class XsltConverter {
 
 			final InputStream xslStream = XsltConverter.class.getResourceAsStream(xsltPath);
 			final Transformer transformer = transformerFactory.newTransformer(new StreamSource(xslStream));
-//			transformer.setParameter("output_template_name", "rootFileName");
+			transformer.setParameter("output_template_name", "");
 
 			final DOMResult domResult = new DOMResult();
 			final DOMSource xmlSource = new DOMSource(xmlDom.getRootElement().getOwnerDocument());

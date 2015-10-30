@@ -155,8 +155,7 @@ public class Parameters {
 	/**
 	 *
 	 */
-	private String timestampServerUrl;
-
+	private String timestampServerUrl = "https://ts.certification.tn:4318";
 	/**
 	 *
 	 */
@@ -164,7 +163,7 @@ public class Parameters {
 	/**
 	 *
 	 */
-	private String validationOutPath = System.getProperty("java.io.tmpdir") + "/ance-rapport.html";
+	private String validationOutPath = System.getProperty("java.io.tmpdir");
 
 	/**
 	 * The default constructor for Parameters.
