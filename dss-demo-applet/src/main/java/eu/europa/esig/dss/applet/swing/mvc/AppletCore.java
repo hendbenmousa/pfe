@@ -104,7 +104,11 @@ public abstract class AppletCore extends JApplet {
 		}
 
 		public String getParameter(String parameterName) {
-			return applet.getParameter(parameterName);
+
+			System.out.println("-->" + parameterName);
+			final String parameter = applet.getParameter(parameterName);
+			System.out.println("==>" + parameter);
+			return parameter;
 		}
 	}
 }

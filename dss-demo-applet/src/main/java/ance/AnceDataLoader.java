@@ -21,14 +21,17 @@ import org.apache.http.entity.BufferedHttpEntity;
 import org.apache.http.entity.InputStreamEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
+import org.bouncycastle.tsp.TimeStampToken;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import eu.europa.esig.dss.DSSException;
 import eu.europa.esig.dss.DSSUtils;
+import eu.europa.esig.dss.DigestAlgorithm;
 import eu.europa.esig.dss.applet.PinInputDialog;
 import eu.europa.esig.dss.applet.SignatureTokenType;
 import eu.europa.esig.dss.client.http.DataLoader;
+import eu.europa.esig.dss.client.tsp.OnlineTSPSource;
 import eu.europa.esig.dss.token.AbstractSignatureTokenConnection;
 import eu.europa.esig.dss.token.MSCAPISignatureToken;
 import eu.europa.esig.dss.token.Pkcs11SignatureToken;
@@ -49,6 +52,19 @@ public class AnceDataLoader implements DataLoader {
 	private SignatureTokenType tokenType = null;
 	private File pkcsFile;
 	private String pkcsPassword;
+
+	public static void main(String[] args) {
+
+		final OnlineTSPSource onlineTSPSource = new OnlineTSPSource();
+		final AnceDataLoader dataLoader = new AnceDataLoader();
+		dataLoader.setMscapi();
+		onlineTSPSource.setDataLoader(dataLoader);
+		onlineTSPSource.setTspServer("https://ts.certification.tn:4318");
+
+		final byte[] hellos = DSSUtils.digest(DigestAlgorithm.SHA1, "Hello".getBytes());
+		final TimeStampToken timeStampResponse = onlineTSPSource.getTimeStampResponse(DigestAlgorithm.SHA1, hellos);
+		System.out.println(timeStampResponse.toString());
+	}
 
 	public void setPinInputDialog(final PinInputDialog pinInputDialog) {
 		this.pinInputDialog = pinInputDialog;
@@ -92,6 +108,11 @@ public class AnceDataLoader implements DataLoader {
 
 			final KeyStore trustKeyStore = KeyStore.getInstance("Windows-ROOT");
 			trustKeyStore.load(null, null);
+			//			final Enumeration<String> aliases = trustKeyStore.aliases();
+			//			while (aliases.hasMoreElements()) {
+			//				String s = aliases.nextElement();
+			//				System.out.println(s);
+			//			}
 
 			KeyManagerFactory kmf = KeyManagerFactory.getInstance("SunX509");
 			kmf.init(clientKeyStore, new char[0]);
@@ -126,7 +147,6 @@ public class AnceDataLoader implements DataLoader {
 			throw new DSSException(e);
 		}
 	}
-
 
 	protected byte[] readHttpResponse(final String url, final HttpResponse httpResponse) throws DSSException {
 
