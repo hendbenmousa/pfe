@@ -226,7 +226,9 @@ public class SignatureView extends WizardView<SignatureModel, SignatureWizardCon
 
 				JRadioButton selectedButton = enableJRadioButton(null, envelopingButton);
 				selectedButton = enableJRadioButton(selectedButton, detachedButton);
-				envelopedButton.setEnabled(false);
+				if (envelopedButton != null) {
+					envelopedButton.setEnabled(false);
+				}
 				selectedButton.doClick();
 			}
 
