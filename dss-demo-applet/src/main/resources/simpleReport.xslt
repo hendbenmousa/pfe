@@ -79,6 +79,7 @@
 				</style>
 			</head>
 			<body>
+				<img src="http://www.certification.tn/sites/default/files/images/header_ance.png"/>
 				<table>
 					<xsl:call-template name="documentInformationHeader"/>
 					<!--<xsl:call-template name="Global"/>-->
