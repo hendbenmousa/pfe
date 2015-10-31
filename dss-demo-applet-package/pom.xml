@@ -30,7 +30,7 @@
 				<configuration>
 					<artifactSet>
 						<excludes>
-							<exclude>xalan:*</exclude>
+							<!--<exclude>xalan:*</exclude>-->
 							<exclude>xerces:*</exclude>
 						</excludes>
 					</artifactSet>
@@ -60,10 +60,6 @@
 	</build>
 
 	<dependencies>
-		<dependency>
-			<groupId>eu.europa.ec.joinup.sd-dss</groupId>
-			<artifactId>dss-document</artifactId>
-		</dependency>
 		<dependency>
 			<groupId>eu.europa.ec.joinup.sd-dss</groupId>
 			<artifactId>dss-demo-applet</artifactId>
