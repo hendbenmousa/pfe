@@ -63,6 +63,7 @@ import static eu.europa.esig.dss.x509.SignatureForm.XAdES;
 public class Parameters {
 
 	private static final Logger LOG = LoggerFactory.getLogger(Parameters.class);
+	public static final String SETUP_PROPERTIES = "setup.properties";
 
 	public static final String USAGE = "USAGE";
 	public static final String FORM = "FORMAT";
@@ -174,29 +175,33 @@ public class Parameters {
 
 		try {
 
-			File setupFile;
+			InputStream setupInputStream;
 			if (StringUtils.isBlank(setupPath)) {
 
-				setupFile = new File("setup.properties");
-				if (!(setupFile.exists() && setupFile.isFile())) {
+				LOG.info("Try to use default configuration file '{}'", SETUP_PROPERTIES);
+				setupInputStream = Parameters.class.getResourceAsStream("/" + SETUP_PROPERTIES);
+				if (setupInputStream == null) {
 
 					LOG.warn("Default applet configuration used.");
 					return;
 				}
+				LOG.info("Default configuration file is used.");
 			} else {
 
-				setupFile = new File(setupPath);
+				File setupFile = new File(setupPath);
 				if (!(setupFile.exists() && setupFile.isFile())) {
 
 					LOG.warn("Applet configuration does not exist: " + setupPath);
 					LOG.warn("Default applet configuration used.");
 					return;
+				} else {
+
+					LOG.warn("Applet configuration used: " + setupFile.getAbsolutePath());
+					setupInputStream = DSSUtils.toInputStream(setupFile);
 				}
 			}
-			LOG.warn("Applet configuration used: " + setupFile.getAbsolutePath());
-			final InputStream inputStream = DSSUtils.toInputStream(setupPath);
 			final Properties properties = new Properties();
-			properties.load(inputStream);
+			properties.load(setupInputStream);
 
 			initUsage(properties);
 			initForm(properties);

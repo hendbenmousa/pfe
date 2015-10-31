@@ -62,6 +62,7 @@ public class Main {
 			public void run() {
 
 				JFrame frame = new JFrame();
+				frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 				// Main main = new Main(frame);
 				// center on screen (need to set the panel first to obtain correct size)
 				DSSAppletCore appletCore = new DSSAppletCore();

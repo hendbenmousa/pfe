@@ -26,6 +26,8 @@ import java.io.InputStream;
 import java.util.Date;
 import java.util.List;
 
+import org.apache.commons.io.IOUtils;
+
 import eu.europa.esig.dss.DSSUtils;
 import eu.europa.esig.dss.client.crl.OnlineCRLSource;
 import eu.europa.esig.dss.client.ocsp.OnlineOCSPSource;
@@ -96,11 +98,19 @@ public class CertificateValidationService {
 
 	private static CommonTrustedCertificateSource getCommonTrustedCertificateSource() {
 
-		final InputStream rootCertificateFile = CertificateValidationService.class.getResourceAsStream("/tun-root.pem");
-		rootCertificateToken = DSSUtils.loadCertificate(rootCertificateFile);
+		InputStream rootCertificateStream = null;
+		InputStream rootCertificate2Stream = null;
+		try {
 
-		final InputStream rootCertificateFile2 = CertificateValidationService.class.getResourceAsStream("/TunServerCA2.crt");
-		rootCertificateToken2 = DSSUtils.loadCertificate(rootCertificateFile2);
+			rootCertificateStream = CertificateValidationService.class.getResourceAsStream("/tun-root.pem");
+			rootCertificateToken = DSSUtils.loadCertificate(rootCertificateStream);
+
+			rootCertificate2Stream = CertificateValidationService.class.getResourceAsStream("/TunServerCA2.crt");
+			rootCertificateToken2 = DSSUtils.loadCertificate(rootCertificate2Stream);
+		} finally {
+			IOUtils.closeQuietly(rootCertificateStream);
+			IOUtils.closeQuietly(rootCertificate2Stream);
+		}
 
 		final CommonTrustedCertificateSource trustedCertificateSource = new CommonTrustedCertificateSource();
 
